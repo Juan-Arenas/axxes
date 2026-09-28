@@ -1,22 +1,9 @@
 function initAdmin() {
-    let logoClicks = 0;
-    let logoClickTimer;
-
-    const logo = document.querySelector('.logo-img');
-    if (logo) {
-        logo.addEventListener('click', (e) => {
+    const adminBtn = document.getElementById('admin-login-btn');
+    if (adminBtn) {
+        adminBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            logoClicks++;
-            
-            clearTimeout(logoClickTimer);
-            logoClickTimer = setTimeout(() => {
-                logoClicks = 0;
-            }, 1000);
-
-            if (logoClicks === 3) {
-                logoClicks = 0;
-                showPinModal();
-            }
+            showPinModal();
         });
     }
 

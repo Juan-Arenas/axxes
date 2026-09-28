@@ -175,25 +175,24 @@ function injectAdminHTML() {
                                 </div>
 
                                 <div class="form-group">
-                                    <label>URL de Imagen *</label>
-                                    <input type="text" id="admin-product-image" required>
+                                    <label>Imagen del Producto *</label>
+                                    <input type="file" id="admin-product-image-file" accept="image/*" style="padding: 5px;">
+                                    <input type="hidden" id="admin-product-image-url">
+                                    <div id="admin-image-preview-wrap" style="display:none; margin-top:10px; border:1px dashed #333; padding:5px; border-radius:6px; width:fit-content;">
+                                        <img id="admin-image-preview-img" src="" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
+                                    </div>
                                 </div>
 
-                                <!-- DECANTS INSTEAD OF SKIN TONES -->
-                                <div class="form-group" style="background:#1a1a1a; padding:10px; border-radius:6px; border:1px solid #333;">
-                                    <label style="margin-bottom:10px;">Gestión de Decants</label>
+                                <!-- GESTIÓN DE DECANTS DINÁMICOS -->
+                                <div class="form-group" style="background:#1a1a1a; padding:15px; border-radius:8px; border:1px solid #333;">
+                                    <label style="margin-bottom:10px; color:#fff; border-bottom:1px solid #333; padding-bottom:5px;">Gestión de Decants Personalizados</label>
                                     
-                                    <div style="display:flex; gap:20px; margin-bottom:10px;">
-                                        <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="admin-decant-5ml"> Habilitar 5 ml</label>
-                                        <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="admin-decant-10ml"> Habilitar 10 ml</label>
-                                        <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="admin-decant-30ml"> Habilitar 30 ml</label>
+                                    <div id="admin-decants-list" style="display:flex; flex-direction:column; gap:10px; margin-bottom:10px;">
+                                        <!-- Filas de decants inyectadas dinámicamente -->
                                     </div>
-
-                                    <div style="display:flex; gap:10px;">
-                                        <input type="number" id="admin-price-5ml" placeholder="Precio 5 ml">
-                                        <input type="number" id="admin-price-10ml" placeholder="Precio 10 ml">
-                                        <input type="number" id="admin-price-30ml" placeholder="Precio 30 ml">
-                                    </div>
+                                    <button type="button" onclick="addDecantRow()" class="btn-secondary" style="font-size:0.75rem; padding:6px 12px; width:100%;">
+                                        <i class="fas fa-plus"></i> Añadir Tamaño de Decant
+                                    </button>
                                 </div>
 
                                 <div class="form-group">
@@ -209,7 +208,7 @@ function injectAdminHTML() {
 
                                 <div class="admin-form-actions">
                                     <button class="btn-primary" type="submit" id="admin-product-submit-btn">Guardar</button>
-                                    <button class="btn-secondary" type="button" onclick="document.getElementById('admin-product-form').reset();document.getElementById('admin-product-id').value='';">Limpiar</button>
+                                    <button class="btn-secondary" type="button" onclick="resetAdminForm()">Limpiar</button>
                                 </div>
                             </form>
                         </div>
@@ -290,6 +289,21 @@ function setupAdminEvents() {
         }
     });
 
+    // Image upload logic to Base64
+    document.getElementById('admin-product-image-file').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64 = event.target.result;
+                document.getElementById('admin-product-image-url').value = base64;
+                document.getElementById('admin-image-preview-img').src = base64;
+                document.getElementById('admin-image-preview-wrap').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
     document.getElementById('admin-panel-close').addEventListener('click', () => {
         document.getElementById('admin-panel').style.display = 'none';
         renderCatalog(); // From render.js
@@ -299,19 +313,33 @@ function setupAdminEvents() {
     document.getElementById('admin-product-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const id = document.getElementById('admin-product-id').value;
+        
+        // Gather dynamic decants
+        const decantRows = document.querySelectorAll('.decant-row');
+        const decants = [];
+        decantRows.forEach(row => {
+            const size = row.querySelector('.decant-size').value;
+            const price = parseFloat(row.querySelector('.decant-price').value) || 0;
+            if (size && price > 0) {
+                decants.push({ size, price });
+            }
+        });
+
+        // Use base64 if uploaded, else fallback (for existing products)
+        let finalImage = document.getElementById('admin-product-image-url').value;
+        if (!finalImage && id) {
+            const existing = window.axxesStore.products.find(x => x.id === id);
+            finalImage = existing ? existing.image : '';
+        }
+
         const prod = {
             id: id || 'axx-' + Date.now(),
             name: document.getElementById('admin-product-name').value,
             brand: document.getElementById('admin-product-brand').value,
             category: document.getElementById('admin-product-category').value,
-            image: document.getElementById('admin-product-image').value,
+            image: finalImage,
             priceBottle: parseFloat(document.getElementById('admin-product-price').value),
-            price5ml: parseFloat(document.getElementById('admin-price-5ml').value) || 0,
-            price10ml: parseFloat(document.getElementById('admin-price-10ml').value) || 0,
-            price30ml: parseFloat(document.getElementById('admin-price-30ml').value) || 0,
-            has5ml: document.getElementById('admin-decant-5ml').checked,
-            has10ml: document.getElementById('admin-decant-10ml').checked,
-            has30ml: document.getElementById('admin-decant-30ml').checked,
+            decants: decants, // dynamic decants array
             active: document.getElementById('admin-product-active').checked,
             featured: document.getElementById('admin-product-featured').checked,
             offer: document.getElementById('admin-product-offer').checked
@@ -322,11 +350,33 @@ function setupAdminEvents() {
         } else {
             window.axxesStore.addProduct(prod);
         }
-        document.getElementById('admin-product-form').reset();
-        document.getElementById('admin-product-id').value = '';
+        
+        resetAdminForm();
         renderAdminDashboard();
     });
 }
+
+function resetAdminForm() {
+    document.getElementById('admin-product-form').reset();
+    document.getElementById('admin-product-id').value = '';
+    document.getElementById('admin-product-image-url').value = '';
+    document.getElementById('admin-image-preview-wrap').style.display = 'none';
+    document.getElementById('admin-image-preview-img').src = '';
+    document.getElementById('admin-decants-list').innerHTML = ''; // clear dynamic decants
+}
+
+window.addDecantRow = function(size = '', price = '') {
+    const list = document.getElementById('admin-decants-list');
+    const rowId = 'decant-' + Date.now() + Math.random().toString(36).substr(2, 5);
+    const rowHtml = \`
+        <div id="\${rowId}" class="decant-row" style="display:flex; gap:10px; align-items:center;">
+            <input type="text" class="decant-size" placeholder="Tamaño (Ej. 5ml)" value="\${size}" style="flex:1;" required>
+            <input type="number" class="decant-price" placeholder="Precio ($)" value="\${price}" style="flex:1;" required>
+            <button type="button" onclick="document.getElementById('\${rowId}').remove()" style="background:#ff4444; color:white; border:none; border-radius:4px; padding:8px 12px; cursor:pointer;"><i class="fas fa-trash"></i></button>
+        </div>
+    \`;
+    list.insertAdjacentHTML('beforeend', rowHtml);
+};
 
 window.renderAdminDashboard = function() {
     const products = window.axxesStore.products;
@@ -364,6 +414,7 @@ window.renderAdminDashboard = function() {
 };
 
 window.editProduct = function(id) {
+    resetAdminForm();
     const p = window.axxesStore.products.find(x => x.id === id);
     if (!p) return;
     document.getElementById('admin-product-id').value = p.id;
@@ -371,16 +422,24 @@ window.editProduct = function(id) {
     document.getElementById('admin-product-brand').value = p.brand;
     document.getElementById('admin-product-category').value = p.category;
     document.getElementById('admin-product-price').value = p.priceBottle;
-    document.getElementById('admin-product-image').value = p.image;
     
-    document.getElementById('admin-decant-5ml').checked = p.has5ml || (p.price5ml > 0);
-    document.getElementById('admin-price-5ml').value = p.price5ml || '';
+    // For old products loaded from unsplash, keep the URL in the hidden field for now, 
+    // or just show the preview if it exists
+    document.getElementById('admin-product-image-url').value = p.image || '';
+    if (p.image) {
+        document.getElementById('admin-image-preview-img').src = p.image;
+        document.getElementById('admin-image-preview-wrap').style.display = 'block';
+    }
     
-    document.getElementById('admin-decant-10ml').checked = p.has10ml || (p.price10ml > 0);
-    document.getElementById('admin-price-10ml').value = p.price10ml || '';
-
-    document.getElementById('admin-decant-30ml').checked = p.has30ml || (p.price30ml > 0);
-    document.getElementById('admin-price-30ml').value = p.price30ml || '';
+    // Render dynamic decants
+    if (p.decants && p.decants.length > 0) {
+        p.decants.forEach(d => addDecantRow(d.size, d.price));
+    } else {
+        // Fallback for migrated products with legacy fields
+        if (p.price5ml) addDecantRow('5 ml', p.price5ml);
+        if (p.price10ml) addDecantRow('10 ml', p.price10ml);
+        if (p.price30ml) addDecantRow('30 ml', p.price30ml);
+    }
 
     document.getElementById('admin-product-active').checked = p.active;
     document.getElementById('admin-product-featured').checked = p.featured;

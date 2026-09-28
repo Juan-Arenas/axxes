@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axxes Parfum | Perfumería de Lujo</title>
+    <meta name="description" content="Descubre una selección de perfumes cuidadosamente elegidos para quienes buscan dejar una impresión. Axxes Parfum, fragancias que hablan por ti.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-container">
+            <div class="logo">
+                <a href="#">AXXES PARFUM</a>
+            </div>
+            
+            <nav class="desktop-nav">
+                <ul class="nav-links">
+                    <li><a href="#hero" class="active">Inicio</a></li>
+                    <li><a href="#catalog">Catálogo</a></li>
+                    <li><a href="#categories">Categorías</a></li>
+                    <li><a href="#about">Nosotros</a></li>
+                    <li><a href="#footer">Contacto</a></li>
+                </ul>
+            </nav>
+
+            <div class="header-icons">
+                <button aria-label="Buscar" class="icon-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button aria-label="Favoritos" class="icon-btn"><i class="fa-regular fa-heart"></i></button>
+                <button aria-label="Carrito" class="icon-btn cart-btn" id="open-cart">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="cart-count">0</span>
+                </button>
+                <button class="mobile-menu-btn" id="mobile-menu-btn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Nav -->
+        <nav class="mobile-nav" id="mobile-nav">
+            <button class="close-menu" id="close-menu"><i class="fa-solid fa-xmark"></i></button>
+            <ul class="mobile-nav-links">
+                <li><a href="#hero">Inicio</a></li>
+                <li><a href="#catalog">Catálogo</a></li>
+                <li><a href="#categories">Categorías</a></li>
+                <li><a href="#about">Nosotros</a></li>
+                <li><a href="#footer">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="hero">
+            <div class="hero-content fade-in-up">
+                <h1>Fragancias que <br>hablan por ti.</h1>
+                <p>Descubre una selección de perfumes cuidadosamente elegidos para quienes buscan dejar una impresión inolvidable.</p>
+                <div class="hero-buttons">
+                    <a href="#catalog" class="btn btn-primary">Explorar catálogo</a>
+                    <a href="#about" class="btn btn-secondary">Descubrir Axxes</a>
+                </div>
+            </div>
+            <div class="hero-image fade-in-up delay-1">
+                <div class="hero-image-placeholder">
+                    <!-- Placeholder for high quality perfume image -->
+                    <img src="https://images.unsplash.com/photo-1523293115678-d126868e96f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Axxes Perfume Collection">
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="categories" id="categories">
+            <div class="section-header fade-in-up">
+                <h2>Colecciones</h2>
+            </div>
+            <div class="categories-grid">
+                <div class="category-card fade-in-up delay-1">
+                    <h3>Para Hombre</h3>
+                    <a href="#catalog" class="category-link">Ver colección <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="category-card fade-in-up delay-2">
+                    <h3>Para Mujer</h3>
+                    <a href="#catalog" class="category-link">Ver colección <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="category-card fade-in-up delay-3">
+                    <h3>Unisex</h3>
+                    <a href="#catalog" class="category-link">Ver colección <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="category-card fade-in-up delay-1">
+                    <h3>Nicho</h3>
+                    <a href="#catalog" class="category-link">Ver colección <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Product -->
+        <section class="featured-product fade-in-up" id="featured">
+            <div class="featured-image">
+                <img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Perfume Destacado">
+            </div>
+            <div class="featured-info">
+                <span class="featured-tag">Producto Destacado</span>
+                <h2>Noir Absolu</h2>
+                <p class="featured-desc">Una fragancia intensa y misteriosa. Notas profundas de madera de oud, cuero y toques ahumados, diseñadas para dejar una estela inolvidable y sofisticada.</p>
+                <div class="featured-notes">
+                    <div><strong>Salida:</strong> Bergamota, Pimienta Negra</div>
+                    <div><strong>Corazón:</strong> Rosa, Incienso</div>
+                    <div><strong>Fondo:</strong> Oud, Cuero, Ámbar</div>
+                </div>
+                <p class="featured-price">$245.00</p>
+                <button class="btn btn-primary add-to-cart-btn" data-id="1" data-name="Noir Absolu" data-price="245.00" data-img="https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80">Comprar ahora</button>
+            </div>
+        </section>
+
+        <!-- Catalog Section -->
+        <section class="catalog" id="catalog">
+            <div class="section-header fade-in-up">
+                <h2>Descubre nuestra colección</h2>
+                
+                <div class="catalog-controls">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-input" placeholder="Buscar perfumes...">
+                    </div>
+                    <button class="btn btn-outline" id="filter-btn"><i class="fa-solid fa-sliders"></i> Filtros</button>
+                </div>
+            </div>
+
+            <!-- Filters Panel (Hidden by default on mobile) -->
+            <div class="filters-panel" id="filters-panel">
+                <div class="filter-group">
+                    <label>Género</label>
+                    <select id="filter-gender">
+                        <option value="all">Todos</option>
+                        <option value="hombre">Hombre</option>
+                        <option value="mujer">Mujer</option>
+                        <option value="unisex">Unisex</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Familia Olfativa</label>
+                    <select id="filter-family">
+                        <option value="all">Todas</option>
+                        <option value="amaderada">Amaderada</option>
+                        <option value="floral">Floral</option>
+                        <option value="citrica">Cítrica</option>
+                        <option value="oriental">Oriental</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="products-grid" id="products-grid">
+                <!-- Products will be dynamically inserted here via JS -->
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about fade-in-up" id="about">
+            <div class="about-content">
+                <h2>Más que una fragancia.<br>Una forma de expresarte.</h2>
+                <p>En Axxes Parfum curamos selecciones exclusivas de las mejores casas perfumistas del mundo. Buscamos la excelencia, la duración y la autenticidad en cada gota.</p>
+                
+                <div class="about-stats">
+                    <div class="stat">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-text">Originales</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">+50</span>
+                        <span class="stat-text">Marcas exclusivas</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">24h</span>
+                        <span class="stat-text">Envío express</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3>AXXES PARFUM</h3>
+                <p>El lujo de una estela inolvidable.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>Navegación</h4>
+                <ul>
+                    <li><a href="#hero">Inicio</a></li>
+                    <li><a href="#catalog">Catálogo</a></li>
+                    <li><a href="#about">Nosotros</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Ayuda</h4>
+                <ul>
+                    <li><a href="#">Envíos y devoluciones</a></li>
+                    <li><a href="#">Preguntas frecuentes</a></li>
+                    <li><a href="#">Contacto</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Términos y condiciones</a></li>
+                    <li><a href="#">Política de privacidad</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Axxes Parfum. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Tu Carrito</h3>
+            <button class="close-cart" id="close-cart"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Cart items will be dynamically inserted here -->
+            <div class="empty-cart-msg">Tu carrito está vacío.</div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Subtotal</span>
+                <span id="cart-subtotal">$0.00</span>
+            </div>
+            <button class="btn btn-primary w-100" id="checkout-btn">Finalizar compra</button>
+            <button class="btn btn-outline w-100 mt-2" id="continue-shopping">Continuar comprando</button>
+        </div>
+    </div>
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/1234567890" class="whatsapp-btn" target="_blank" aria-label="Contactar por WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- Product Modal / Quick View (Template) -->
+    <div class="product-modal" id="product-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-body" id="modal-body">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal-overlay"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

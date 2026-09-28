@@ -117,7 +117,6 @@ function closeQuiz() {
 
 // Cart Logic
 let cart = [];
-const FREE_SHIPPING_THRESHOLD = 500000; // 500.000 COP
 
 function initCart() {
     const openCartBtn = document.getElementById("open-cart");
@@ -218,21 +217,7 @@ function updateCartUI() {
     countEl.textContent = itemsCount;
     subtotalEl.textContent = formatPrice(subtotal);
 
-    // Progress Bar
-    const progressFill = document.getElementById("shipping-progress");
-    const shippingMsg = document.getElementById("shipping-msg");
-    
-    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
-        progressFill.style.width = "100%";
-        progressFill.style.background = "#25D366";
-        shippingMsg.innerHTML = "¡Felicidades! Tienes <strong>envío gratis</strong>.";
-    } else {
-        const percent = (subtotal / FREE_SHIPPING_THRESHOLD) * 100;
-        const missing = FREE_SHIPPING_THRESHOLD - subtotal;
-        progressFill.style.width = percent + "%";
-        progressFill.style.background = "var(--c-black)";
-        shippingMsg.innerHTML = `Te faltan <strong>${formatPrice(missing)}</strong> para envío gratis.`;
-    }
+    // Se eliminó la lógica de envío gratis
 }
 
 // Attach globals for inline onclicks

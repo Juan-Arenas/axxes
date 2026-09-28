@@ -1158,3 +1158,26 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     .ad-image img { height: 400px; }
     .brands-track { font-size: 1.5rem; }
 }
+
+/* CATALOG V2 (App-like) */
+.catalog-search-bar { display: flex; align-items: center; background: #fff; border: 2px solid #ddd; border-radius: 30px; padding: 10px 20px; margin-bottom: 20px; }
+.catalog-search-bar i { color: #888; margin-right: 10px; font-size: 1.2rem; }
+.catalog-search-bar input { border: none; outline: none; width: 100%; font-size: 1rem; color: #333; font-family: 'Inter', sans-serif; }
+.catalog-category-pills { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
+.catalog-category-pills::-webkit-scrollbar { display: none; }
+.cat-pill { white-space: nowrap; padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; background: #fff; color: #333; cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: all 0.3s; }
+.cat-pill.active { background: #000; color: #fff; border-color: #000; }
+.app-prod-card { background: #fff; border-radius: 15px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; }
+.app-prod-card img { width: 100%; border-radius: 10px; aspect-ratio: 1; object-fit: cover; }
+.app-prod-badge { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.9); color: #333; padding: 4px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.app-prod-name { font-weight: 600; font-size: 0.9rem; color: #111; margin: 10px 0 5px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.app-prod-price { font-size: 1.1rem; font-weight: 700; color: #000; margin-bottom: 15px; }
+.app-btn-add { background: #000; color: #fff; border: none; width: 100%; padding: 10px; border-radius: 20px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.3s; }
+.app-btn-add:hover { background: #333; }
+#main-catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+@media (max-width: 600px) {
+    #main-catalog-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .app-prod-name { font-size: 0.8rem; }
+    .app-prod-price { font-size: 1rem; }
+    .app-btn-add { font-size: 0.8rem; padding: 8px; }
+}

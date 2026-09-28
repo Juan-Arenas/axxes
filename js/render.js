@@ -3,30 +3,69 @@
 function renderCatalog() {
     const prods = window.axxesStore.products.filter(p => p.active);
     
-    // 1. Featured Catalog (#catalog .product-grid)
-    const catalogGrid = document.querySelector('#catalog .product-grid');
-    if (catalogGrid) {
-        const catalogProds = prods.filter(p => !p.featured); // Just taking first 3 for simplicity to match original
-        catalogGrid.innerHTML = catalogProds.slice(0,3).map((p, idx) => `
-            <div class="prod-card reveal is-visible delay-${idx}">
-                ${p.discountBadge ? `<div class="prod-badge discount">${p.discountBadge}</div>` : ''}
-                ${p.isNew ? `<div class="prod-badge new">NUEVO</div>` : ''}
-                ${p.bestseller && !p.discountBadge && !p.isNew ? `<div class="prod-badge hot">MÁS VENDIDO</div>` : ''}
-                <button class="prod-fav ${p.isFavorite ? 'active' : ''}"><i class="fa-${p.isFavorite ? 'solid' : 'regular'} fa-heart"></i></button>
-                <div class="prod-img-wrapper">
+    // 1. Featured Catalog V2 (App-like layout)
+    const catalogGrid = document.getElementById('main-catalog-grid');
+    const pillsContainer = document.getElementById('catalog-pills');
+    const searchInput = document.getElementById('catalog-search-input');
+    
+    if (catalogGrid && pillsContainer) {
+        // Render Pills
+        const allCats = window.axxesStore.categories || [];
+        // Add "Todas" first
+        let pillsHTML = `<button class="cat-pill active" data-cat="todas">✨ Todas</button>`;
+        allCats.forEach(c => {
+            pillsHTML += `<button class="cat-pill" data-cat="${c.name}">${c.name}</button>`;
+        });
+        pillsContainer.innerHTML = pillsHTML;
+
+        // Active filter state
+        let currentCat = 'todas';
+        let currentSearch = '';
+
+        const renderGrid = () => {
+            let filtered = prods;
+            if (currentCat !== 'todas') {
+                filtered = filtered.filter(p => p.category === currentCat || (p.tags && p.tags.includes(currentCat)));
+            }
+            if (currentSearch) {
+                const s = currentSearch.toLowerCase();
+                filtered = filtered.filter(p => p.name.toLowerCase().includes(s) || p.brand.toLowerCase().includes(s));
+            }
+
+            catalogGrid.innerHTML = filtered.map((p, idx) => `
+                <div class="app-prod-card reveal is-visible delay-${idx % 4}">
+                    <div class="app-prod-badge">${p.category || 'Destacado'}</div>
                     <img src="${p.image}" alt="${p.name}">
+                    <h4 class="app-prod-name">${p.name}</h4>
+                    <div class="app-prod-price">$${p.priceBottle.toLocaleString('es-CO')}</div>
+                    <button class="app-btn-add btn-add" data-id="${p.id}" data-name="${p.name}" data-price="${p.priceBottle}" data-img="${p.image}">
+                        <i class="fa-solid fa-bag-shopping"></i> Agregar al Carrito
+                    </button>
                 </div>
-                <div class="prod-info">
-                    <span class="prod-brand">${p.brand}</span>
-                    <h4 class="prod-name">${p.name}</h4>
-                    <div class="prod-prices">
-                        ${p.priceOld ? `<span class="price-old">$${p.priceOld.toLocaleString('es-CO')}</span>` : ''}
-                        <span class="price-current">$${p.priceBottle.toLocaleString('es-CO')}</span>
-                    </div>
-                    <button class="btn btn-full btn-add" data-id="${p.id}" data-name="${p.name}" data-price="${p.priceBottle}" data-img="${p.image}">AGREGAR AL CARRITO</button>
-                </div>
-            </div>
-        `).join('');
+            `).join('');
+
+            // Re-bind Add to Cart buttons inside this function so they work on filter change
+            bindCartButtons();
+        };
+
+        // Attach events to pills
+        pillsContainer.querySelectorAll('.cat-pill').forEach(pill => {
+            pill.addEventListener('click', (e) => {
+                pillsContainer.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+                e.target.classList.add('active');
+                currentCat = e.target.dataset.cat;
+                renderGrid();
+            });
+        });
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value.trim();
+                renderGrid();
+            });
+        }
+
+        renderGrid();
     }
 
     // 2. Featured Cinematic (#destacado)
@@ -89,15 +128,20 @@ function renderCatalog() {
     }
     
     // Re-bind Add to Cart buttons
+    bindCartButtons();
+}
+
+function bindCartButtons() {
     if (typeof initCart === 'function') {
         const addBtns = document.querySelectorAll(".btn-add");
         addBtns.forEach(btn => {
-            // Need to remove old listeners or just rely on global event delegation.
-            // A simple clone approach removes previous listeners
             const clone = btn.cloneNode(true);
             btn.parentNode.replaceChild(clone, btn);
             clone.addEventListener("click", (e) => {
-                const data = clone.dataset;
+                // If the icon or span was clicked, bubble up to button
+                const targetBtn = e.target.closest('.btn-add');
+                if (!targetBtn) return;
+                const data = targetBtn.dataset;
                 addToCart({
                     id: data.id,
                     name: data.name,

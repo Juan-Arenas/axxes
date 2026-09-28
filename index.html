@@ -41,7 +41,6 @@
                     <li><a href="#hombre">Hombre</a></li>
                     <li><a href="#mujer">Mujer</a></li>
                     <li><a href="#unisex">Unisex</a></li>
-                    <li><a href="#nicho">Nicho</a></li>
                     <li><a href="#arabes">Árabes</a></li>
                     <li><a href="#ofertas" class="text-accent">Ofertas</a></li>
                 </ul>
@@ -72,7 +71,6 @@
                 <li><a href="#hombre">Hombre</a></li>
                 <li><a href="#mujer">Mujer</a></li>
                 <li><a href="#unisex">Unisex</a></li>
-                <li><a href="#nicho">Nicho</a></li>
                 <li><a href="#arabes">Árabes</a></li>
                 <li><a href="#ofertas">Ofertas</a></li>
             </ul>
@@ -129,6 +127,28 @@
             </div>
         </div>
 
+        <!-- Featured Catalog -->
+        <section class="catalog-premium" id="catalog" style="padding-top: 30px;">
+            <div class="container" style="max-width:1200px; margin:0 auto; padding:0 20px;">
+                
+                <!-- Buscador tipo app -->
+                <div class="catalog-search-bar reveal">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="catalog-search-input" placeholder="Buscar productos... (ej. Creed, Sauvage)">
+                </div>
+
+                <!-- Pills de categorías -->
+                <div class="catalog-category-pills reveal delay-1" id="catalog-pills">
+                    <!-- Dynamic pills via JS -->
+                </div>
+
+                <!-- Grid de productos -->
+                <div class="product-grid" id="main-catalog-grid" style="margin-top:20px;">
+                    <!-- Productos cargados por render.js -->
+                </div>
+            </div>
+        </section>
+
         <!-- Categories Section -->
         <section class="categories-editorial" id="categorias">
             <div class="section-header text-center reveal">
@@ -162,12 +182,39 @@
                         <span class="cat-btn">EXPLORAR <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
                 </a>
-                <a href="#nicho" class="cat-block reveal delay-1">
-                    <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1000&q=80" alt="Nicho">
-                    <div class="cat-overlay dark-overlay"></div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="categories-editorial" id="categorias">
+            <div class="section-header text-center reveal">
+                <h2 class="serif">DESCUBRE TU FRAGANCIA</h2>
+            </div>
+            <div class="categories-grid">
+                <a href="#hombre" class="cat-block reveal">
+                    <img src="https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1000&q=80" alt="Hombre">
+                    <div class="cat-overlay"></div>
                     <div class="cat-content">
-                        <h3 class="serif">NICHO</h3>
-                        <p>Exclusividad y arte.</p>
+                        <h3 class="serif">HOMBRE</h3>
+                        <p>Sofisticación y carácter.</p>
+                        <span class="cat-btn">EXPLORAR <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                </a>
+                <a href="#mujer" class="cat-block reveal delay-1">
+                    <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1000&q=80" alt="Mujer">
+                    <div class="cat-overlay"></div>
+                    <div class="cat-content">
+                        <h3 class="serif">MUJER</h3>
+                        <p>Elegancia y feminidad.</p>
+                        <span class="cat-btn">EXPLORAR <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                </a>
+                <a href="#unisex" class="cat-block reveal">
+                    <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1000&q=80" alt="Unisex">
+                    <div class="cat-overlay"></div>
+                    <div class="cat-content">
+                        <h3 class="serif">UNISEX</h3>
+                        <p>Aromas sin fronteras.</p>
                         <span class="cat-btn">EXPLORAR <i class="fa-solid fa-arrow-right"></i></span>
                     </div>
                 </a>
@@ -503,7 +550,6 @@
                     <li><a href="#">Hombre</a></li>
                     <li><a href="#">Mujer</a></li>
                     <li><a href="#">Unisex</a></li>
-                    <li><a href="#">Nicho</a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -547,13 +593,6 @@
             <button class="close-cart" id="close-cart"><i class="fa-solid fa-xmark"></i></button>
         </div>
         
-        <div class="cart-progress">
-            <p id="shipping-msg">Te faltan <strong>$100.000</strong> para envío gratis.</p>
-            <div class="progress-bar">
-                <div class="progress-fill" id="shipping-progress" style="width: 50%;"></div>
-            </div>
-        </div>
-
         <div class="cart-items" id="cart-items">
             <!-- Items dynamically added -->
             <div class="empty-cart-msg">Tu carrito está vacío.</div>

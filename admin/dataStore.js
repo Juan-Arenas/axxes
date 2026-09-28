@@ -48,6 +48,11 @@ class DataStore {
         document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
     }
 
+    saveCategories() {
+        localStorage.setItem(this.keys.categories, JSON.stringify(this.categories));
+        document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
+    }
+
     // CRUD Products
     addProduct(product) {
         this.products.push(product);
@@ -65,6 +70,19 @@ class DataStore {
     deleteProduct(id) {
         this.products = this.products.filter(p => p.id !== id);
         this.saveProducts();
+    }
+
+    // CRUD Categories
+    addCategory(name) {
+        if (!this.categories.some(c => c.name === name)) {
+            this.categories.push({ id: 'cat-' + Date.now(), name: name });
+            this.saveCategories();
+        }
+    }
+
+    deleteCategory(name) {
+        this.categories = this.categories.filter(c => c.name !== name);
+        this.saveCategories();
     }
 
     // Backup

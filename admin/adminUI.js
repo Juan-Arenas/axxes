@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+function initAdmin() {
     let logoClicks = 0;
     let logoClickTimer;
 
@@ -22,7 +22,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     injectAdminCSS();
     injectAdminHTML();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", initAdmin);
+} else {
+    initAdmin();
+}
 
 function injectAdminCSS() {
     if (document.getElementById('axxes-admin-css')) return;
@@ -354,6 +360,17 @@ function setupAdminEvents() {
         resetAdminForm();
         renderAdminDashboard();
     });
+
+    // Category form logic
+    document.getElementById('admin-category-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const catName = document.getElementById('admin-new-category').value.trim();
+        if (catName) {
+            window.axxesStore.addCategory(catName);
+            document.getElementById('admin-category-form').reset();
+            renderAdminDashboard();
+        }
+    });
 }
 
 function resetAdminForm() {
@@ -391,7 +408,12 @@ window.renderAdminDashboard = function() {
 
     // Populate Category List
     const catList = document.getElementById('admin-category-list');
-    catList.innerHTML = categories.map(c => `<span style="background:#333; padding:4px 10px; border-radius:20px; font-size:0.8rem;">${c.name}</span>`).join('');
+    catList.innerHTML = categories.map(c => `
+        <span style="background:#333; padding:4px 10px; border-radius:20px; font-size:0.8rem; display:flex; align-items:center; gap:5px;">
+            ${c.name}
+            <button onclick="deleteCategory('${c.name}')" style="background:transparent; border:none; color:#ff4444; cursor:pointer; font-weight:bold;">&times;</button>
+        </span>
+    `).join('');
 
     // Populate Products
     const prodList = document.getElementById('admin-product-list');
@@ -449,6 +471,13 @@ window.editProduct = function(id) {
 window.deleteProduct = function(id) {
     if (confirm('¿Seguro que deseas eliminar este producto?')) {
         window.axxesStore.deleteProduct(id);
+        renderAdminDashboard();
+    }
+};
+
+window.deleteCategory = function(name) {
+    if (confirm(`¿Seguro que deseas eliminar la categoría "${name}"?`)) {
+        window.axxesStore.deleteCategory(name);
         renderAdminDashboard();
     }
 };

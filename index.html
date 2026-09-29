@@ -177,28 +177,32 @@
                 </div>
                 <div class="trust-steps-row reveal">
                     <div class="trust-step-card">
-                        <div class="trust-step-number">01</div>
-                        <div class="trust-step-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
-                        <h4>ELIGE TU PRODUCTO</h4>
-                        <p>Explora la tienda, selecciona tu fragancia o decant y agrégalo al carrito.</p>
+                        <div class="trust-step-header">
+                            <span class="trust-step-badge">01</span>
+                            <h4 class="trust-step-title">ELIGE TU PRODUCTO</h4>
+                        </div>
+                        <p class="trust-step-desc">Explora la tienda, selecciona tu fragancia o decant y agrégalo al carrito.</p>
                     </div>
                     <div class="trust-step-card">
-                        <div class="trust-step-number">02</div>
-                        <div class="trust-step-icon"><i class="fa-brands fa-whatsapp"></i></div>
-                        <h4>WEB O WHATSAPP</h4>
-                        <p>Finaliza tu pedido directo en la web o contáctanos para asesoría por WhatsApp.</p>
+                        <div class="trust-step-header">
+                            <span class="trust-step-badge">02</span>
+                            <h4 class="trust-step-title">WEB O WHATSAPP</h4>
+                        </div>
+                        <p class="trust-step-desc">Finaliza tu pedido directo en la web o contáctanos para asesoría por WhatsApp.</p>
                     </div>
                     <div class="trust-step-card">
-                        <div class="trust-step-number">03</div>
-                        <div class="trust-step-icon"><i class="fa-solid fa-gift"></i></div>
-                        <h4>PAGO & REGALO</h4>
-                        <p>Aceptamos transferencias y tarjetas. Tu pedido incluye un obsequio.</p>
+                        <div class="trust-step-header">
+                            <span class="trust-step-badge">03</span>
+                            <h4 class="trust-step-title">PAGO & REGALO</h4>
+                        </div>
+                        <p class="trust-step-desc">Aceptamos transferencias y tarjetas. Tu pedido incluye un obsequio.</p>
                     </div>
                     <div class="trust-step-card">
-                        <div class="trust-step-number">04</div>
-                        <div class="trust-step-icon"><i class="fa-solid fa-truck-fast"></i></div>
-                        <h4>RECIBE Y DISFRUTA</h4>
-                        <p>Despachamos tu pedido hasta la puerta de tu casa u oficina.</p>
+                        <div class="trust-step-header">
+                            <span class="trust-step-badge">04</span>
+                            <h4 class="trust-step-title">RECIBE Y DISFRUTA</h4>
+                        </div>
+                        <p class="trust-step-desc">Despachamos tu pedido hasta la puerta de tu casa u oficina.</p>
                     </div>
                 </div>
             </div>
@@ -209,42 +213,50 @@
             <div class="container text-center">
                 <h2 class="section-title mb-4">CÓMO COMPRAR</h2>
                 <p class="how-subtitle">Comprar en AXXES es fácil, rápido y seguro. Sigue estos simples pasos:</p>
-                <div class="steps-enhanced-grid">
-                    <div class="step-enhanced-item reveal">
-                        <div class="step-icon-circle">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <div class="steps-carousel-container">
+                    <div class="steps-enhanced-grid" id="steps-enhanced-track">
+                        <div class="step-enhanced-item reveal">
+                            <div class="step-icon-circle">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                            <div class="step-num-enhanced">PASO 01</div>
+                            <h4>ELIGE TU PERFUME</h4>
+                            <p>Navega nuestro catálogo y descubre tu fragancia ideal entre cientos de opciones.</p>
                         </div>
-                        <div class="step-line"></div>
-                        <div class="step-num-enhanced">01</div>
-                        <h4>ELIGE TU PERFUME</h4>
-                        <p>Navega nuestro catálogo y descubre tu fragancia ideal entre cientos de opciones.</p>
+                        <div class="step-enhanced-item reveal delay-1">
+                            <div class="step-icon-circle">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </div>
+                            <div class="step-num-enhanced">PASO 02</div>
+                            <h4>AGRÉGALO AL CARRITO</h4>
+                            <p>Selecciona la presentación que prefieras: decant o botella completa.</p>
+                        </div>
+                        <div class="step-enhanced-item reveal delay-2">
+                            <div class="step-icon-circle">
+                                <i class="fa-solid fa-credit-card"></i>
+                            </div>
+                            <div class="step-num-enhanced">PASO 03</div>
+                            <h4>CONFIRMA TU PEDIDO</h4>
+                            <p>Completa tu compra de forma segura con múltiples métodos de pago.</p>
+                        </div>
+                        <div class="step-enhanced-item reveal delay-3">
+                            <div class="step-icon-circle">
+                                <i class="fa-solid fa-box-open"></i>
+                            </div>
+                            <div class="step-num-enhanced">PASO 04</div>
+                            <h4>RECÍBELO</h4>
+                            <p>Disfruta tu fragancia con envío seguro y empaque premium a tu puerta.</p>
+                        </div>
                     </div>
-                    <div class="step-enhanced-item reveal delay-1">
-                        <div class="step-icon-circle">
-                            <i class="fa-solid fa-cart-plus"></i>
-                        </div>
-                        <div class="step-line"></div>
-                        <div class="step-num-enhanced">02</div>
-                        <h4>AGRÉGALO AL CARRITO</h4>
-                        <p>Selecciona la presentación que prefieras: decant o botella completa.</p>
+                    <!-- Indicator dots on mobile for horizontal track -->
+                    <div class="steps-nav-dots mobile-only" id="steps-nav-dots">
+                        <button class="step-dot active" data-step="0" aria-label="Paso 1"></button>
+                        <button class="step-dot" data-step="1" aria-label="Paso 2"></button>
+                        <button class="step-dot" data-step="2" aria-label="Paso 3"></button>
+                        <button class="step-dot" data-step="3" aria-label="Paso 4"></button>
                     </div>
-                    <div class="step-enhanced-item reveal delay-2">
-                        <div class="step-icon-circle">
-                            <i class="fa-solid fa-credit-card"></i>
-                        </div>
-                        <div class="step-line"></div>
-                        <div class="step-num-enhanced">03</div>
-                        <h4>CONFIRMA TU PEDIDO</h4>
-                        <p>Completa tu compra de forma segura con múltiples métodos de pago.</p>
-                    </div>
-                    <div class="step-enhanced-item reveal delay-3">
-                        <div class="step-icon-circle">
-                            <i class="fa-solid fa-box-open"></i>
-                        </div>
-                        <div class="step-line"></div>
-                        <div class="step-num-enhanced">04</div>
-                        <h4>RECÍBELO</h4>
-                        <p>Disfruta tu fragancia con envío seguro y empaque premium a tu puerta.</p>
+                    <div class="steps-swipe-hint mobile-only">
+                        <span><i class="fa-solid fa-arrows-left-right"></i> Desliza para ver los pasos</span>
                     </div>
                 </div>
             </div>

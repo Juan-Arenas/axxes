@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initQuiz();
     initAdminAccess();
     initLogoUpdater();
+    initStepsCarousel();
     
     // Defer store filters so render.js can finish first
     setTimeout(initStoreFilters, 500);
@@ -537,4 +538,50 @@ function initLogoUpdater() {
         if (siteLogo) siteLogo.src = logoSrc;
         if (footerLogo) footerLogo.src = logoSrc;
     }
+}
+
+// 10. Horizontal Steps Carousel on Mobile
+function initStepsCarousel() {
+    const track = document.getElementById('steps-enhanced-track');
+    const dotsContainer = document.getElementById('steps-nav-dots');
+    if (!track || !dotsContainer) return;
+    
+    const dots = dotsContainer.querySelectorAll('.step-dot');
+    const items = track.querySelectorAll('.step-enhanced-item');
+    if (!dots.length || !items.length) return;
+
+    // Click dot to scroll to card
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            if (items[index]) {
+                items[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        });
+    });
+
+    // Update active dot on scroll
+    let scrollTimer;
+    track.addEventListener('scroll', () => {
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => {
+            const trackRect = track.getBoundingClientRect();
+            const trackCenter = trackRect.left + trackRect.width / 2;
+            let closestIndex = 0;
+            let minDistance = Infinity;
+
+            items.forEach((item, index) => {
+                const itemRect = item.getBoundingClientRect();
+                const itemCenter = itemRect.left + itemRect.width / 2;
+                const distance = Math.abs(trackCenter - itemCenter);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestIndex = index;
+                }
+            });
+
+            dots.forEach((d, idx) => {
+                d.classList.toggle('active', idx === closestIndex);
+            });
+        }, 50);
+    }, { passive: true });
 }

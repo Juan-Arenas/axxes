@@ -356,19 +356,20 @@ img { max-width: 100%; display: block; }
     color: rgba(255,255,255,0.7);
 }
 
-/* Steps Row */
+/* Steps Row — Elegant Glassmorphic cards like Luzents */
 .trust-steps-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    gap: 16px;
 }
 .trust-step-card {
-    background: rgba(96, 90, 254, 0.12);
-    border: 1px solid rgba(96, 90, 254, 0.3);
-    border-radius: 16px;
-    padding: 30px 20px;
+    background: rgba(16, 13, 40, 0.7);
+    border: 1px solid rgba(96, 90, 254, 0.25);
+    border-radius: 14px;
+    padding: 16px 20px;
     text-align: left;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -379,42 +380,52 @@ img { max-width: 100%; display: block; }
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 2px;
     background: linear-gradient(90deg, var(--c-accent), transparent);
 }
 .trust-step-card:hover {
-    background: rgba(96, 90, 254, 0.22);
-    transform: translateY(-5px);
-    box-shadow: 0 10px 40px rgba(96, 90, 254, 0.3);
+    background: rgba(96, 90, 254, 0.18);
+    border-color: rgba(96, 90, 254, 0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(96, 90, 254, 0.25);
 }
-.trust-step-number {
-    font-family: var(--font-heading);
-    font-size: 14px;
-    color: var(--c-accent);
-    background: rgba(96,90,254,0.15);
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-bottom: 12px;
-    letter-spacing: 1px;
-}
-.trust-step-icon {
-    font-size: 28px;
-    color: var(--c-accent);
-    margin-bottom: 15px;
-}
-.trust-step-card h4 {
-    font-family: var(--font-heading);
-    font-size: 22px;
-    font-weight: 400;
-    text-transform: uppercase;
+.trust-step-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin-bottom: 8px;
-    color: #fff;
 }
-.trust-step-card p {
+.trust-step-badge {
+    font-family: var(--font-heading);
     font-size: 13px;
-    color: rgba(255,255,255,0.6);
-    line-height: 1.6;
+    font-weight: 700;
+    color: #c7d2fe;
+    background: rgba(96, 90, 254, 0.3);
+    border: 1px solid rgba(96, 90, 254, 0.45);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 9px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.trust-step-title {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    margin: 0;
+    line-height: 1.2;
+}
+.trust-step-desc {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.45;
+    margin: 0;
 }
 
 /* ===== HOW TO BUY — ENHANCED BLACK SECTION ===== */
@@ -422,6 +433,7 @@ img { max-width: 100%; display: block; }
     padding: 80px 35px;
     background: #000;
     position: relative;
+    overflow: hidden;
 }
 .how-to-buy-enhanced::before {
     content: '';
@@ -429,72 +441,117 @@ img { max-width: 100%; display: block; }
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(96,90,254,0.1) 0%, transparent 70%);
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(96,90,254,0.12) 0%, transparent 70%);
     pointer-events: none;
 }
 .how-subtitle {
     font-size: 16px;
     color: rgba(255,255,255,0.5);
-    margin-bottom: 50px;
+    margin-bottom: 45px;
+}
+.steps-carousel-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
 }
 .steps-enhanced-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
+    gap: 24px;
 }
 .step-enhanced-item {
     text-align: center;
     position: relative;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 30px 20px;
+    transition: all 0.3s ease;
+}
+.step-enhanced-item:hover {
+    background: rgba(96, 90, 254, 0.08);
+    border-color: rgba(96, 90, 254, 0.35);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(96, 90, 254, 0.15);
 }
 .step-icon-circle {
-    width: 80px;
-    height: 80px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--c-accent), #8b5cf6);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
-    font-size: 30px;
+    margin: 0 auto 16px;
+    font-size: 26px;
     color: #fff;
-    box-shadow: 0 8px 30px rgba(96,90,254,0.4);
+    box-shadow: 0 8px 25px rgba(96,90,254,0.35);
     transition: all 0.3s ease;
 }
 .step-enhanced-item:hover .step-icon-circle {
-    transform: scale(1.1);
-    box-shadow: 0 12px 40px rgba(96,90,254,0.6);
-}
-.step-line {
-    width: 2px;
-    height: 30px;
-    background: linear-gradient(to bottom, var(--c-accent), transparent);
-    margin: 0 auto 15px;
+    transform: scale(1.08);
+    box-shadow: 0 12px 35px rgba(96,90,254,0.55);
 }
 .step-num-enhanced {
     font-family: var(--font-heading);
-    font-size: 16px;
-    color: var(--c-accent);
-    margin-bottom: 10px;
-    letter-spacing: 2px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #a5b4fc;
+    background: rgba(96, 90, 254, 0.2);
+    border: 1px solid rgba(96, 90, 254, 0.35);
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-bottom: 12px;
+    letter-spacing: 1.5px;
 }
 .step-enhanced-item h4 {
     font-family: var(--font-heading);
-    font-size: 24px;
-    font-weight: 400;
+    font-size: 20px;
+    font-weight: 600;
     text-transform: uppercase;
     margin-bottom: 10px;
     color: #fff;
+    letter-spacing: 0.5px;
 }
 .step-enhanced-item p {
     font-size: 13px;
-    color: rgba(255,255,255,0.5);
-    line-height: 1.6;
-    max-width: 220px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.55;
     margin: 0 auto;
+}
+.steps-nav-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+}
+.step-dot {
+    width: 22px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.25);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.step-dot.active {
+    width: 38px;
+    background: var(--c-accent);
+    box-shadow: 0 0 10px var(--c-accent-glow);
+}
+.steps-swipe-hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 0.5px;
+}
+.steps-swipe-hint i {
+    margin-right: 5px;
+    color: var(--c-accent);
 }
 
 /* ===== BENEFITS ===== */
@@ -1025,10 +1082,160 @@ img { max-width: 100%; display: block; }
     .app-btn-add { font-size: 12px; padding: 8px 10px; width: calc(100% - 20px); margin-bottom: 15px; }
     .app-prod-info { padding: 10px 12px 0; }
 
-    .trust-stats-row { grid-template-columns: 1fr; gap: 20px; }
-    .trust-stat-item h3 { font-size: 45px; }
-    .trust-steps-row { grid-template-columns: 1fr; }
-    .steps-enhanced-grid { grid-template-columns: 1fr; gap: 20px; }
+    /* 1. COMPRA CON CONFIANZA: 3 COLUMNS SIDE-BY-SIDE (IMAGE 2) */
+    .trust-section-luzents {
+        padding: 50px 16px;
+    }
+    .trust-section-luzents .section-title {
+        font-size: 30px !important;
+        margin-bottom: 24px;
+        letter-spacing: 0.5px;
+    }
+    .trust-stats-row {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+        margin-bottom: 30px !important;
+        align-items: flex-start;
+    }
+    .trust-stat-item {
+        padding: 4px 2px;
+    }
+    .trust-stat-item h3 {
+        font-size: 30px !important;
+        line-height: 1.1;
+        margin-bottom: 4px !important;
+        text-shadow: 0 0 15px rgba(96,90,254,0.6);
+    }
+    .trust-stat-item p {
+        font-size: 10px !important;
+        letter-spacing: 0.8px !important;
+        line-height: 1.25 !important;
+        word-break: break-word;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    /* 2. COMPRA CON CONFIANZA CARDS: SLEEK, COMPACT, ELEGANT (IMAGE 2) */
+    .trust-steps-row {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 9px !important;
+    }
+    .trust-step-card {
+        padding: 13px 16px !important;
+        border-radius: 12px !important;
+        background: rgba(18, 14, 40, 0.72) !important;
+        border: 1px solid rgba(96, 90, 254, 0.25) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    .trust-step-header {
+        display: flex !important;
+        align-items: center !important;
+        gap: 9px !important;
+        margin-bottom: 5px !important;
+    }
+    .trust-step-badge {
+        font-size: 12px !important;
+        padding: 2px 8px !important;
+        border-radius: 6px !important;
+    }
+    .trust-step-title {
+        font-size: 15px !important;
+        letter-spacing: 0.5px !important;
+    }
+    .trust-step-desc {
+        font-size: 12.5px !important;
+        line-height: 1.4 !important;
+        color: rgba(255, 255, 255, 0.72) !important;
+    }
+
+    /* 3. CÓMO COMPRAR: HORIZONTAL SWIPE TRACK ("hacia el lado") */
+    .how-to-buy-enhanced {
+        padding: 50px 16px;
+    }
+    .how-to-buy-enhanced .section-title {
+        font-size: 30px !important;
+        margin-bottom: 10px;
+    }
+    .how-subtitle {
+        font-size: 13.5px;
+        margin-bottom: 22px;
+        padding: 0 8px;
+    }
+    .steps-carousel-container {
+        position: relative;
+        width: 100%;
+    }
+    .steps-enhanced-grid {
+        display: flex !important;
+        grid-template-columns: none !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory !important;
+        -webkit-overflow-scrolling: touch !important;
+        gap: 12px !important;
+        padding: 6px 16px 16px !important;
+        margin: 0 -16px !important;
+        scrollbar-width: none !important;
+    }
+    .steps-enhanced-grid::-webkit-scrollbar {
+        display: none !important;
+    }
+    .how-to-buy-enhanced.is-visible .step-enhanced-item,
+    .step-enhanced-item.is-visible,
+    .step-enhanced-item {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    .step-enhanced-item {
+        flex: 0 0 76vw !important;
+        max-width: 275px !important;
+        min-width: 235px !important;
+        scroll-snap-align: center !important;
+        background: rgba(18, 14, 40, 0.75) !important;
+        border: 1px solid rgba(96, 90, 254, 0.28) !important;
+        border-radius: 16px !important;
+        padding: 22px 18px !important;
+        backdrop-filter: blur(12px) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    .step-icon-circle {
+        width: 58px !important;
+        height: 58px !important;
+        font-size: 22px !important;
+        margin: 0 auto 12px !important;
+    }
+    .step-line {
+        display: none !important;
+    }
+    .step-num-enhanced {
+        font-size: 11px !important;
+        margin-bottom: 8px !important;
+        padding: 2px 9px !important;
+    }
+    .step-enhanced-item h4 {
+        font-size: 18px !important;
+        margin-bottom: 8px !important;
+    }
+    .step-enhanced-item p {
+        font-size: 12.5px !important;
+        line-height: 1.45 !important;
+        color: rgba(255, 255, 255, 0.65) !important;
+    }
+    .steps-nav-dots {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        margin-top: 14px !important;
+    }
+    .steps-swipe-hint {
+        display: block !important;
+        margin-top: 8px !important;
+    }
+
     .footer-top { grid-template-columns: 1fr; text-align: center; gap: 25px; }
     .footer-logo { margin: 0 auto 10px; }
     .footer-socials { justify-content: center; }
@@ -1045,4 +1252,23 @@ img { max-width: 100%; display: block; }
     .slider-arrow { width: 36px; height: 36px; font-size: 14px; }
     .slider-arrow-left { left: 8px; }
     .slider-arrow-right { right: 8px; }
+}
+
+@media (max-width: 360px) {
+    .trust-stat-item h3 {
+        font-size: 24px !important;
+    }
+    .trust-stat-item p {
+        font-size: 9px !important;
+        letter-spacing: 0.5px !important;
+    }
+    .trust-step-title {
+        font-size: 13.5px !important;
+    }
+    .trust-step-desc {
+        font-size: 11.5px !important;
+    }
+    .step-enhanced-item {
+        flex: 0 0 82vw !important;
+    }
 }

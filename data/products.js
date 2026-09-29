@@ -1,50 +1,5 @@
 window.INITIAL_PRODUCTS = [
   {
-    "id": "axx-006",
-    "name": "Y Eau de Parfum",
-    "brand": "YVES SAINT LAURENT",
-    "category": "Hombre",
-    "gender": "Hombre",
-    "description": "La frescura profunda y audaz.",
-    "image": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=800&q=80",
-    "images": [],
-    "priceBottle": 648000,
-    "priceOld": 720000,
-    "decants": [
-      {
-        "size": "5ml",
-        "price": 38000
-      },
-      {
-        "size": "10ml",
-        "price": 70000
-      },
-      {
-        "size": "30ml",
-        "price": 190000
-      }
-    ],
-    "stock": 18,
-    "featured": false,
-    "bestseller": false,
-    "restocked": false,
-    "offer": true,
-    "discountBadge": "-10%",
-    "isNew": false,
-    "active": true,
-    "isFavorite": false,
-    "notes": {
-      "top": "",
-      "heart": "",
-      "base": ""
-    },
-    "aromas": [],
-    "categories": [
-      "Hombre"
-    ],
-    "sellBottle": true
-  },
-  {
     "id": "axx-007",
     "name": "Versace Eros Energy",
     "brand": "VERSACE",

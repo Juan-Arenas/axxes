@@ -30,7 +30,7 @@ window.INITIAL_PRODUCTS = [
   },
   {
     "id": "axx-1790711014450",
-    "name": "ITALIA POUR HOMME Edp 100ML ",
+    "name": "ITALIA POUR HOMME 100ML Edp Spray ",
     "brand": "RAYHAAN",
     "description": "",
     "gender": "Hombre",

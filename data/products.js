@@ -1,50 +1,5 @@
 window.INITIAL_PRODUCTS = [
   {
-    "id": "axx-003",
-    "name": "Ombré Leather",
-    "brand": "TOM FORD",
-    "category": "Unisex",
-    "gender": "Unisex",
-    "description": "Un aroma intenso y cautivador.",
-    "image": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=800&q=80",
-    "images": [],
-    "priceBottle": 920000,
-    "priceOld": 0,
-    "decants": [
-      {
-        "size": "5ml",
-        "price": 50000
-      },
-      {
-        "size": "10ml",
-        "price": 95000
-      },
-      {
-        "size": "30ml",
-        "price": 260000
-      }
-    ],
-    "stock": 8,
-    "featured": false,
-    "bestseller": true,
-    "restocked": false,
-    "offer": false,
-    "discountBadge": "",
-    "isNew": false,
-    "active": true,
-    "isFavorite": false,
-    "notes": {
-      "top": "",
-      "heart": "",
-      "base": ""
-    },
-    "aromas": [],
-    "categories": [
-      "Unisex"
-    ],
-    "sellBottle": true
-  },
-  {
     "id": "axx-004",
     "name": "Noir Absolu Intense",
     "brand": "AXXES",

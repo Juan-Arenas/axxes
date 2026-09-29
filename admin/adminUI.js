@@ -263,6 +263,9 @@ function injectAdminHTML() {
                         <p class="admin-subtitle">Gestión completa del catálogo y configuración.</p>
                     </div>
                     <div style="display:flex; align-items:center; gap:12px;">
+                        <button class="admin-btn-primary" onclick="publishChanges()" id="admin-publish-btn" style="background:#22c55e;">
+                            <i class="fas fa-cloud-upload-alt"></i> Sincronizar (Publicar)
+                        </button>
                         <div class="admin-header-stats">
                             <span class="admin-stat-pill" id="admin-header-product-stat">0 Productos</span>
                             <span class="admin-stat-pill" id="admin-header-category-stat">0 Categorías</span>
@@ -447,6 +450,21 @@ function injectAdminHTML() {
                             <button class="admin-btn-primary" style="margin-top:12px;" onclick="saveLogo()">
                                 <i class="fas fa-save"></i> Guardar Logo
                             </button>
+                        </div>
+                    </div>
+                    
+                    <!-- NEW CARD FOR GITHUB -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3><i class="fab fa-github"></i> Conexión GitHub</h3>
+                        </div>
+                        <div class="admin-form">
+                            <p style="font-size:0.85rem; color:var(--admin-muted); margin-bottom:10px;">Para publicar cambios directamente desde aquí a tu repositorio, ingresa tu GitHub Personal Access Token (PAT). Este se guardará localmente en tu navegador.</p>
+                            <div class="form-group">
+                                <label>GitHub Token</label>
+                                <input type="password" id="admin-github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxx">
+                            </div>
+                            <button class="admin-btn-primary" onclick="saveGithubToken()">Guardar Token</button>
                         </div>
                     </div>
                 </div>
@@ -638,6 +656,8 @@ function setupAdminEvents() {
         resetAdminForm();
         renderAdminDashboard();
         
+        window.showToast('Producto guardado exitosamente. Haz clic en "Sincronizar" para publicar.');
+        
         // Switch to products tab
         document.querySelector('[data-tab="tab-products"]').click();
     });
@@ -650,6 +670,7 @@ function setupAdminEvents() {
             window.axxesStore.addCategory(catName);
             document.getElementById('admin-category-form').reset();
             renderAdminDashboard();
+            window.showToast('Categoría guardada localmente.');
         }
     });
 
@@ -823,6 +844,7 @@ window.deleteProduct = function(id) {
     if (confirm('¿Seguro que deseas eliminar este producto?')) {
         window.axxesStore.deleteProduct(id);
         renderAdminDashboard();
+        window.showToast('Producto eliminado. Recuerda hacer clic en Sincronizar.');
     }
 };
 
@@ -830,6 +852,7 @@ window.deleteCategory = function(name) {
     if (confirm(`¿Seguro que deseas eliminar la categoría "${name}"?`)) {
         window.axxesStore.deleteCategory(name);
         renderAdminDashboard();
+        window.showToast('Categoría eliminada. Recuerda hacer clic en Sincronizar.');
     }
 };
 
@@ -875,4 +898,70 @@ window.resetAllData = function() {
             location.reload();
         }
     }
+};
+
+// Toast Notifications
+window.showToast = function(msg, type='success') {
+    const t = document.createElement('div');
+    t.style.position = 'fixed';
+    t.style.bottom = '20px';
+    t.style.right = '20px';
+    t.style.backgroundColor = type === 'success' ? '#22c55e' : '#ff4444';
+    t.style.color = 'white';
+    t.style.padding = '12px 24px';
+    t.style.borderRadius = '8px';
+    t.style.zIndex = '999999';
+    t.style.fontFamily = "'Poppins', sans-serif";
+    t.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    t.style.transition = 'opacity 0.3s';
+    t.innerText = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; }, 3500);
+    setTimeout(() => { t.remove(); }, 4000);
+};
+
+// GitHub Sync Logic
+window.saveGithubToken = function() {
+    const token = document.getElementById('admin-github-token').value.trim();
+    if (token) {
+        localStorage.setItem('axxes_github_token', token);
+        window.showToast('Token guardado correctamente.');
+    } else {
+        window.showToast('Ingresa un token válido.', 'error');
+    }
+};
+
+// Auto-fill token field if exists
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const storedToken = localStorage.getItem('axxes_github_token');
+        if (storedToken) {
+            const input = document.getElementById('admin-github-token');
+            if(input) input.value = storedToken;
+        }
+    }, 1000);
+});
+
+window.publishChanges = async function() {
+    const token = localStorage.getItem('axxes_github_token');
+    if (!token) {
+        window.showToast('Falta el Token de GitHub. Configúralo en la pestaña de Configuración.', 'error');
+        document.querySelector('[data-tab="tab-config"]').click();
+        return;
+    }
+
+    const btn = document.getElementById('admin-publish-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
+
+    const result = await window.axxesStore.publishToGithub(token);
+    
+    if (result.success) {
+        window.showToast('¡Éxito! Cambios sincronizados con GitHub. Recarga en un minuto para verlos publicados.');
+    } else {
+        window.showToast('Error al publicar: ' + result.error, 'error');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Sincronizar (Publicar)';
 };

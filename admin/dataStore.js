@@ -187,6 +187,63 @@ class DataStore {
             return { success: false, error: e.message };
         }
     }
+
+    // --- GITHUB SYNC ---
+    async publishToGithub(token) {
+        const repo = "Juan-Arenas/axxes";
+        try {
+            // Update products.js
+            const productsContent = `window.INITIAL_PRODUCTS = ${JSON.stringify(this.products, null, 2)};`;
+            await this.commitFile(token, repo, 'data/products.js', productsContent, 'Admin: Update products');
+            
+            // Update categories.js
+            const catsContent = `window.INITIAL_CATEGORIES = ${JSON.stringify(this.categories, null, 2)};`;
+            await this.commitFile(token, repo, 'data/categories.js', catsContent, 'Admin: Update categories');
+
+            return { success: true };
+        } catch (e) {
+            console.error(e);
+            return { success: false, error: e.message };
+        }
+    }
+
+    async commitFile(token, repo, path, content, message) {
+        const url = `https://api.github.com/repos/${repo}/contents/${path}`;
+        
+        // 1. Get current file SHA
+        const getRes = await fetch(url, {
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        
+        let sha = null;
+        if (getRes.ok) {
+            const data = await getRes.json();
+            sha = data.sha;
+        } else if (getRes.status !== 404) {
+            throw new Error(`Error fetching ${path}: ${getRes.statusText}`);
+        }
+
+        // 2. Encode content to Base64 (Unicode safe)
+        const base64Content = btoa(unescape(encodeURIComponent(content)));
+
+        // 3. Put new content
+        const putBody = {
+            message: message,
+            content: base64Content,
+            branch: 'master'
+        };
+        if (sha) putBody.sha = sha;
+
+        const putRes = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+            body: JSON.stringify(putBody)
+        });
+
+        if (!putRes.ok) {
+            throw new Error(`Error committing ${path}: ${putRes.statusText}`);
+        }
+    }
 }
 
 window.axxesStore = new DataStore();

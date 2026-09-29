@@ -1,50 +1,5 @@
 window.INITIAL_PRODUCTS = [
   {
-    "id": "axx-010",
-    "name": "Acqua Di Giò Parfum",
-    "brand": "ARMANI",
-    "category": "Hombre",
-    "gender": "Hombre",
-    "description": "La intensidad del océano profundo.",
-    "image": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=500&q=80",
-    "images": [],
-    "priceBottle": 710000,
-    "priceOld": 0,
-    "decants": [
-      {
-        "size": "5ml",
-        "price": 40000
-      },
-      {
-        "size": "10ml",
-        "price": 75000
-      },
-      {
-        "size": "30ml",
-        "price": 210000
-      }
-    ],
-    "stock": 11,
-    "featured": false,
-    "bestseller": false,
-    "restocked": false,
-    "offer": false,
-    "discountBadge": "",
-    "isNew": true,
-    "active": true,
-    "isFavorite": false,
-    "notes": {
-      "top": "",
-      "heart": "",
-      "base": ""
-    },
-    "aromas": [],
-    "categories": [
-      "Hombre"
-    ],
-    "sellBottle": true
-  },
-  {
     "id": "axx-011",
     "name": "Bleu de Chanel",
     "brand": "CHANEL",

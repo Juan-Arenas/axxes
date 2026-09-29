@@ -1,50 +1,5 @@
 window.INITIAL_PRODUCTS = [
   {
-    "id": "axx-009",
-    "name": "Creed Aventus",
-    "brand": "CREED",
-    "category": "Nicho",
-    "gender": "Unisex",
-    "description": "Fuerza, poder y éxito.",
-    "image": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=500&q=80",
-    "images": [],
-    "priceBottle": 1850000,
-    "priceOld": 0,
-    "decants": [
-      {
-        "size": "5ml",
-        "price": 90000
-      },
-      {
-        "size": "10ml",
-        "price": 170000
-      },
-      {
-        "size": "30ml",
-        "price": 480000
-      }
-    ],
-    "stock": 4,
-    "featured": false,
-    "bestseller": false,
-    "restocked": false,
-    "offer": false,
-    "discountBadge": "",
-    "isNew": true,
-    "active": true,
-    "isFavorite": false,
-    "notes": {
-      "top": "",
-      "heart": "",
-      "base": ""
-    },
-    "aromas": [],
-    "categories": [
-      "Nicho"
-    ],
-    "sellBottle": true
-  },
-  {
     "id": "axx-010",
     "name": "Acqua Di Giò Parfum",
     "brand": "ARMANI",

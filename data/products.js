@@ -1,50 +1,5 @@
 window.INITIAL_PRODUCTS = [
   {
-    "id": "axx-005",
-    "name": "Libre Intense",
-    "brand": "YVES SAINT LAURENT",
-    "category": "Mujer",
-    "gender": "Mujer",
-    "description": "La libertad en su máxima intensidad.",
-    "image": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=80",
-    "images": [],
-    "priceBottle": 680000,
-    "priceOld": 850000,
-    "decants": [
-      {
-        "size": "5ml",
-        "price": 40000
-      },
-      {
-        "size": "10ml",
-        "price": 75000
-      },
-      {
-        "size": "30ml",
-        "price": 210000
-      }
-    ],
-    "stock": 15,
-    "featured": false,
-    "bestseller": false,
-    "restocked": false,
-    "offer": true,
-    "discountBadge": "-20%",
-    "isNew": false,
-    "active": true,
-    "isFavorite": false,
-    "notes": {
-      "top": "",
-      "heart": "",
-      "base": ""
-    },
-    "aromas": [],
-    "categories": [
-      "Mujer"
-    ],
-    "sellBottle": true
-  },
-  {
     "id": "axx-006",
     "name": "Y Eau de Parfum",
     "brand": "YVES SAINT LAURENT",

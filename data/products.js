@@ -1,50 +1,5 @@
 window.INITIAL_PRODUCTS = [
   {
-    "id": "axx-008",
-    "name": "Prada Paradoxe",
-    "brand": "PRADA",
-    "category": "Mujer",
-    "gender": "Mujer",
-    "description": "Una invitación a explorar todas tus facetas.",
-    "image": "https://images.unsplash.com/photo-1557170334-a9632e77c6e4?auto=format&fit=crop&w=500&q=80",
-    "images": [],
-    "priceBottle": 690000,
-    "priceOld": 0,
-    "decants": [
-      {
-        "size": "5ml",
-        "price": 38000
-      },
-      {
-        "size": "10ml",
-        "price": 72000
-      },
-      {
-        "size": "30ml",
-        "price": 200000
-      }
-    ],
-    "stock": 14,
-    "featured": false,
-    "bestseller": false,
-    "restocked": false,
-    "offer": false,
-    "discountBadge": "",
-    "isNew": true,
-    "active": true,
-    "isFavorite": false,
-    "notes": {
-      "top": "",
-      "heart": "",
-      "base": ""
-    },
-    "aromas": [],
-    "categories": [
-      "Mujer"
-    ],
-    "sellBottle": true
-  },
-  {
     "id": "axx-009",
     "name": "Creed Aventus",
     "brand": "CREED",

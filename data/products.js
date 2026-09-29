@@ -1,5 +1,50 @@
 window.INITIAL_PRODUCTS = [
   {
+    "id": "axx-001",
+    "name": "Sauvage Elixir",
+    "brand": "DIOR",
+    "category": "Hombre",
+    "gender": "Hombre",
+    "description": "Una fragancia concentrada y poderosa.",
+    "image": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80",
+    "images": [],
+    "priceBottle": 637500,
+    "priceOld": 750000,
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 35000
+      },
+      {
+        "size": "10ml",
+        "price": 55000
+      },
+      {
+        "size": "30ml",
+        "price": 110000
+      }
+    ],
+    "stock": 10,
+    "featured": false,
+    "bestseller": false,
+    "restocked": false,
+    "offer": true,
+    "discountBadge": "-15%",
+    "isNew": false,
+    "active": true,
+    "isFavorite": false,
+    "notes": {
+      "top": "",
+      "heart": "",
+      "base": ""
+    },
+    "aromas": [],
+    "categories": [
+      "Hombre"
+    ],
+    "sellBottle": true
+  },
+  {
     "id": "axx-002",
     "name": "Baccarat Rouge 540",
     "brand": "MAISON FRANCIS KURKDJIAN",

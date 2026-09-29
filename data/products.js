@@ -1,50 +1,5 @@
 window.INITIAL_PRODUCTS = [
   {
-    "id": "axx-004",
-    "name": "Noir Absolu Intense",
-    "brand": "AXXES",
-    "category": "Nicho",
-    "gender": "Unisex",
-    "description": "Una fragancia magnética y misteriosa. Un encuentro audaz entre maderas profundas y especias exóticas.",
-    "image": "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=80",
-    "images": [],
-    "priceBottle": 890000,
-    "priceOld": 0,
-    "decants": [
-      {
-        "size": "5ml",
-        "price": 45000
-      },
-      {
-        "size": "10ml",
-        "price": 85000
-      },
-      {
-        "size": "30ml",
-        "price": 240000
-      }
-    ],
-    "stock": 12,
-    "featured": true,
-    "bestseller": false,
-    "restocked": false,
-    "offer": false,
-    "discountBadge": "",
-    "isNew": false,
-    "active": true,
-    "isFavorite": false,
-    "notes": {
-      "top": "Bergamota, Pimienta Negra",
-      "heart": "Iris, Incienso",
-      "base": "Oud, Cuero, Sándalo"
-    },
-    "aromas": [],
-    "categories": [
-      "Nicho"
-    ],
-    "sellBottle": true
-  },
-  {
     "id": "axx-005",
     "name": "Libre Intense",
     "brand": "YVES SAINT LAURENT",

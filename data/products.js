@@ -583,23 +583,5 @@ window.INITIAL_PRODUCTS = [
       "Hombre"
     ],
     "sellBottle": true
-  },
-  {
-    "id": "axx-1790672934548",
-    "name": "Prueba Del Mejor",
-    "brand": "ARMANI",
-    "description": "",
-    "gender": "Hombre",
-    "categories": [],
-    "category": "",
-    "image": "",
-    "priceBottle": 67,
-    "sellBottle": true,
-    "decants": [],
-    "active": true,
-    "featured": false,
-    "bestseller": false,
-    "offer": false,
-    "isNew": false
   }
 ];

@@ -521,7 +521,7 @@ function setupAdminEvents() {
     document.getElementById('admin-login-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const pin = inputs.map(i => i.value).join('');
-        if (pin === '2006') {
+        if (pin === '1710') {
             document.getElementById('admin-password-modal').style.display = 'none';
             document.getElementById('admin-panel').style.display = 'flex';
             renderAdminDashboard();

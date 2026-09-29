@@ -1,50 +1,5 @@
 window.INITIAL_PRODUCTS = [
   {
-    "id": "axx-002",
-    "name": "Baccarat Rouge 540",
-    "brand": "MAISON FRANCIS KURKDJIAN",
-    "category": "Nicho",
-    "gender": "Unisex",
-    "description": "Un perfume luminoso y sofisticado.",
-    "image": "https://images.unsplash.com/photo-1557170334-a9632e77c6e4?auto=format&fit=crop&w=800&q=80",
-    "images": [],
-    "priceBottle": 1450000,
-    "priceOld": 0,
-    "decants": [
-      {
-        "size": "5ml",
-        "price": 65000
-      },
-      {
-        "size": "10ml",
-        "price": 120000
-      },
-      {
-        "size": "30ml",
-        "price": 350000
-      }
-    ],
-    "stock": 5,
-    "featured": false,
-    "bestseller": false,
-    "restocked": false,
-    "offer": false,
-    "discountBadge": "",
-    "isNew": true,
-    "active": true,
-    "isFavorite": false,
-    "notes": {
-      "top": "",
-      "heart": "",
-      "base": ""
-    },
-    "aromas": [],
-    "categories": [
-      "Nicho"
-    ],
-    "sellBottle": true
-  },
-  {
     "id": "axx-003",
     "name": "Ombré Leather",
     "brand": "TOM FORD",

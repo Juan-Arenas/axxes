@@ -15,7 +15,7 @@ window.INITIAL_PRODUCTS = [
     "decants": [
       {
         "size": "5ML",
-        "price": 143
+        "price": 144
       },
       {
         "size": "10ML",

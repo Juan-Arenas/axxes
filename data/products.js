@@ -1,50 +1,5 @@
 window.INITIAL_PRODUCTS = [
   {
-    "id": "axx-011",
-    "name": "Bleu de Chanel",
-    "brand": "CHANEL",
-    "category": "Hombre",
-    "gender": "Hombre",
-    "description": "La elegancia atemporal y la libertad.",
-    "image": "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=500&q=80",
-    "images": [],
-    "priceBottle": 850000,
-    "priceOld": 0,
-    "decants": [
-      {
-        "size": "5ml",
-        "price": 45000
-      },
-      {
-        "size": "10ml",
-        "price": 85000
-      },
-      {
-        "size": "30ml",
-        "price": 240000
-      }
-    ],
-    "stock": 25,
-    "featured": false,
-    "bestseller": true,
-    "restocked": false,
-    "offer": false,
-    "discountBadge": "",
-    "isNew": false,
-    "active": true,
-    "isFavorite": false,
-    "notes": {
-      "top": "",
-      "heart": "",
-      "base": ""
-    },
-    "aromas": [],
-    "categories": [
-      "Hombre"
-    ],
-    "sellBottle": true
-  },
-  {
     "id": "axx-012",
     "name": "Carolina Herrera Good Girl",
     "brand": "CAROLINA HERRERA",

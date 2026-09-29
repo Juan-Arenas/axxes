@@ -8,12 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initHeader();
     initMobileMenu();
     initHeroSlider();
-    initHorizontalScrolls();
     initScrollReveal();
     initSearch();
     initCartUI();
     initQuiz();
     initAdminAccess();
+    initLogoUpdater();
     
     // Defer store filters so render.js can finish first
     setTimeout(initStoreFilters, 500);
@@ -46,10 +46,12 @@ function initMobileMenu() {
     }
 }
 
-// 2. Hero Slider
+// 2. Hero Slider — Banner2 first, 3 sec interval, with arrows
 function initHeroSlider() {
     const track = document.getElementById('main-slider');
     const indicatorsContainer = document.getElementById('slider-indicators');
+    const prevBtn = document.getElementById('slider-prev');
+    const nextBtn = document.getElementById('slider-next');
     if (!track || !indicatorsContainer) return;
     
     const slides = document.querySelectorAll('.slide');
@@ -78,14 +80,28 @@ function initHeroSlider() {
     }
 
     function nextSlide() { goToSlide(slideIndex + 1); }
+    function prevSlide() { goToSlide(slideIndex - 1); }
 
-    sliderInterval = setInterval(nextSlide, 5000);
+    // Start auto-slide every 3 seconds
+    sliderInterval = setInterval(nextSlide, 3000);
+
+    // Arrow buttons
+    if(nextBtn) nextBtn.addEventListener('click', () => {
+        clearInterval(sliderInterval);
+        nextSlide();
+        sliderInterval = setInterval(nextSlide, 3000);
+    });
+    if(prevBtn) prevBtn.addEventListener('click', () => {
+        clearInterval(sliderInterval);
+        prevSlide();
+        sliderInterval = setInterval(nextSlide, 3000);
+    });
 
     // Pause on hover/touch
     track.addEventListener('mouseenter', () => clearInterval(sliderInterval));
-    track.addEventListener('mouseleave', () => sliderInterval = setInterval(nextSlide, 5000));
+    track.addEventListener('mouseleave', () => sliderInterval = setInterval(nextSlide, 3000));
     track.addEventListener('touchstart', () => clearInterval(sliderInterval));
-    track.addEventListener('touchend', () => sliderInterval = setInterval(nextSlide, 5000));
+    track.addEventListener('touchend', () => sliderInterval = setInterval(nextSlide, 3000));
     
     // Swipe logic
     let startX = 0;
@@ -93,57 +109,20 @@ function initHeroSlider() {
     track.addEventListener('touchend', e => {
         const endX = e.changedTouches[0].clientX;
         if (startX - endX > 50) nextSlide();
-        else if (endX - startX > 50) goToSlide(slideIndex - 1);
+        else if (endX - startX > 50) prevSlide();
     });
 }
 
-// 3. Horizontal Scrolls (Carousels)
-function initHorizontalScrolls() {
-    const setupScroll = (trackId, prevBtnClass, nextBtnClass) => {
-        const track = document.getElementById(trackId);
-        const prev = document.querySelector(prevBtnClass);
-        const next = document.querySelector(nextBtnClass);
-        if (!track || !prev || !next) return;
-
-        let scrollPos = 0;
-        const cardWidth = 300; // approx card width + gap
-
-        next.addEventListener('click', () => {
-            const maxScroll = track.scrollWidth - track.clientWidth;
-            scrollPos += cardWidth;
-            if (scrollPos > maxScroll) scrollPos = maxScroll;
-            track.style.transform = `translateX(-${scrollPos}px)`;
-        });
-
-        prev.addEventListener('click', () => {
-            scrollPos -= cardWidth;
-            if (scrollPos < 0) scrollPos = 0;
-            track.style.transform = `translateX(-${scrollPos}px)`;
-        });
-    };
-
-    setupScroll('track-new-arrivals', '.prev-btn', '.next-btn');
-    setupScroll('track-bestsellers', '.prev-btn-2', '.next-btn-2');
-    setupScroll('track-restocked', '.prev-btn-3', '.next-btn-3');
-    setupScroll('track-featured', '.prev-btn-4', '.next-btn-4');
-    
-    // Decants drag to scroll (optional enhancement)
-    const decantsTrack = document.getElementById('track-decants');
-    if(decantsTrack) {
-        decantsTrack.parentElement.style.overflowX = 'auto';
-        decantsTrack.parentElement.style.scrollbarWidth = 'none';
-    }
-}
-
-// 4. Scroll Reveal
+// 3. Scroll Reveal + Counter Animation
 function initScrollReveal() {
     const reveals = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
-                // Number counter animation
-                if (entry.target.classList.contains('trust-stats-section')) {
+                // Number counter animation for trust section
+                if (entry.target.classList.contains('trust-stats-row') || 
+                    entry.target.closest('.trust-section-luzents')) {
                     animateCounters();
                 }
             }
@@ -151,27 +130,51 @@ function initScrollReveal() {
     }, { threshold: 0.1 });
 
     reveals.forEach(r => observer.observe(r));
+    
+    // Also observe the trust section directly
+    const trustSection = document.getElementById('trust-section');
+    if (trustSection) {
+        const trustObs = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    trustObs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+        trustObs.observe(trustSection);
+    }
 }
 
+let countersAnimated = false;
 function animateCounters() {
-    const counters = document.querySelectorAll('.counter');
+    if (countersAnimated) return;
+    countersAnimated = true;
+    
+    const counters = document.querySelectorAll('.counter-animated');
     counters.forEach(counter => {
-        const target = +counter.getAttribute('data-target');
+        const target = parseInt(counter.getAttribute('data-target'));
+        const suffix = counter.getAttribute('data-suffix') || '';
+        let current = 0;
+        const duration = 2000; // 2 seconds
+        const steps = 60;
+        const increment = target / steps;
+        const stepTime = duration / steps;
+        
         const updateCount = () => {
-            const c = +counter.innerText.replace('+','');
-            const inc = target / 20;
-            if (c < target) {
-                counter.innerText = '+' + Math.ceil(c + inc);
-                setTimeout(updateCount, 50);
+            current += increment;
+            if (current < target) {
+                counter.textContent = Math.floor(current) + suffix;
+                setTimeout(updateCount, stepTime);
             } else {
-                counter.innerText = '+' + target;
+                counter.textContent = target + suffix;
             }
         };
         updateCount();
     });
 }
 
-// 5. Mega Search
+// 4. Mega Search
 function initSearch() {
     const modal = document.getElementById('search-modal');
     const btnOpen = document.getElementById('open-search');
@@ -203,7 +206,7 @@ function initSearch() {
         const matches = prods.filter(p => 
             p.name.toLowerCase().includes(query) || 
             (p.brand && p.brand.toLowerCase().includes(query)) ||
-            (p.category && p.category.toLowerCase().includes(query))
+            (p.categories && p.categories.some(c => c.toLowerCase().includes(query)))
         ).slice(0, 5);
 
         if (matches.length === 0) {
@@ -215,7 +218,7 @@ function initSearch() {
             <div style="display:flex; gap:15px; align-items:center; cursor:pointer;" onclick="window.location.hash='catalogo-seccion'; document.getElementById('close-search').click();">
                 <img src="${p.image}" alt="${p.name}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
                 <div>
-                    <h4 style="font-family:var(--font-serif); font-size:1.1rem; margin-bottom:0;">${p.name}</h4>
+                    <h4 style="font-family:var(--font-heading); font-size:1.1rem; margin-bottom:0;">${p.name}</h4>
                     <span style="font-size:0.8rem; color:#888; text-transform:uppercase;">${p.brand}</span>
                 </div>
             </div>
@@ -223,7 +226,7 @@ function initSearch() {
     });
 }
 
-// 6. Cart UI & Logic
+// 5. Cart UI & Logic
 function initCartUI() {
     const drawer = document.getElementById('cart-drawer');
     const overlay = document.getElementById('cart-overlay');
@@ -319,7 +322,7 @@ function loadCart() {
     }
 }
 
-// 7. Store Logic (Filters & Sort)
+// 6. Store Logic (Filters & Sort)
 function initStoreFilters() {
     const btnOpenFilters = document.getElementById('open-filters-mobile');
     const btnCloseFilters = document.getElementById('close-filters-mobile');
@@ -333,7 +336,7 @@ function initStoreFilters() {
     }
 
     // Attach listeners
-    const checkboxes = document.querySelectorAll('.filter-gender, .filter-category, .filter-brand');
+    const checkboxes = document.querySelectorAll('.filter-gender, .filter-category, .filter-brand, .filter-size');
     checkboxes.forEach(cb => cb.addEventListener('change', window.applyFilters));
 
     const priceSlider = document.getElementById('filter-price-slider');
@@ -380,19 +383,45 @@ window.applyFilters = function() {
     const selectedGenders = Array.from(document.querySelectorAll('.filter-gender:checked')).map(cb => cb.value);
     const selectedCategories = Array.from(document.querySelectorAll('.filter-category:checked')).map(cb => cb.value);
     const selectedBrands = Array.from(document.querySelectorAll('.filter-brand:checked')).map(cb => cb.value);
+    const selectedSizes = Array.from(document.querySelectorAll('.filter-size:checked')).map(cb => cb.value);
     const maxPrice = document.getElementById('filter-price-slider') ? parseInt(document.getElementById('filter-price-slider').value) : 9999999;
 
     if (selectedGenders.length > 0) {
         prods = prods.filter(p => selectedGenders.includes(p.gender));
     }
     if (selectedCategories.length > 0) {
-        prods = prods.filter(p => selectedCategories.includes(p.category));
+        prods = prods.filter(p => {
+            if (Array.isArray(p.categories)) {
+                return p.categories.some(c => selectedCategories.includes(c));
+            }
+            return selectedCategories.includes(p.category);
+        });
     }
     if (selectedBrands.length > 0) {
         prods = prods.filter(p => selectedBrands.includes(p.brand));
     }
     
-    prods = prods.filter(p => p.priceBottle <= maxPrice);
+    // Size filter: show only products that have the selected size available
+    if (selectedSizes.length > 0) {
+        prods = prods.filter(p => {
+            if (selectedSizes.includes('bottle') && p.sellBottle) return true;
+            if (Array.isArray(p.decants)) {
+                return p.decants.some(d => selectedSizes.includes(d.size));
+            }
+            return false;
+        });
+    }
+    
+    // Price filter on lowest available price
+    prods = prods.filter(p => {
+        let lowestPrice = p.sellBottle ? p.priceBottle : Infinity;
+        if (Array.isArray(p.decants)) {
+            p.decants.forEach(d => {
+                if (d.price < lowestPrice) lowestPrice = d.price;
+            });
+        }
+        return lowestPrice <= maxPrice;
+    });
 
     // Sort
     const sortVal = document.getElementById('sort-select') ? document.getElementById('sort-select').value : 'relevance';
@@ -405,7 +434,7 @@ window.applyFilters = function() {
 };
 
 
-// 8. Quiz Logic
+// 7. Quiz Logic
 let quizAnswers = {};
 
 function initQuiz() {
@@ -428,14 +457,13 @@ window.finishQuiz = function(key, val) {
     // Calculate recommendation based on gender and aroma
     const prods = window.axxesStore.products.filter(p => p.active);
     let recom = prods.filter(p => p.gender === quizAnswers.gender || p.gender === 'Unisex');
-    // For this demo, just shuffle and pick 3 to simulate complex logic if exact matches fail
     recom = recom.sort(() => 0.5 - Math.random()).slice(0, 3);
     
     const resGrid = document.getElementById('quiz-results-grid');
     resGrid.innerHTML = recom.map(p => `
         <div style="background:#f5f5f5; padding:15px; border-radius:8px;">
             <img src="${p.image}" style="width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:10px;">
-            <h5 style="font-family:var(--font-serif); font-size:1.1rem; margin-bottom:5px;">${p.name}</h5>
+            <h5 style="font-family:var(--font-heading); font-size:1.1rem; margin-bottom:5px;">${p.name}</h5>
             <p style="font-weight:bold;">$${p.priceBottle.toLocaleString('es-CO')}</p>
         </div>
     `).join('');
@@ -452,7 +480,7 @@ window.closeQuiz = function() {
     }, 300);
 };
 
-// 9. Admin Access (User Icon + Logo 3-clicks)
+// 8. Admin Access (User Icon + Logo 3-clicks + Floating Btn)
 function initAdminAccess() {
     // Access 1: User Icon
     const userBtn = document.getElementById('admin-login-btn');
@@ -462,7 +490,15 @@ function initAdminAccess() {
         });
     }
 
-    // Access 2: Logo 3 Clicks
+    // Access 2: Floating Admin Button
+    const floatAdminBtn = document.getElementById('floating-admin-btn');
+    if(floatAdminBtn) {
+        floatAdminBtn.addEventListener('click', () => {
+            if (typeof showPinModal === 'function') showPinModal();
+        });
+    }
+
+    // Access 3: Logo 3 Clicks
     const logos = document.querySelectorAll('.logo-img');
     let clickCount = 0;
     let clickTimer;
@@ -479,4 +515,26 @@ function initAdminAccess() {
             }
         });
     });
+}
+
+// 9. Logo updater — listen for logo changes from admin
+function initLogoUpdater() {
+    document.addEventListener('axxesDataUpdated', () => {
+        if (window.axxesStore && window.axxesStore.siteConfig && window.axxesStore.siteConfig.logo) {
+            const logoSrc = window.axxesStore.siteConfig.logo;
+            const siteLogo = document.getElementById('site-logo');
+            const footerLogo = document.getElementById('footer-logo');
+            if (siteLogo) siteLogo.src = logoSrc;
+            if (footerLogo) footerLogo.src = logoSrc;
+        }
+    });
+    
+    // Apply on load too
+    if (window.axxesStore && window.axxesStore.siteConfig && window.axxesStore.siteConfig.logo) {
+        const logoSrc = window.axxesStore.siteConfig.logo;
+        const siteLogo = document.getElementById('site-logo');
+        const footerLogo = document.getElementById('footer-logo');
+        if (siteLogo) siteLogo.src = logoSrc;
+        if (footerLogo) footerLogo.src = logoSrc;
+    }
 }

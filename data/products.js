@@ -10,11 +10,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 637500,
     "priceOld": 750000,
-    "decants": {
-      "5ml": 35000,
-      "10ml": 55000,
-      "30ml": 110000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 35000
+      },
+      {
+        "size": "10ml",
+        "price": 55000
+      },
+      {
+        "size": "30ml",
+        "price": 110000
+      }
+    ],
     "stock": 10,
     "featured": false,
     "bestseller": false,
@@ -29,7 +38,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Hombre"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-002",
@@ -42,11 +55,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 1450000,
     "priceOld": 0,
-    "decants": {
-      "5ml": 65000,
-      "10ml": 120000,
-      "30ml": 350000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 65000
+      },
+      {
+        "size": "10ml",
+        "price": 120000
+      },
+      {
+        "size": "30ml",
+        "price": 350000
+      }
+    ],
     "stock": 5,
     "featured": false,
     "bestseller": false,
@@ -61,7 +83,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Nicho"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-003",
@@ -74,11 +100,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 920000,
     "priceOld": 0,
-    "decants": {
-      "5ml": 50000,
-      "10ml": 95000,
-      "30ml": 260000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 50000
+      },
+      {
+        "size": "10ml",
+        "price": 95000
+      },
+      {
+        "size": "30ml",
+        "price": 260000
+      }
+    ],
     "stock": 8,
     "featured": false,
     "bestseller": true,
@@ -93,7 +128,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Unisex"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-004",
@@ -106,11 +145,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 890000,
     "priceOld": 0,
-    "decants": {
-      "5ml": 45000,
-      "10ml": 85000,
-      "30ml": 240000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 45000
+      },
+      {
+        "size": "10ml",
+        "price": 85000
+      },
+      {
+        "size": "30ml",
+        "price": 240000
+      }
+    ],
     "stock": 12,
     "featured": true,
     "bestseller": false,
@@ -125,7 +173,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "Iris, Incienso",
       "base": "Oud, Cuero, Sándalo"
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Nicho"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-005",
@@ -138,11 +190,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 680000,
     "priceOld": 850000,
-    "decants": {
-      "5ml": 40000,
-      "10ml": 75000,
-      "30ml": 210000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 40000
+      },
+      {
+        "size": "10ml",
+        "price": 75000
+      },
+      {
+        "size": "30ml",
+        "price": 210000
+      }
+    ],
     "stock": 15,
     "featured": false,
     "bestseller": false,
@@ -157,7 +218,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Mujer"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-006",
@@ -170,11 +235,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 648000,
     "priceOld": 720000,
-    "decants": {
-      "5ml": 38000,
-      "10ml": 70000,
-      "30ml": 190000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 38000
+      },
+      {
+        "size": "10ml",
+        "price": 70000
+      },
+      {
+        "size": "30ml",
+        "price": 190000
+      }
+    ],
     "stock": 18,
     "featured": false,
     "bestseller": false,
@@ -189,7 +263,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Hombre"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-007",
@@ -202,11 +280,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 520000,
     "priceOld": 0,
-    "decants": {
-      "5ml": 30000,
-      "10ml": 55000,
-      "30ml": 150000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 30000
+      },
+      {
+        "size": "10ml",
+        "price": 55000
+      },
+      {
+        "size": "30ml",
+        "price": 150000
+      }
+    ],
     "stock": 20,
     "featured": false,
     "bestseller": false,
@@ -221,7 +308,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Hombre"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-008",
@@ -234,11 +325,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 690000,
     "priceOld": 0,
-    "decants": {
-      "5ml": 38000,
-      "10ml": 72000,
-      "30ml": 200000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 38000
+      },
+      {
+        "size": "10ml",
+        "price": 72000
+      },
+      {
+        "size": "30ml",
+        "price": 200000
+      }
+    ],
     "stock": 14,
     "featured": false,
     "bestseller": false,
@@ -253,7 +353,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Mujer"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-009",
@@ -266,11 +370,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 1850000,
     "priceOld": 0,
-    "decants": {
-      "5ml": 90000,
-      "10ml": 170000,
-      "30ml": 480000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 90000
+      },
+      {
+        "size": "10ml",
+        "price": 170000
+      },
+      {
+        "size": "30ml",
+        "price": 480000
+      }
+    ],
     "stock": 4,
     "featured": false,
     "bestseller": false,
@@ -285,7 +398,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Nicho"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-010",
@@ -298,11 +415,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 710000,
     "priceOld": 0,
-    "decants": {
-      "5ml": 40000,
-      "10ml": 75000,
-      "30ml": 210000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 40000
+      },
+      {
+        "size": "10ml",
+        "price": 75000
+      },
+      {
+        "size": "30ml",
+        "price": 210000
+      }
+    ],
     "stock": 11,
     "featured": false,
     "bestseller": false,
@@ -317,7 +443,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Hombre"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-011",
@@ -330,11 +460,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 850000,
     "priceOld": 0,
-    "decants": {
-      "5ml": 45000,
-      "10ml": 85000,
-      "30ml": 240000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 45000
+      },
+      {
+        "size": "10ml",
+        "price": 85000
+      },
+      {
+        "size": "30ml",
+        "price": 240000
+      }
+    ],
     "stock": 25,
     "featured": false,
     "bestseller": true,
@@ -349,7 +488,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Hombre"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-012",
@@ -362,11 +505,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 620000,
     "priceOld": 0,
-    "decants": {
-      "5ml": 35000,
-      "10ml": 65000,
-      "30ml": 180000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 35000
+      },
+      {
+        "size": "10ml",
+        "price": 65000
+      },
+      {
+        "size": "30ml",
+        "price": 180000
+      }
+    ],
     "stock": 16,
     "featured": false,
     "bestseller": false,
@@ -381,7 +533,11 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Mujer"
+    ],
+    "sellBottle": true
   },
   {
     "id": "axx-013",
@@ -394,11 +550,20 @@ window.INITIAL_PRODUCTS = [
     "images": [],
     "priceBottle": 780000,
     "priceOld": 0,
-    "decants": {
-      "5ml": 42000,
-      "10ml": 80000,
-      "30ml": 220000
-    },
+    "decants": [
+      {
+        "size": "5ml",
+        "price": 42000
+      },
+      {
+        "size": "10ml",
+        "price": 80000
+      },
+      {
+        "size": "30ml",
+        "price": 220000
+      }
+    ],
     "stock": 30,
     "featured": false,
     "bestseller": true,
@@ -413,6 +578,30 @@ window.INITIAL_PRODUCTS = [
       "heart": "",
       "base": ""
     },
-    "aromas": []
+    "aromas": [],
+    "categories": [
+      "Hombre"
+    ],
+    "sellBottle": true
+  },
+  {
+    "id": "axx-1790672243468",
+    "name": "Prueba Del Mejor",
+    "brand": "ARMANI",
+    "description": "",
+    "gender": "Hombre",
+    "categories": [
+      "Hombre"
+    ],
+    "category": "Hombre",
+    "image": "",
+    "priceBottle": 67,
+    "sellBottle": true,
+    "decants": [],
+    "active": true,
+    "featured": false,
+    "bestseller": false,
+    "offer": false,
+    "isNew": false
   }
 ];

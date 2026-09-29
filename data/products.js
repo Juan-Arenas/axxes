@@ -1,50 +1,5 @@
 window.INITIAL_PRODUCTS = [
   {
-    "id": "axx-007",
-    "name": "Versace Eros Energy",
-    "brand": "VERSACE",
-    "category": "Hombre",
-    "gender": "Hombre",
-    "description": "Pura energía y pasión.",
-    "image": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=500&q=80",
-    "images": [],
-    "priceBottle": 520000,
-    "priceOld": 0,
-    "decants": [
-      {
-        "size": "5ml",
-        "price": 30000
-      },
-      {
-        "size": "10ml",
-        "price": 55000
-      },
-      {
-        "size": "30ml",
-        "price": 150000
-      }
-    ],
-    "stock": 20,
-    "featured": false,
-    "bestseller": false,
-    "restocked": false,
-    "offer": false,
-    "discountBadge": "",
-    "isNew": true,
-    "active": true,
-    "isFavorite": false,
-    "notes": {
-      "top": "",
-      "heart": "",
-      "base": ""
-    },
-    "aromas": [],
-    "categories": [
-      "Hombre"
-    ],
-    "sellBottle": true
-  },
-  {
     "id": "axx-008",
     "name": "Prada Paradoxe",
     "brand": "PRADA",

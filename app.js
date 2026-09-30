@@ -217,7 +217,7 @@ function initSearch() {
 
         resultsContainer.innerHTML = matches.map(p => `
             <div style="display:flex; gap:15px; align-items:center; cursor:pointer;" onclick="window.location.hash='catalogo-seccion'; document.getElementById('close-search').click();">
-                <img src="${p.image}" alt="${p.name}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
+                <img src="${p.image || 'logo.webp'}" alt="${p.name}" onerror="this.onerror=null;this.src='logo.webp';" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
                 <div>
                     <h4 style="font-family:var(--font-heading); font-size:1.1rem; margin-bottom:0;">${p.name}</h4>
                     <span style="font-size:0.8rem; color:#888; text-transform:uppercase;">${p.brand}</span>
@@ -295,7 +295,7 @@ function updateCartUI() {
         let sizeDisplay = item.size === 'bottle' ? 'Botella Completa' : item.size;
         return `
             <div class="cart-item">
-                <img src="${item.img}" alt="${item.name}">
+                <img src="${item.img || 'logo.webp'}" alt="${item.name}" onerror="this.onerror=null;this.src='logo.webp';">
                 <div class="cart-item-info">
                     <h4>${item.name}</h4>
                     <div class="size">Presentación: ${sizeDisplay}</div>
@@ -463,7 +463,7 @@ window.finishQuiz = function(key, val) {
     const resGrid = document.getElementById('quiz-results-grid');
     resGrid.innerHTML = recom.map(p => `
         <div style="background:#f5f5f5; padding:15px; border-radius:8px;">
-            <img src="${p.image}" style="width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:10px;">
+            <img src="${p.image || 'logo.webp'}" onerror="this.onerror=null;this.src='logo.webp';" style="width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:10px;">
             <h5 style="font-family:var(--font-heading); font-size:1.1rem; margin-bottom:5px;">${p.name}</h5>
             <p style="font-weight:bold;">$${p.priceBottle.toLocaleString('es-CO')}</p>
         </div>

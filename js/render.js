@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderAll() {
     if (!window.axxesStore) return;
     
+    // Automatic deduplication guarantee
+    if (typeof window.axxesStore.deduplicateProducts === 'function') {
+        window.axxesStore.deduplicateProducts(false);
+    }
+    
     const prods = window.axxesStore.products.filter(p => p.active);
 
     // Update dynamic products count
@@ -170,7 +175,7 @@ function createProductCardWithSizes(p) {
     return `
         <div class="app-prod-card reveal is-visible" data-product-id="${p.id}">
             ${badgeText ? `<div class="app-prod-badge">${badgeText}</div>` : ''}
-            <img src="${p.image}" alt="${p.name}">
+            <img src="${p.image || 'logo.webp'}" alt="${p.name}" onerror="this.onerror=null;this.src='logo.webp';">
             <div class="app-prod-brand">${p.brand || ''}</div>
             <h4 class="app-prod-name">${p.name}</h4>
             ${descHtml}

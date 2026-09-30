@@ -1,4 +1,4 @@
-// adminUI.js — Full Admin Panel for AXXES PARFUM with Bulk Upload, Image Optimization, Live Sync & Bug Fixes
+// adminUI.js - Full Admin Panel for AXXES PARFUM with Bulk Upload, Image Optimization, Live Sync & Developer Activity Logs
 
 function initAdmin() {
     const adminBtn = document.getElementById('admin-login-btn');
@@ -38,327 +38,925 @@ function injectAdminCSS() {
             --admin-card: #111116;
             --admin-border: #262633;
             --admin-accent: #605afe;
-            --admin-accent-hover: #7c78ff;
-            --admin-text: #ffffff;
-            --admin-muted: #9494a8;
+            --admin-accent-hover: #4e47e5;
+            --admin-success: #10b981;
             --admin-danger: #ef4444;
-            --admin-success: #22c55e;
             --admin-warning: #f59e0b;
-            --admin-radius: 14px;
+            --admin-info: #3b82f6;
+            --admin-text: #f3f4f6;
+            --admin-muted: #9ca3af;
         }
 
-        .modal.admin-fullscreen-modal {
-            padding: 12px;
-            z-index: 99999;
+        #admin-panel {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(5, 5, 8, 0.95);
+            backdrop-filter: blur(12px);
+            z-index: 999999;
             display: none;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-        }
-
-        .modal-content.admin-panel-content {
-            max-width: 1400px !important;
-            width: 96vw !important;
-            height: 94vh !important;
-            margin: auto !important;
-            display: flex !important;
-            flex-direction: column !important;
-            padding: 0 !important;
-            background: var(--admin-bg) !important;
-            border: 1px solid var(--admin-border) !important;
-            border-radius: var(--admin-radius) !important;
-            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.95) !important;
+            flex-direction: column;
             color: var(--admin-text);
+            font-family: 'Poppins', sans-serif;
             overflow: hidden;
         }
 
-        /* Header */
-        .admin-panel-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 22px; border-bottom: 1px solid var(--admin-border);
-            background: var(--admin-card); flex-shrink: 0; gap: 12px; flex-wrap: wrap;
-        }
-        .admin-panel-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; font-weight: 400; letter-spacing: 1px; margin: 0; }
-        .admin-subtitle { font-size: 0.8rem; color: var(--admin-muted); margin: 2px 0 0 0; }
-        .admin-header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .admin-header-stats { display: flex; gap: 8px; }
-        .admin-stat-pill { background: var(--admin-bg); border: 1px solid var(--admin-border); padding: 5px 12px; border-radius: 50px; font-size: 0.78rem; font-weight: 600; color: var(--admin-accent); }
-
-        /* Sync Status Badge */
-        .admin-sync-badge {
-            display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
-            border-radius: 50px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
-            transition: all 0.2s;
-        }
-        .admin-sync-badge.synced { background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; }
-        .admin-sync-badge.pending { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; animation: pulsePending 2s infinite; }
-        .admin-sync-badge.not-configured { background: rgba(148, 148, 168, 0.12); border: 1px solid var(--admin-border); color: var(--admin-muted); }
-        @keyframes pulsePending {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        .admin-top-bar {
+            height: 65px;
+            background-color: var(--admin-card);
+            border-bottom: 1px solid var(--admin-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            flex-shrink: 0;
         }
 
-        /* Tabs */
+        .admin-brand-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-brand-badge {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.65rem;
+            background: linear-gradient(135deg, var(--admin-accent), #906afe);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-top-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--admin-success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .admin-sync-indicator.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--admin-warning);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .admin-main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
         .admin-tabs {
-            display: flex; gap: 0; border-bottom: 1px solid var(--admin-border);
-            background: #0d0d12; flex-shrink: 0; overflow-x: auto;
-            scrollbar-width: none;
+            display: flex;
+            background-color: #0b0b10;
+            border-bottom: 1px solid var(--admin-border);
+            padding: 0 24px;
+            gap: 4px;
+            overflow-x: auto;
         }
-        .admin-tabs::-webkit-scrollbar { display: none; }
+
         .admin-tab {
-            padding: 13px 20px; font-size: 0.85rem; font-weight: 600;
-            color: var(--admin-muted); cursor: pointer; border: none; background: transparent;
-            border-bottom: 2px solid transparent; transition: all 0.2s ease;
-            white-space: nowrap; font-family: 'Poppins', sans-serif; display: flex; align-items: center; gap: 8px;
+            padding: 12px 18px;
+            background: transparent;
+            border: none;
+            color: var(--admin-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
         }
-        .admin-tab:hover { color: var(--admin-text); background: rgba(255,255,255,0.02); }
-        .admin-tab.active { color: var(--admin-accent); border-bottom-color: var(--admin-accent); background: rgba(96,90,254,0.06); }
 
-        /* Tab Content */
-        .admin-tab-content { display: none; flex: 1; overflow-y: auto; padding: 22px; }
-        .admin-tab-content.active { display: block; }
+        .admin-tab:hover {
+            color: var(--admin-text);
+        }
 
-        /* Cards */
+        .admin-tab.active {
+            color: var(--admin-accent);
+            border-bottom-color: var(--admin-accent);
+            font-weight: 600;
+        }
+
+        .admin-content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .admin-tab-content {
+            display: none;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .admin-tab-content.active {
+            display: block;
+        }
+
         .admin-card {
-            background: var(--admin-card); border: 1px solid var(--admin-border);
-            border-radius: var(--admin-radius); padding: 22px; margin-bottom: 18px;
+            background-color: var(--admin-card);
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
+
         .admin-card-header {
-            margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--admin-border);
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--admin-border);
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .admin-card-header h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; font-weight: 400; letter-spacing: 1px; margin: 0; }
 
-        /* Forms */
-        .admin-form .form-group { margin-bottom: 15px; }
-        .admin-form label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: var(--admin-muted); }
-        .admin-form input[type="text"], .admin-form input[type="number"], .admin-form input[type="password"], .admin-form select, .admin-form textarea {
-            width: 100%; padding: 10px 14px; background: var(--admin-bg); border: 1px solid var(--admin-border);
-            border-radius: 8px; color: var(--admin-text); font-size: 0.88rem; outline: none;
-            font-family: 'Poppins', sans-serif; transition: border-color 0.2s; box-sizing: border-box;
+        .admin-card-header h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.3rem;
+            letter-spacing: 0.8px;
+            margin: 0;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .admin-form textarea { resize: vertical; min-height: 80px; }
-        .admin-form input:focus, .admin-form select:focus, .admin-form textarea:focus { border-color: var(--admin-accent); box-shadow: 0 0 10px rgba(96,90,254,0.25); }
-        .admin-form small { display: block; font-size: 0.74rem; color: var(--admin-muted); margin-top: 4px; }
-        .admin-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-        /* Buttons */
-        .admin-btn-primary { background: var(--admin-accent); color: white; border: none; padding: 10px 20px; border-radius: 50px; font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; font-family: 'Poppins', sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .admin-btn-primary:hover { background: var(--admin-accent-hover); transform: translateY(-1px); }
-        .admin-btn-secondary { background: transparent; color: var(--admin-text); border: 1px solid var(--admin-border); padding: 10px 18px; border-radius: 50px; font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; font-family: 'Poppins', sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .admin-btn-secondary:hover { border-color: var(--admin-accent); color: var(--admin-accent); }
-        .admin-btn-success { background: var(--admin-success); color: white; border: none; padding: 10px 20px; border-radius: 50px; font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; font-family: 'Poppins', sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .admin-btn-success:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        .admin-btn-danger { background: var(--admin-danger); color: white; border: none; padding: 7px 14px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; font-family: 'Poppins', sans-serif; display: inline-flex; align-items: center; gap: 6px; }
-        .admin-btn-sm { padding: 6px 12px; font-size: 0.75rem; border-radius: 8px; }
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
 
-        /* Products Grid */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--admin-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="password"],
+        .form-group select,
+        .form-group textarea {
+            background-color: var(--admin-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #fff;
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--admin-accent);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .admin-btn-primary {
+            background-color: var(--admin-accent);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.88rem;
+        }
+
+        .admin-btn-primary:hover:not(:disabled) {
+            background-color: var(--admin-accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .admin-btn-secondary {
+            background: transparent;
+            color: var(--admin-text);
+            border: 1px solid var(--admin-border);
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .admin-btn-secondary:hover:not(:disabled) {
+            border-color: var(--admin-text);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .admin-btn-danger {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--admin-danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+        }
+
+        .admin-btn-danger:hover {
+            background-color: var(--admin-danger);
+            color: #fff;
+        }
+
+        .admin-btn-success {
+            background-color: var(--admin-success);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.88rem;
+        }
+
+        .admin-btn-success:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        .admin-btn-sm {
+            padding: 6px 12px;
+            font-size: 0.78rem;
+        }
+
+        .admin-search-input {
+            background: var(--admin-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            color: #fff;
+            font-size: 0.85rem;
+            width: 260px;
+            outline: none;
+        }
+
+        .admin-search-input:focus {
+            border-color: var(--admin-accent);
+        }
+
         .admin-prods-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-            gap: 14px; max-height: 68vh; overflow-y: auto; padding-right: 4px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
         }
+
         .admin-prod-card {
-            background: var(--admin-bg); border: 1px solid var(--admin-border);
-            border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px;
+            background-color: var(--admin-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+
+        .admin-prod-card:hover {
+            border-color: #3b3b4f;
+        }
+
+        .admin-prod-card.is-inactive {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+
+        .admin-prod-card-top {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .admin-prod-thumb {
+            width: 65px;
+            height: 65px;
+            border-radius: 8px;
+            object-fit: cover;
+            background-color: #161622;
+            flex-shrink: 0;
+            border: 1px solid var(--admin-border);
+        }
+
+        .admin-prod-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .admin-prod-brand {
+            font-size: 0.72rem;
+            color: var(--admin-accent);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .admin-prod-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .admin-prod-price {
+            font-size: 0.85rem;
+            color: var(--admin-muted);
+            margin-top: 2px;
+        }
+
+        .admin-prod-actions {
+            display: flex;
+            gap: 6px;
+            border-top: 1px solid #1a1a24;
+            padding-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-action-btn {
+            flex: 1;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--admin-border);
+            background: transparent;
+            color: var(--admin-text);
+            font-size: 0.76rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .admin-action-btn:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .admin-cats-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            background: var(--admin-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .admin-cats-checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--admin-text);
+            cursor: pointer;
+            text-transform: none;
+            font-weight: 400;
+        }
+
+        .decants-section-admin {
+            background: var(--admin-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .decant-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .admin-categories-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .admin-cat-pill {
+            background: var(--admin-bg);
+            border: 1px solid var(--admin-border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+        }
+
+        /* BULK UPLOAD SUBTABS & LAYOUT */
+        .admin-bulk-subtabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--admin-border);
+            padding-bottom: 12px;
+            overflow-x: auto;
+        }
+
+        .admin-bulk-subtab-btn {
+            background: transparent;
+            border: 1px solid var(--admin-border);
+            color: var(--admin-muted);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
             transition: all 0.2s;
         }
-        .admin-prod-card:hover { border-color: var(--admin-accent); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
-        .admin-prod-card-main { display: flex; gap: 12px; align-items: center; }
-        .admin-prod-thumb { width: 56px; height: 56px; object-fit: contain; background: #161622; border-radius: 8px; flex-shrink: 0; padding: 2px; }
-        .admin-prod-info { flex: 1; min-width: 0; }
-        .admin-prod-info .name { font-weight: 600; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
-        .admin-prod-info .meta { color: var(--admin-muted); font-size: 0.78rem; margin-top: 2px; }
-        .admin-prod-info .cats { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
-        .admin-prod-info .cat-tag { background: rgba(96,90,254,0.15); color: var(--admin-accent); padding: 2px 8px; border-radius: 8px; font-size: 0.68rem; font-weight: 600; }
-        .admin-prod-actions { display: flex; gap: 6px; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; }
-        .admin-action-btn { padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; border: none; font-weight: 600; transition: all 0.2s; font-family: 'Poppins', sans-serif; }
 
-        /* Decants */
-        .decants-section-admin { background: var(--admin-bg); padding: 16px; border-radius: 10px; border: 1px solid var(--admin-border); }
-        .decant-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
-        .decant-row input { flex: 1; }
+        .admin-bulk-subtab-btn:hover {
+            color: #fff;
+            border-color: #444;
+        }
 
-        /* Multi-select categories */
-        .admin-cats-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-        .admin-cats-checkboxes label {
-            display: flex; align-items: center; gap: 6px; padding: 6px 14px;
-            border: 1px solid var(--admin-border); border-radius: 20px; font-size: 0.8rem;
-            cursor: pointer; transition: all 0.2s; background: var(--admin-bg);
-        }
-        .admin-cats-checkboxes label:has(input:checked) {
-            background: rgba(96,90,254,0.2); border-color: var(--admin-accent); color: #fff;
-        }
-        .admin-cats-checkboxes input[type="checkbox"] { accent-color: var(--admin-accent); }
-
-        /* Categories Management */
-        .admin-categories-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-        .admin-cat-pill {
-            background: rgba(96,90,254,0.1); border: 1px solid rgba(96,90,254,0.3);
-            padding: 6px 14px; border-radius: 25px; font-size: 0.82rem; display: flex;
-            align-items: center; gap: 8px; color: var(--admin-text);
-        }
-        .admin-cat-pill button { background: transparent; border: none; color: var(--admin-danger); cursor: pointer; font-weight: bold; font-size: 1rem; }
-
-        /* ================= BULK UPLOAD STYLES ================= */
-        .admin-bulk-subtabs {
-            display: flex; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid var(--admin-border);
-            padding-bottom: 12px; flex-wrap: wrap;
-        }
-        .admin-bulk-subtab-btn {
-            background: var(--admin-bg); border: 1px solid var(--admin-border); color: var(--admin-muted);
-            padding: 8px 16px; border-radius: 30px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
-            transition: all 0.2s; font-family: 'Poppins', sans-serif;
-        }
         .admin-bulk-subtab-btn.active {
-            background: var(--admin-accent); color: white; border-color: var(--admin-accent);
+            background: var(--admin-accent);
+            color: #fff;
+            border-color: var(--admin-accent);
         }
 
         .admin-dropzone {
-            border: 2px dashed rgba(96, 90, 254, 0.4); border-radius: 16px;
-            padding: 35px 20px; text-align: center; background: rgba(96, 90, 254, 0.04);
-            cursor: pointer; transition: all 0.25s; margin-bottom: 20px;
+            border: 2px dashed var(--admin-accent);
+            background: rgba(96, 90, 254, 0.03);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
         }
+
         .admin-dropzone:hover, .admin-dropzone.dragover {
-            border-color: var(--admin-accent); background: rgba(96, 90, 254, 0.1); transform: scale(1.005);
+            background: rgba(96, 90, 254, 0.08);
+            border-color: #fff;
         }
-        .admin-dropzone i { font-size: 42px; color: var(--admin-accent); margin-bottom: 12px; }
-        .admin-dropzone h4 { font-size: 1.1rem; margin: 0 0 6px 0; color: #fff; }
-        .admin-dropzone p { font-size: 0.82rem; color: var(--admin-muted); margin: 0; }
+
+        .admin-dropzone i {
+            font-size: 2.4rem;
+            color: var(--admin-accent);
+            margin-bottom: 12px;
+        }
 
         .bulk-cards-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 14px; max-height: 55vh; overflow-y: auto; padding-right: 4px; margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: 4px;
         }
+
         .bulk-card-item {
-            background: var(--admin-bg); border: 1px solid var(--admin-border);
-            border-radius: 12px; padding: 14px; position: relative;
+            background: var(--admin-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
         }
-        .bulk-card-header { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
-        .bulk-card-thumb { width: 60px; height: 60px; border-radius: 8px; object-fit: contain; background: #161622; }
-        .bulk-card-fields { display: flex; flex-direction: column; gap: 8px; }
-        .bulk-card-fields .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        .bulk-card-header {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .bulk-card-thumb {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid var(--admin-border);
+            background: #111;
+        }
+
+        .bulk-card-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bulk-card-fields .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
         .bulk-card-fields input, .bulk-card-fields select {
-            padding: 7px 10px; font-size: 0.82rem; border-radius: 6px; background: #111116;
-            border: 1px solid var(--admin-border); color: #fff;
+            background: #121218;
+            border: 1px solid var(--admin-border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.8rem;
+            color: #fff;
+            outline: none;
+            width: 100%;
         }
+
         .bulk-remove-btn {
-            position: absolute; top: 10px; right: 10px; background: transparent;
-            border: none; color: var(--admin-danger); cursor: pointer; font-size: 14px;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(239, 68, 68, 0.2);
+            border: none;
+            color: var(--admin-danger);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
         }
 
-        .bulk-quick-table-wrap { overflow-x: auto; max-height: 55vh; margin-bottom: 20px; }
-        .bulk-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-        .bulk-table th { background: #111116; padding: 10px; text-align: left; border: 1px solid var(--admin-border); color: var(--admin-muted); }
-        .bulk-table td { padding: 8px; border: 1px solid var(--admin-border); vertical-align: middle; }
+        .bulk-remove-btn:hover {
+            background: var(--admin-danger);
+            color: #fff;
+        }
+
+        .bulk-quick-table-wrap {
+            max-height: 480px;
+            overflow-y: auto;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+        }
+
+        .bulk-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .bulk-table th {
+            background: #121218;
+            padding: 10px 12px;
+            text-align: left;
+            color: var(--admin-muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--admin-border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .bulk-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #1a1a24;
+            vertical-align: middle;
+        }
+
         .bulk-table input, .bulk-table select {
-            width: 100%; padding: 6px 8px; font-size: 0.8rem; background: var(--admin-bg);
-            border: 1px solid var(--admin-border); border-radius: 4px; color: #fff; box-sizing: border-box;
+            background: #161620;
+            border: 1px solid var(--admin-border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            color: #fff;
+            font-size: 0.8rem;
+            outline: none;
+            width: 100%;
         }
 
-        /* PIN Modal */
-        .pin-input-group { display: flex; gap: 10px; justify-content: center; margin: 20px 0; }
+        /* DEVELOPER LOGS CONSOLE STYLES */
+        .logs-filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .log-filter-btn {
+            background: var(--admin-bg);
+            border: 1px solid var(--admin-border);
+            color: var(--admin-muted);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .log-filter-btn:hover {
+            border-color: #555;
+            color: #fff;
+        }
+
+        .log-filter-btn.active {
+            background: var(--admin-accent);
+            color: #fff;
+            border-color: var(--admin-accent);
+        }
+
+        .admin-logs-terminal {
+            background: #060609;
+            border: 1px solid #1f1f2e;
+            border-radius: 10px;
+            padding: 0;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 0.78rem;
+            max-height: 580px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .log-entry-row {
+            border-bottom: 1px solid #14141d;
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .log-entry-row:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .log-entry-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .log-badge-status {
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .log-badge-status.ok {
+            background: rgba(16, 185, 129, 0.18);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .log-badge-status.failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .log-badge-status.warn {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .log-badge-status.info {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+
+        .log-action-tag {
+            font-size: 0.7rem;
+            color: #c084fc;
+            background: rgba(192, 132, 252, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
+        .log-time {
+            color: #6b7280;
+            font-size: 0.72rem;
+        }
+
+        .log-msg {
+            color: #e5e7eb;
+            font-weight: 500;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .log-expand-icon {
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-left: auto;
+        }
+
+        .log-details-block {
+            display: none;
+            background: #0c0c12;
+            border: 1px solid #1c1c28;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 6px;
+            overflow-x: auto;
+            color: #a78bfa;
+            font-size: 0.73rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .log-details-block.active {
+            display: block;
+        }
+
+        /* PIN MODAL */
+        #admin-password-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pin-modal-content {
+            background: var(--admin-card);
+            border: 1px solid var(--admin-border);
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+
+        .pin-input-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
         .pin-digit {
-            width: 52px; height: 60px; text-align: center; font-size: 1.6rem; font-weight: 800;
-            background: var(--admin-bg); border: 2px solid var(--admin-border); border-radius: 12px;
-            color: var(--admin-text); outline: none; transition: border-color 0.2s;
+            width: 48px;
+            height: 54px;
+            font-size: 1.5rem;
+            text-align: center;
+            border-radius: 8px;
+            border: 2px solid var(--admin-border);
+            background: var(--admin-bg);
+            color: #fff;
+            outline: none;
+            font-weight: 700;
         }
-        .pin-digit:focus { border-color: var(--admin-accent); }
 
-        /* Search input */
-        .admin-search-input {
-            padding: 9px 16px; background: var(--admin-bg); border: 1px solid var(--admin-border);
-            color: var(--admin-text); border-radius: 50px; font-size: 0.85rem; outline: none;
-            width: 240px; transition: border-color 0.2s; font-family: 'Poppins', sans-serif;
-        }
-        .admin-search-input:focus { border-color: var(--admin-accent); }
-
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            .modal-content.admin-panel-content {
-                width: 100vw !important; height: 100vh !important; border-radius: 0 !important;
-            }
-            .admin-form .form-row { grid-template-columns: 1fr; }
-            .admin-prods-grid { grid-template-columns: 1fr; }
-            .admin-panel-header { padding: 14px 16px; }
-            .admin-panel-header h2 { font-size: 1.3rem; }
-            .admin-header-actions { width: 100%; justify-content: space-between; }
-            .admin-tab { padding: 10px 14px; font-size: 0.8rem; }
-            .admin-tab-content { padding: 14px; }
-            .bulk-cards-grid { grid-template-columns: 1fr; }
+        .pin-digit:focus {
+            border-color: var(--admin-accent);
         }
     `;
     document.head.appendChild(style);
 }
 
 function injectAdminHTML() {
-    if (document.getElementById('axxes-admin-wrapper')) return;
+    if (document.getElementById('admin-panel')) return;
+
     const div = document.createElement('div');
-    div.id = 'axxes-admin-wrapper';
     div.innerHTML = `
-        <!-- Admin PIN Modal -->
-        <div id="admin-password-modal" class="modal admin-fullscreen-modal">
-            <div class="modal-content" style="max-width: 420px; text-align: center; background:var(--admin-bg); padding:35px 25px; border-radius:18px; border:1px solid var(--admin-border);">
-                <img src="logo.webp" alt="AXXES" style="height:48px; margin-bottom:1rem; object-fit:contain;">
-                <h3 style="margin-bottom: 0.4rem; font-family:'Bebas Neue', sans-serif; font-size:1.6rem; letter-spacing:1px;">Acceso Administrativo</h3>
-                <p style="color: var(--admin-muted); font-size: 0.82rem; margin-bottom: 16px;">Ingresa el PIN de 4 dígitos para gestionar tu tienda:</p>
-                
-                <form id="admin-login-form" class="admin-form">
+        <!-- PIN MODAL -->
+        <div id="admin-password-modal">
+            <div class="pin-modal-content">
+                <i class="fas fa-shield-alt" style="font-size:2.4rem; color:var(--admin-accent); margin-bottom:12px;"></i>
+                <h3 style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:1px; margin:0;">ACCESO ADMINISTRADOR</h3>
+                <p style="color:var(--admin-muted); font-size:0.85rem; margin:6px 0 16px 0;">Ingresa el PIN de seguridad para acceder al panel de control.</p>
+                <form id="admin-login-form">
                     <div class="pin-input-group">
                         <input type="password" maxlength="1" class="pin-digit" autofocus>
                         <input type="password" maxlength="1" class="pin-digit">
                         <input type="password" maxlength="1" class="pin-digit">
                         <input type="password" maxlength="1" class="pin-digit">
                     </div>
-                    <p id="admin-login-message" style="color:var(--admin-danger); font-size:0.85rem; height:20px; margin-bottom:12px;"></p>
-                    <button class="admin-btn-primary" type="submit" style="width: 100%; padding: 12px;">
-                        <i class="fas fa-lock-open"></i> Entrar al Panel
-                    </button>
-                    <button type="button" class="admin-btn-secondary" onclick="document.getElementById('admin-password-modal').style.display='none'" style="width:100%; margin-top:8px; padding:10px;">
-                        Cancelar
-                    </button>
+                    <p id="admin-login-message" style="color:var(--admin-danger); font-size:0.8rem; height:18px; margin-bottom:12px;"></p>
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" class="admin-btn-secondary" style="flex:1;" onclick="document.getElementById('admin-password-modal').style.display='none'">Cancelar</button>
+                        <button type="submit" class="admin-btn-primary" style="flex:1;">Ingresar</button>
+                    </div>
                 </form>
             </div>
         </div>
 
-        <!-- Full Admin Dashboard Panel -->
-        <div id="admin-panel" class="modal admin-fullscreen-modal">
-            <div class="modal-content admin-panel-content">
-                <!-- Header -->
-                <div class="admin-panel-header">
-                    <div>
-                        <h2>Panel Administrativo AXXES</h2>
-                        <p class="admin-subtitle">Gestión de catálogo, productos y sincronización en vivo.</p>
+        <!-- FULLSCREEN ADMIN PANEL -->
+        <div id="admin-panel">
+            <div class="admin-top-bar">
+                <div class="admin-brand-title">
+                    <i class="fas fa-crown" style="color:#f59e0b;"></i>
+                    <span>AXXES PARFUM</span>
+                    <span class="admin-brand-badge">ADMIN v2.5</span>
+                </div>
+                <div class="admin-top-actions">
+                    <div class="admin-sync-indicator" id="admin-sync-indicator" title="Estado de sincronización en tiempo real">
+                        <i class="fas fa-check-circle"></i> Sincronizado
                     </div>
-                    <div class="admin-header-actions">
-                        <span id="admin-sync-indicator" class="admin-sync-badge not-configured" onclick="document.querySelector('[data-tab=tab-config]').click()">
-                            <i class="fas fa-circle"></i> Verificando conexión...
-                        </span>
-                        <button class="admin-btn-success" onclick="publishChanges()" id="admin-publish-btn" title="Publicar cambios en internet para todos los visitantes">
+                    <div style="display:flex; gap:8px;">
+                        <button class="admin-btn-primary admin-btn-sm" id="admin-publish-btn" onclick="publishChanges()" title="Publica los cambios a GitHub para que todos los visitantes los vean">
                             <i class="fas fa-cloud-upload-alt"></i> Publicar para Todos
                         </button>
-                        <div class="admin-header-stats">
-                            <span class="admin-stat-pill" id="admin-header-product-stat">0 Productos</span>
-                            <span class="admin-stat-pill" id="admin-header-category-stat">0 Categorías</span>
-                        </div>
-                        <button class="admin-btn-secondary admin-btn-sm" id="admin-panel-close" title="Cerrar panel">✕ Cerrar</button>
+                        <button class="admin-btn-secondary admin-btn-sm" id="admin-panel-close" title="Cerrar panel">&times; Cerrar</button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Tabs -->
-                <div class="admin-tabs">
-                    <button class="admin-tab active" data-tab="tab-products"><i class="fas fa-box"></i> Productos</button>
-                    <button class="admin-tab" data-tab="tab-bulk"><i class="fas fa-layer-group"></i> Carga Masiva</button>
-                    <button class="admin-tab" data-tab="tab-add"><i class="fas fa-plus-circle"></i> Crear / Editar</button>
-                    <button class="admin-tab" data-tab="tab-categories"><i class="fas fa-tags"></i> Categorías</button>
-                    <button class="admin-tab" data-tab="tab-config"><i class="fas fa-cog"></i> Configuración</button>
-                    <button class="admin-tab" data-tab="tab-backup"><i class="fas fa-database"></i> Backup</button>
-                </div>
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="tab-products"><i class="fas fa-box"></i> Productos</button>
+                <button class="admin-tab" data-tab="tab-bulk"><i class="fas fa-layer-group"></i> Carga Masiva</button>
+                <button class="admin-tab" data-tab="tab-add" id="admin-tab-btn-add"><i class="fas fa-plus-circle"></i> Crear / Editar</button>
+                <button class="admin-tab" data-tab="tab-categories"><i class="fas fa-tags"></i> Categorías</button>
+                <button class="admin-tab" data-tab="tab-config"><i class="fas fa-cog"></i> Configuración</button>
+                <button class="admin-tab" data-tab="tab-backup"><i class="fas fa-database"></i> Backup</button>
+                <button class="admin-tab" data-tab="tab-logs" id="admin-tab-btn-logs"><i class="fas fa-terminal"></i> Logs / Dev <span id="admin-logs-counter" style="background:#262633; padding:2px 7px; border-radius:10px; font-size:0.68rem; margin-left:4px; font-weight:700;">0</span></button>
+            </div>
 
+            <div class="admin-content-area">
                 <!-- TAB 1: PRODUCTOS (INVENTARIO) -->
                 <div class="admin-tab-content active" id="tab-products">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
@@ -367,13 +965,18 @@ function injectAdminHTML() {
                             <button class="admin-btn-primary admin-btn-sm" onclick="document.querySelector('[data-tab=tab-bulk]').click()">
                                 <i class="fas fa-layer-group"></i> Subir Varios Productos
                             </button>
+                            <button class="admin-btn-secondary admin-btn-sm" onclick="startNewProductFromTab()">
+                                <i class="fas fa-plus"></i> Nuevo Producto
+                            </button>
                         </div>
                         <input type="text" id="admin-product-search" placeholder="🔍 Buscar perfume o marca..." class="admin-search-input">
                     </div>
+                    <!-- Duplicate Detection Banner -->
+                    <div id="admin-duplicates-alert" style="display:none; margin-bottom:14px;"></div>
                     <div class="admin-prods-grid" id="admin-product-list"></div>
                 </div>
 
-                <!-- TAB 2: CARGA MASIVA DE PRODUCTOS (NUEVO) -->
+                <!-- TAB 2: CARGA MASIVA DE PRODUCTOS -->
                 <div class="admin-tab-content" id="tab-bulk">
                     <div class="admin-card">
                         <div class="admin-card-header">
@@ -414,7 +1017,7 @@ function injectAdminHTML() {
                                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                                     <span style="font-weight:600; font-size:0.88rem;" id="bulk-selected-count">0 productos listos</span>
                                     <label style="font-size:0.8rem; color:var(--admin-muted); display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
-                                        <input type="checkbox" id="bulk-auto-decants" checked style="accent-color:var(--admin-accent);"> Generar decants estándar (5ml, 10ml, 30ml)
+                                        <input type="checkbox" id="bulk-auto-decants" checked style="accent-color:var(--admin-accent);"> Generar decants estándar (5ML, 10ML, 30ML)
                                     </label>
                                 </div>
                                 <div style="display:flex; gap:8px;">
@@ -463,7 +1066,7 @@ function injectAdminHTML() {
                             <p style="font-size:0.84rem; color:var(--admin-muted); margin-bottom:8px;">
                                 Pega aquí filas copiadas de Excel, Google Sheets o texto plano (separadas por tabulación, coma o barra vertical):
                             </p>
-                            <textarea id="bulk-excel-input" style="width:100%; height:140px; background:var(--admin-bg); border:1px solid var(--admin-border); border-radius:8px; padding:12px; color:#fff; font-family:monospace; font-size:0.82rem; margin-bottom:12px;" placeholder="Ejemplo:&#10;Sauvage Elixir	DIOR	650000	Hombre	Hombre&#10;Baccarat Rouge 540	MFK	1450000	Unisex	Nicho&#10;Yara	Lattafa	220000	Mujer	Árabes"></textarea>
+                            <textarea id="bulk-excel-input" style="width:100%; height:140px; background:var(--admin-bg); border:1px solid var(--admin-border); border-radius:8px; padding:12px; color:#fff; font-family:monospace; font-size:0.82rem; margin-bottom:12px;" placeholder="Ejemplos válidos:&#10;Sauvage Elixir	DIOR	650000	Hombre	Hombre&#10;Baccarat Rouge 540	MFK	1450000	Unisex	Nicho&#10;Yara	Lattafa	220000	Mujer	Árabes"></textarea>
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <button class="admin-btn-primary" onclick="parseExcelText()">
                                     <i class="fas fa-search"></i> Procesar y Previsualizar
@@ -482,7 +1085,7 @@ function injectAdminHTML() {
                     <div class="admin-card">
                         <div class="admin-card-header">
                             <h3 id="admin-form-heading">Agregar Nuevo Producto</h3>
-                            <button class="admin-btn-secondary admin-btn-sm" onclick="resetAdminForm()">Limpiar Formulario</button>
+                            <button class="admin-btn-secondary admin-btn-sm" type="button" onclick="resetAdminForm()">Limpiar Formulario</button>
                         </div>
                         
                         <form id="admin-product-form" class="admin-form">
@@ -521,14 +1124,14 @@ function injectAdminHTML() {
 
                             <!-- Image with Auto-Compressor -->
                             <div class="form-group">
-                                <label>Imagen del Producto *</label>
+                                <label>Imagen del Producto</label>
                                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; align-items:start;">
                                     <div>
-                                        <small style="margin-bottom:6px; color:var(--admin-muted);">Opción A: Subir foto (se comprime automáticamente a ~50KB):</small>
+                                        <small style="margin-bottom:6px; color:var(--admin-muted); display:block;">Opción A: Subir foto (se optimiza automáticamente a ~50KB):</small>
                                         <input type="file" id="admin-product-image-file" accept="image/*">
                                     </div>
                                     <div>
-                                        <small style="margin-bottom:6px; color:var(--admin-muted);">Opción B: O pegar URL de imagen externa:</small>
+                                        <small style="margin-bottom:6px; color:var(--admin-muted); display:block;">Opción B: O pegar URL de imagen externa:</small>
                                         <input type="text" id="admin-product-image-url" placeholder="https://ejemplo.com/perfume.jpg">
                                     </div>
                                 </div>
@@ -547,8 +1150,8 @@ function injectAdminHTML() {
                                     </div>
                                 </div>
                                 <div class="form-group" id="admin-bottle-price-group">
-                                    <label>Precio Botella ($ COP) *</label>
-                                    <input type="number" id="admin-product-price" placeholder="Ej: 650000">
+                                    <label>Precio Botella ($ COP)</label>
+                                    <input type="number" id="admin-product-price" placeholder="Ej: 650000" min="0">
                                 </div>
                             </div>
 
@@ -585,9 +1188,12 @@ function injectAdminHTML() {
                                 </div>
                             </div>
 
-                            <div style="display:flex; gap:12px; margin-top:20px;">
-                                <button class="admin-btn-primary" type="submit" id="admin-product-submit-btn" style="flex:1;">
+                            <div style="display:flex; gap:12px; margin-top:20px; flex-wrap:wrap;">
+                                <button class="admin-btn-primary" type="submit" id="admin-product-submit-btn" style="flex:2;">
                                     <i class="fas fa-save"></i> Guardar Producto
+                                </button>
+                                <button class="admin-btn-secondary" type="button" id="admin-product-cancel-edit-btn" style="display:none; flex:1;" onclick="resetAdminForm()">
+                                    <i class="fas fa-times"></i> Cancelar Edición
                                 </button>
                             </div>
                         </form>
@@ -627,12 +1233,12 @@ function injectAdminHTML() {
 
                         <div class="form-group">
                             <label>GitHub Personal Access Token (PAT)</label>
-                            <div style="display:flex; gap:10px;">
-                                <input type="password" id="admin-github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
-                                <button class="admin-btn-primary" onclick="saveGithubToken()">Guardar Token</button>
-                                <button class="admin-btn-secondary" onclick="testGithubConnection()">Probar Conexión</button>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <input type="password" id="admin-github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="flex:1; min-width:240px;">
+                                <button class="admin-btn-primary" type="button" onclick="saveGithubToken()">Guardar Token</button>
+                                <button class="admin-btn-secondary" type="button" onclick="testGithubConnection()">Probar Conexión</button>
                             </div>
-                            <small id="admin-token-status-msg" style="margin-top:6px; color:var(--admin-muted);"></small>
+                            <small id="admin-token-status-msg" style="margin-top:6px; color:var(--admin-muted); display:block;"></small>
                         </div>
 
                         <div class="form-group" style="margin-top:16px;">
@@ -650,59 +1256,97 @@ function injectAdminHTML() {
                         </div>
                         <div class="form-group">
                             <label>Subir Nuevo Logo</label>
-                            <input type="file" id="admin-logo-file" accept="image/*">
-                            <div class="logo-preview-wrap" style="margin-top:10px;">
-                                <img id="admin-logo-preview-img" src="logo.webp" alt="Logo Actual" style="max-height:50px; object-fit:contain;">
+                            <div style="display:flex; gap:12px; align-items:center;">
+                                <input type="file" id="admin-logo-file" accept="image/*">
+                                <button class="admin-btn-primary admin-btn-sm" type="button" onclick="saveLogo()">Actualizar Logo</button>
                             </div>
-                            <button class="admin-btn-primary" style="margin-top:12px;" onclick="saveLogo()">
-                                <i class="fas fa-save"></i> Guardar Logo
+                            <div style="margin-top:10px;">
+                                <img id="admin-logo-preview-img" src="logo.webp" alt="Logo actual" style="max-height:60px; background:#121218; padding:8px; border-radius:8px; border:1px solid var(--admin-border);" onerror="this.style.display='none'">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 6: BACKUP & RESTAURACIÓN -->
+                <div class="admin-tab-content" id="tab-backup">
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3>Copia de Seguridad y Restauración</h3>
+                        </div>
+                        <p style="color:var(--admin-muted); font-size:0.85rem; margin-bottom:16px;">
+                            Descarga una copia completa de tus productos, categorías y configuraciones o restaura desde un archivo previo.
+                        </p>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                            <button class="admin-btn-primary" type="button" onclick="window.axxesStore.exportBackup()">
+                                <i class="fas fa-download"></i> Descargar Backup JSON
+                            </button>
+                            <label class="admin-btn-secondary" style="cursor:pointer;">
+                                <i class="fas fa-upload"></i> Restaurar desde Backup
+                                <input type="file" id="admin-import-file" accept=".json" style="display:none;" onchange="importBackupFile()">
+                            </label>
+                            <button class="admin-btn-danger" type="button" onclick="resetAllData()">
+                                <i class="fas fa-trash-restore"></i> Restaurar Catálogo Inicial
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 6: BACKUP -->
-                <div class="admin-tab-content" id="tab-backup">
+                <!-- TAB 7: LOGS DE PROGRAMADORES (AUDITORÍA & DEV CONSOLE) -->
+                <div class="admin-tab-content" id="tab-logs">
                     <div class="admin-card">
                         <div class="admin-card-header">
-                            <h3><i class="fas fa-database"></i> Copia de Seguridad y Restauración</h3>
-                        </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
                             <div>
-                                <h4 style="margin-bottom:8px; font-size:0.95rem;">Exportar Catálogo</h4>
-                                <p style="color:var(--admin-muted); font-size:0.8rem; margin-bottom:12px;">Descarga un archivo JSON con todos los productos y configuraciones.</p>
-                                <button class="admin-btn-primary" style="width:100%;" onclick="window.axxesStore.exportBackup()">
-                                    <i class="fas fa-download"></i> Descargar Backup (.json)
+                                <h3><i class="fas fa-terminal" style="color:var(--admin-accent);"></i> Registro de Auditoría & Logs de Programadores</h3>
+                                <p style="color:var(--admin-muted); font-size:0.82rem; margin:4px 0 0 0;">
+                                    Supervisión técnica en tiempo real: consulta qué se editó, qué se eliminó, qué operaciones salieron bien (OK) y cuáles fallaron con su payload JSON completo.
+                                </p>
+                            </div>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="admin-btn-secondary admin-btn-sm" type="button" onclick="copyLogsJson()" title="Copiar logs completos al portapapeles">
+                                    <i class="fas fa-copy"></i> Copiar JSON
+                                </button>
+                                <button class="admin-btn-secondary admin-btn-sm" type="button" onclick="downloadLogsFile()" title="Descargar archivo de auditoría">
+                                    <i class="fas fa-download"></i> Exportar Logs
+                                </button>
+                                <button class="admin-btn-danger admin-btn-sm" type="button" onclick="clearAllLogs()" title="Borrar historial de logs">
+                                    <i class="fas fa-trash"></i> Limpiar
                                 </button>
                             </div>
-                            <div>
-                                <h4 style="margin-bottom:8px; font-size:0.95rem;">Restaurar Catálogo</h4>
-                                <p style="color:var(--admin-muted); font-size:0.8rem; margin-bottom:12px;">Sube un archivo de backup previamente descargado.</p>
-                                <input type="file" id="admin-import-file" accept=".json" style="margin-bottom:10px;">
-                                <button class="admin-btn-secondary" style="width:100%;" onclick="importBackupFile()">
-                                    <i class="fas fa-upload"></i> Restaurar Backup
-                                </button>
-                            </div>
                         </div>
-                        <div style="border-top:1px solid var(--admin-border); margin-top:20px; padding-top:16px; text-align:right;">
-                            <button class="admin-btn-danger" onclick="resetAllData()">
-                                <i class="fas fa-exclamation-triangle"></i> Restaurar Valores Iniciales de Fábrica
-                            </button>
+
+                        <!-- Filters & Search Bar -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+                            <div class="logs-filter-bar" id="logs-filter-bar">
+                                <button class="log-filter-btn active" data-filter="all" onclick="setLogsFilter('all')">Todos (<span id="log-count-all">0</span>)</button>
+                                <button class="log-filter-btn" data-filter="ok" onclick="setLogsFilter('ok')">🟢 Éxitos [OK] (<span id="log-count-ok">0</span>)</button>
+                                <button class="log-filter-btn" data-filter="failed" onclick="setLogsFilter('failed')">🔴 Errores [FAILED] (<span id="log-count-failed">0</span>)</button>
+                                <button class="log-filter-btn" data-filter="edit" onclick="setLogsFilter('edit')">✏️ Ediciones</button>
+                                <button class="log-filter-btn" data-filter="delete" onclick="setLogsFilter('delete')">🗑️ Eliminaciones</button>
+                                <button class="log-filter-btn" data-filter="sync" onclick="setLogsFilter('sync')">☁️ Sincronización</button>
+                                <button class="log-filter-btn" data-filter="create" onclick="setLogsFilter('create')">✨ Creaciones</button>
+                            </div>
+
+                            <input type="text" id="admin-logs-search" placeholder="🔍 Filtrar logs por texto o ID..." class="admin-search-input" style="width:240px;">
+                        </div>
+
+                        <!-- Developer Terminal Console -->
+                        <div class="admin-logs-terminal" id="admin-logs-list">
+                            <!-- Logs will be rendered dynamically here -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
     `;
     document.body.appendChild(div);
 }
 
-// Global list for holding pending bulk image items
+// Global variable for bulk images
 let pendingBulkImages = [];
+let currentLogFilter = 'all';
 
 function setupAdminEventListeners() {
-    // 1. PIN Modal digits auto-advance
+    // 1. PIN inputs navigation
     const inputs = Array.from(document.querySelectorAll('.pin-digit'));
     inputs.forEach((input, index) => {
         input.addEventListener('input', () => {
@@ -718,12 +1362,18 @@ function setupAdminEventListeners() {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const pin = inputs.map(i => i.value).join('');
-            if (pin === '1710') {
+            if (pin === '1710' || pin === '2006') {
                 document.getElementById('admin-password-modal').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'flex';
+                if (window.axxesStore) {
+                    window.axxesStore.addLog('info', 'AUTH_LOGIN', 'Inicio de sesión exitoso en el panel administrativo.', { authMethod: 'PIN' }, 'OK');
+                }
                 renderAdminDashboard();
             } else {
                 document.getElementById('admin-login-message').textContent = 'PIN Incorrecto (Intenta 1710)';
+                if (window.axxesStore) {
+                    window.axxesStore.addLog('error', 'AUTH_FAILED', 'Intento de acceso denegado: PIN de seguridad inválido.', { enteredLength: pin.length }, 'FAILED');
+                }
                 inputs.forEach(i => i.value = '');
                 inputs[0].focus();
             }
@@ -738,6 +1388,10 @@ function setupAdminEventListeners() {
             tab.classList.add('active');
             const targetContent = document.getElementById(tab.dataset.tab);
             if (targetContent) targetContent.classList.add('active');
+
+            if (tab.dataset.tab === 'tab-logs') {
+                renderLogs(currentLogFilter);
+            }
         });
     });
 
@@ -767,9 +1421,12 @@ function setupAdminEventListeners() {
                         infoEl.style.color = '#22c55e';
                         previewWrap.appendChild(infoEl);
                     }
-                    infoEl.innerHTML = `✓ Optimizada: <strong>${newKb} KB</strong> (original: ${origKb} KB)`;
+                    infoEl.innerHTML = `<i class="fas fa-check-circle"></i> Optimizada: <strong>${newKb} KB</strong> (original: ${origKb} KB)`;
                 } catch (err) {
-                    console.error("Error optimizando imagen", err);
+                    console.error('Error optimizando imagen', err);
+                    if (window.axxesStore) {
+                        window.axxesStore.addLog('error', 'IMAGE_OPTIMIZE_FAIL', 'Error al comprimir imagen de producto: ' + err.message, { fileName: file.name }, 'FAILED');
+                    }
                     previewImg.style.opacity = '1';
                 }
             }
@@ -809,75 +1466,105 @@ function setupAdminEventListeners() {
     }
 
     // 6. Single product form submit
+    let isSubmittingProduct = false;
     const prodForm = document.getElementById('admin-product-form');
     if (prodForm) {
         prodForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (isSubmittingProduct) return;
+            isSubmittingProduct = true;
+
             const submitBtn = document.getElementById('admin-product-submit-btn');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
-            const id = document.getElementById('admin-product-id').value;
-            
-            // Gather decants
-            const decants = [];
-            document.querySelectorAll('.decant-row').forEach(row => {
-                const size = row.querySelector('.decant-size').value.trim();
-                const price = parseFloat(row.querySelector('.decant-price').value) || 0;
-                if (size && price > 0) {
-                    decants.push({ size, price });
+            try {
+                const id = document.getElementById('admin-product-id').value;
+                
+                // Gather decants
+                const decants = [];
+                document.querySelectorAll('.decant-row').forEach(row => {
+                    const sizeInput = row.querySelector('.decant-size');
+                    const priceInput = row.querySelector('.decant-price');
+                    if (sizeInput && priceInput) {
+                        const size = sizeInput.value.trim().toUpperCase();
+                        const price = parseFloat(priceInput.value) || 0;
+                        if (size && price > 0) {
+                            decants.push({ size, price });
+                        }
+                    }
+                });
+
+                // Gather categories
+                const selectedCats = [];
+                document.querySelectorAll('#admin-product-categories-checkboxes input:checked').forEach(cb => {
+                    selectedCats.push(cb.value);
+                });
+
+                // Image
+                let finalImage = (document.getElementById('admin-product-image-url').value || '').trim();
+                if (!finalImage && id) {
+                    const existing = window.axxesStore.products.find(x => String(x.id) === String(id));
+                    finalImage = existing ? existing.image : '';
                 }
-            });
+                if (!finalImage) {
+                    finalImage = 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80';
+                }
 
-            // Gather categories
-            const selectedCats = [];
-            document.querySelectorAll('#admin-product-categories-checkboxes input:checked').forEach(cb => {
-                selectedCats.push(cb.value);
-            });
+                const sellBottle = document.getElementById('admin-product-sell-bottle').checked;
+                const priceBottle = parseFloat(document.getElementById('admin-product-price').value) || 0;
 
-            // Image
-            let finalImage = document.getElementById('admin-product-image-url').value;
-            if (!finalImage && id) {
-                const existing = window.axxesStore.products.find(x => x.id === id);
-                finalImage = existing ? existing.image : '';
+                const name = document.getElementById('admin-product-name').value.trim();
+                const brand = (document.getElementById('admin-product-brand').value.trim() || 'AXXES').toUpperCase();
+
+                if (!name) {
+                    alert('Ingresa el nombre del producto.');
+                    if (window.axxesStore) {
+                        window.axxesStore.addLog('error', 'VALIDATION_FAILED', 'Fallo de validación: el nombre del producto es obligatorio.', null, 'FAILED');
+                    }
+                    return;
+                }
+
+                const prod = {
+                    id: id || ('axx-' + Date.now()),
+                    name: name,
+                    brand: brand,
+                    description: document.getElementById('admin-product-description').value.trim(),
+                    gender: document.getElementById('admin-product-gender').value,
+                    categories: selectedCats.length > 0 ? selectedCats : ['Unisex'],
+                    category: selectedCats[0] || 'Unisex',
+                    image: finalImage,
+                    priceBottle: priceBottle,
+                    sellBottle: sellBottle,
+                    decants: decants,
+                    active: document.getElementById('admin-product-active').checked,
+                    featured: document.getElementById('admin-product-featured').checked,
+                    bestseller: document.getElementById('admin-product-bestseller').checked,
+                    offer: document.getElementById('admin-product-offer').checked,
+                    isNew: document.getElementById('admin-product-new').checked
+                };
+
+                if (id) {
+                    await window.axxesStore.updateProduct(id, prod);
+                } else {
+                    await window.axxesStore.addProduct(prod);
+                }
+                
+                resetAdminForm();
+                renderAdminDashboard();
+                
+                window.showToast(id ? '✅ Producto actualizado correctamente.' : '✅ Producto guardado en el inventario.');
+                document.querySelector('[data-tab="tab-products"]').click();
+            } catch (err) {
+                console.error('Error guardando producto:', err);
+                alert('Ocurrió un error al guardar el producto: ' + err.message);
+            } finally {
+                isSubmittingProduct = false;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
+                }
             }
-
-            const sellBottle = document.getElementById('admin-product-sell-bottle').checked;
-
-            const prod = {
-                id: id || 'axx-' + Date.now(),
-                name: document.getElementById('admin-product-name').value.trim(),
-                brand: document.getElementById('admin-product-brand').value.trim().toUpperCase(),
-                description: document.getElementById('admin-product-description').value.trim(),
-                gender: document.getElementById('admin-product-gender').value,
-                categories: selectedCats.length > 0 ? selectedCats : ['Unisex'],
-                category: selectedCats[0] || 'Unisex',
-                image: finalImage,
-                priceBottle: parseFloat(document.getElementById('admin-product-price').value) || 0,
-                sellBottle: sellBottle,
-                decants: decants,
-                active: document.getElementById('admin-product-active').checked,
-                featured: document.getElementById('admin-product-featured').checked,
-                bestseller: document.getElementById('admin-product-bestseller').checked,
-                offer: document.getElementById('admin-product-offer').checked,
-                isNew: document.getElementById('admin-product-new').checked
-            };
-
-            if (id) {
-                await window.axxesStore.updateProduct(id, prod);
-            } else {
-                await window.axxesStore.addProduct(prod);
-            }
-            
-            resetAdminForm();
-            renderAdminDashboard();
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
-            
-            window.showToast(id ? '✓ Producto actualizado y protegido contra reinicio.' : '✓ Producto guardado y protegido contra reinicio.');
-            
-            // Switch to inventory
-            document.querySelector('[data-tab="tab-products"]').click();
         });
     }
 
@@ -891,7 +1578,7 @@ function setupAdminEventListeners() {
                 await window.axxesStore.addCategory(catName);
                 document.getElementById('admin-category-form').reset();
                 renderAdminDashboard();
-                window.showToast(`✓ Categoría "${catName}" agregada.`);
+                window.showToast(`✅ Categoría "${catName}" agregada.`);
             }
         });
     }
@@ -904,7 +1591,15 @@ function setupAdminEventListeners() {
         });
     }
 
-    // 9. Bulk images input listener
+    // 9. Logs Search
+    const logsSearchInput = document.getElementById('admin-logs-search');
+    if (logsSearchInput) {
+        logsSearchInput.addEventListener('input', () => {
+            renderLogs(currentLogFilter, logsSearchInput.value.toLowerCase().trim());
+        });
+    }
+
+    // 10. Bulk images input listener
     const bulkImagesInput = document.getElementById('bulk-images-input');
     if (bulkImagesInput) {
         bulkImagesInput.addEventListener('change', handleBulkImagesSelected);
@@ -930,23 +1625,23 @@ function setupAdminEventListeners() {
     // Auto-sync setting change
     const autoSyncCb = document.getElementById('admin-auto-sync-checkbox');
     if (autoSyncCb) {
-        const stored = localStorage.getItem('axxes_auto_sync_enabled');
-        autoSyncCb.checked = stored !== 'false';
-        autoSyncCb.addEventListener('change', () => {
-            localStorage.setItem('axxes_auto_sync_enabled', autoSyncCb.checked ? 'true' : 'false');
-            window.showToast(autoSyncCb.checked ? '✓ Sincronización automática activada.' : 'Sincronización automática desactivada.');
+        autoSyncCb.checked = localStorage.getItem('axxes_auto_sync_enabled') !== 'false';
+        autoSyncCb.addEventListener('change', function() {
+            localStorage.setItem('axxes_auto_sync_enabled', this.checked ? 'true' : 'false');
+            window.showToast(this.checked ? 'Sincronización automática activada' : 'Sincronización automática desactivada');
         });
     }
 
-    // Listen to data updates from other sources
-    document.addEventListener('axxesDataUpdated', () => {
-        if (document.getElementById('admin-panel').style.display === 'flex') {
-            renderAdminDashboard();
-        }
-    });
-
     document.addEventListener('axxesGithubSynced', () => {
         updateSyncBadge();
+    });
+
+    document.addEventListener('axxesLogAdded', () => {
+        updateLogsBadge();
+        const logsTab = document.getElementById('tab-logs');
+        if (logsTab && logsTab.classList.contains('active')) {
+            renderLogs(currentLogFilter);
+        }
     });
 }
 
@@ -984,27 +1679,25 @@ async function handleBulkImagesFiles(fileList) {
 
     const categories = window.axxesStore.categories;
 
+    // First synchronize any existing DOM inputs so we don't lose previous typed data
+    syncBulkDomInputs();
+
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
         progressText.textContent = `Optimizando imagen ${i + 1} de ${files.length}: ${file.name}`;
         
         try {
-            // Compress each image down to ~50KB WebP
             const compressed = await window.compressProductImage(file, 800, 800, 0.78);
-            
-            // Infer clean product name & brand from filename (e.g. "Sauvage Dior.jpg" -> Name: Sauvage, Brand: DIOR)
-            const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
+            const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').trim();
             const parts = cleanName.split(/\s+/);
             let brand = 'AXXES';
             let name = cleanName;
             if (parts.length > 1) {
-                // If last word is likely brand or first word
                 brand = parts[0].toUpperCase();
-                name = cleanName;
             }
 
             pendingBulkImages.push({
-                id: 'bulk-' + Date.now() + '-' + i,
+                id: 'bulk-' + Date.now() + '-' + i + '-' + Math.random().toString(36).substr(2, 3),
                 name: name,
                 brand: brand,
                 price: 0,
@@ -1013,12 +1706,31 @@ async function handleBulkImagesFiles(fileList) {
                 image: compressed
             });
         } catch (err) {
-            console.error("Error comprimiendo", file.name, err);
+            console.error('Error comprimiendo', file.name, err);
         }
     }
 
     progressWrap.style.display = 'none';
     renderBulkCards();
+}
+
+function syncBulkDomInputs() {
+    pendingBulkImages.forEach(item => {
+        const card = document.getElementById('bulk-card-' + item.id);
+        if (card) {
+            const nameEl = card.querySelector('.bulk-item-name');
+            const brandEl = card.querySelector('.bulk-item-brand');
+            const priceEl = card.querySelector('.bulk-item-price');
+            const genderEl = card.querySelector('.bulk-item-gender');
+            const catEl = card.querySelector('.bulk-item-cat');
+
+            if (nameEl) item.name = nameEl.value.trim();
+            if (brandEl) item.brand = brandEl.value.trim().toUpperCase();
+            if (priceEl) item.price = parseFloat(priceEl.value) || 0;
+            if (genderEl) item.gender = genderEl.value;
+            if (catEl) item.category = catEl.value;
+        }
+    });
 }
 
 function renderBulkCards() {
@@ -1036,13 +1748,12 @@ function renderBulkCards() {
     countLabel.textContent = `${pendingBulkImages.length} productos seleccionados`;
 
     const categories = window.axxesStore.categories;
-    const catOptions = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
 
-    container.innerHTML = pendingBulkImages.map((p, idx) => `
+    container.innerHTML = pendingBulkImages.map((p) => `
         <div class="bulk-card-item" id="bulk-card-${p.id}">
-            <button class="bulk-remove-btn" onclick="removeBulkImageItem('${p.id}')" title="Eliminar"><i class="fas fa-times"></i></button>
+            <button class="bulk-remove-btn" type="button" onclick="removeBulkImageItem('${p.id}')" title="Eliminar"><i class="fas fa-times"></i></button>
             <div class="bulk-card-header">
-                <img src="${p.image}" class="bulk-card-thumb" alt="Preview">
+                <img src="${p.image}" class="bulk-card-thumb" alt="Preview" onerror="this.src='logo.webp'">
                 <div style="flex:1; min-width:0;">
                     <input type="text" class="bulk-item-name" data-id="${p.id}" value="${p.name}" placeholder="Nombre del perfume *" style="font-weight:600; width:100%;">
                 </div>
@@ -1059,7 +1770,7 @@ function renderBulkCards() {
                         <option value="Unisex" ${p.gender === 'Unisex' ? 'selected' : ''}>Unisex</option>
                     </select>
                     <select class="bulk-item-cat" data-id="${p.id}">
-                        ${catOptions}
+                        ${categories.map(c => `<option value="${c.name}" ${p.category === c.name ? 'selected' : ''}>${c.name}</option>`).join('')}
                     </select>
                 </div>
             </div>
@@ -1068,6 +1779,7 @@ function renderBulkCards() {
 }
 
 window.removeBulkImageItem = function(id) {
+    syncBulkDomInputs();
     pendingBulkImages = pendingBulkImages.filter(x => x.id !== id);
     renderBulkCards();
 };
@@ -1075,77 +1787,96 @@ window.removeBulkImageItem = function(id) {
 window.clearBulkImages = function() {
     pendingBulkImages = [];
     renderBulkCards();
-    document.getElementById('bulk-images-input').value = '';
+    const input = document.getElementById('bulk-images-input');
+    if (input) input.value = '';
 };
 
+let isSubmittingBulk = false;
 window.saveBulkImagesProducts = async function() {
+    if (isSubmittingBulk) return;
+    syncBulkDomInputs();
+
     if (pendingBulkImages.length === 0) return;
 
+    isSubmittingBulk = true;
     const btn = document.getElementById('btn-save-bulk-images');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    }
 
-    const autoDecants = document.getElementById('bulk-auto-decants').checked;
-    const newProducts = [];
+    try {
+        const autoDecantsEl = document.getElementById('bulk-auto-decants');
+        const autoDecants = autoDecantsEl ? autoDecantsEl.checked : true;
+        const newProducts = [];
 
-    pendingBulkImages.forEach(item => {
-        const card = document.getElementById('bulk-card-' + item.id);
-        if (!card) return;
+        pendingBulkImages.forEach(item => {
+            const name = (item.name || '').trim();
+            if (!name) return;
 
-        const name = card.querySelector('.bulk-item-name').value.trim() || item.name;
-        const brand = card.querySelector('.bulk-item-brand').value.trim().toUpperCase() || 'AXXES';
-        const price = parseFloat(card.querySelector('.bulk-item-price').value) || 0;
-        const gender = card.querySelector('.bulk-item-gender').value;
-        const category = card.querySelector('.bulk-item-cat').value;
+            const brand = (item.brand || 'AXXES').trim().toUpperCase();
+            const price = parseFloat(item.price) || 0;
+            const gender = item.gender || 'Unisex';
+            const category = item.category || 'Unisex';
 
-        // Auto decants calculation based on bottle price if enabled
-        const decants = [];
-        if (autoDecants && price > 0) {
-            decants.push({ size: '5ml', price: Math.round(price * 0.08 / 1000) * 1000 || 35000 });
-            decants.push({ size: '10ml', price: Math.round(price * 0.14 / 1000) * 1000 || 55000 });
-            decants.push({ size: '30ml', price: Math.round(price * 0.32 / 1000) * 1000 || 110000 });
+            const decants = [];
+            if (autoDecants && price > 0) {
+                decants.push({ size: '5ML', price: Math.round(price * 0.08 / 1000) * 1000 || 35000 });
+                decants.push({ size: '10ML', price: Math.round(price * 0.14 / 1000) * 1000 || 55000 });
+                decants.push({ size: '30ML', price: Math.round(price * 0.32 / 1000) * 1000 || 110000 });
+            }
+
+            newProducts.push({
+                id: 'axx-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                name: name,
+                brand: brand,
+                description: '',
+                gender: gender,
+                categories: [category],
+                category: category,
+                image: item.image || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80',
+                priceBottle: price,
+                sellBottle: price > 0,
+                decants: decants,
+                active: true,
+                featured: false,
+                bestseller: false,
+                offer: false,
+                isNew: true
+            });
+        });
+
+        if (newProducts.length === 0) {
+            alert('Por favor ingresa al menos un nombre de producto.');
+            return;
         }
 
-        newProducts.push({
-            id: 'axx-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
-            name: name,
-            brand: brand,
-            description: '',
-            gender: gender,
-            categories: [category],
-            category: category,
-            image: item.image,
-            priceBottle: price,
-            sellBottle: price > 0,
-            decants: decants,
-            active: true,
-            featured: false,
-            bestseller: false,
-            offer: false,
-            isNew: true
-        });
-    });
+        const countAdded = await window.axxesStore.addProductsBulk(newProducts);
+        
+        pendingBulkImages = [];
+        renderBulkCards();
+        const bulkInput = document.getElementById('bulk-images-input');
+        if (bulkInput) bulkInput.value = '';
 
-    await window.axxesStore.addProductsBulk(newProducts);
-    
-    pendingBulkImages = [];
-    renderBulkCards();
-    document.getElementById('bulk-images-input').value = '';
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-save"></i> Guardar Todos los Productos';
-
-    renderAdminDashboard();
-    window.showToast(`✓ ¡Éxito! Se agregaron ${newProducts.length} productos y están protegidos contra reinicio.`);
-    
-    // Switch to products inventory
-    document.querySelector('[data-tab="tab-products"]').click();
+        renderAdminDashboard();
+        window.showToast(`✅ ¡Éxito! Se procesaron ${newProducts.length} productos sin duplicados.`);
+        document.querySelector('[data-tab="tab-products"]').click();
+    } catch (err) {
+        console.error('Error en carga masiva:', err);
+        alert('Error en carga masiva: ' + err.message);
+    } finally {
+        isSubmittingBulk = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Guardar Todos los Productos';
+        }
+    }
 };
 
 // ================== BULK MODE 2: QUICK TABLE ==================
 window.addBulkTableRow = function(data = {}) {
     const tbody = document.getElementById('bulk-table-tbody');
     const rowId = 'row-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4);
-    const rowNum = tbody.children.length + 1;
 
     const categories = window.axxesStore.categories;
     const catOptions = categories.map(c => `<option value="${c.name}" ${data.category === c.name ? 'selected' : ''}>${c.name}</option>`).join('');
@@ -1153,7 +1884,7 @@ window.addBulkTableRow = function(data = {}) {
     const tr = document.createElement('tr');
     tr.id = rowId;
     tr.innerHTML = `
-        <td style="text-align:center; color:var(--admin-muted);">${rowNum}</td>
+        <td class="tbl-row-num" style="text-align:center; color:var(--admin-muted);">1</td>
         <td><input type="text" class="tbl-name" value="${data.name || ''}" placeholder="Ej: Sauvage" required></td>
         <td><input type="text" class="tbl-brand" value="${data.brand || ''}" placeholder="DIOR"></td>
         <td><input type="number" class="tbl-price" value="${data.price || ''}" placeholder="650000"></td>
@@ -1179,11 +1910,26 @@ window.addBulkTableRow = function(data = {}) {
             </div>
         </td>
         <td style="text-align:center;">
-            <button onclick="document.getElementById('${rowId}').remove()" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer;">✕</button>
+            <button type="button" onclick="removeBulkTableRow('${rowId}')" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer;">&times;</button>
         </td>
     `;
     tbody.appendChild(tr);
+    reindexTableRows();
 };
+
+window.removeBulkTableRow = function(rowId) {
+    const el = document.getElementById(rowId);
+    if (el) el.remove();
+    reindexTableRows();
+};
+
+function reindexTableRows() {
+    const rows = document.querySelectorAll('#bulk-table-tbody tr');
+    rows.forEach((r, idx) => {
+        const numEl = r.querySelector('.tbl-row-num');
+        if (numEl) numEl.textContent = idx + 1;
+    });
+}
 
 window.addBulkMultipleRows = function(count = 5) {
     for (let i = 0; i < count; i++) {
@@ -1199,7 +1945,7 @@ window.handleTableRowImage = async function(event, rowId) {
             const row = document.getElementById(rowId);
             if (row) {
                 row.querySelector('.tbl-img-url').value = compressed;
-                window.showToast('✓ Imagen cargada para la fila.');
+                window.showToast('✅ Imagen cargada para la fila.');
             }
         } catch (err) {
             console.error(err);
@@ -1212,12 +1958,12 @@ window.saveBulkTableProducts = async function() {
     const newProducts = [];
 
     rows.forEach(row => {
-        const name = row.querySelector('.tbl-name').value.trim();
-        const brand = row.querySelector('.tbl-brand').value.trim().toUpperCase() || 'AXXES';
+        const name = (row.querySelector('.tbl-name').value || '').trim();
+        const brand = (row.querySelector('.tbl-brand').value || 'AXXES').trim().toUpperCase();
         const price = parseFloat(row.querySelector('.tbl-price').value) || 0;
         const gender = row.querySelector('.tbl-gender').value;
         const category = row.querySelector('.tbl-cat').value;
-        const image = row.querySelector('.tbl-img-url').value.trim();
+        const image = (row.querySelector('.tbl-img-url').value || '').trim();
 
         if (name) {
             newProducts.push({
@@ -1232,8 +1978,8 @@ window.saveBulkTableProducts = async function() {
                 priceBottle: price,
                 sellBottle: price > 0,
                 decants: price > 0 ? [
-                    { size: '5ml', price: Math.round(price * 0.08 / 1000) * 1000 || 35000 },
-                    { size: '10ml', price: Math.round(price * 0.14 / 1000) * 1000 || 55000 }
+                    { size: '5ML', price: Math.round(price * 0.08 / 1000) * 1000 || 35000 },
+                    { size: '10ML', price: Math.round(price * 0.14 / 1000) * 1000 || 55000 }
                 ] : [],
                 active: true,
                 featured: false,
@@ -1253,7 +1999,7 @@ window.saveBulkTableProducts = async function() {
     document.getElementById('bulk-table-tbody').innerHTML = '';
     addBulkMultipleRows(3);
     renderAdminDashboard();
-    window.showToast(`✓ ¡Éxito! ${newProducts.length} productos guardados en el inventario.`);
+    window.showToast(`✅ ¡Éxito! ${newProducts.length} productos guardados en el inventario.`);
     document.querySelector('[data-tab="tab-products"]').click();
 };
 
@@ -1261,7 +2007,7 @@ window.saveBulkTableProducts = async function() {
 let parsedExcelItems = [];
 
 window.parseExcelText = function() {
-    const text = document.getElementById('bulk-excel-input').value.trim();
+    const text = (document.getElementById('bulk-excel-input').value || '').trim();
     if (!text) {
         alert('Pega primero el texto o tabla de Excel.');
         return;
@@ -1274,12 +2020,11 @@ window.parseExcelText = function() {
     const defaultCat = categories[0] ? categories[0].name : 'Unisex';
 
     lines.forEach((line, index) => {
-        // Skip header if line contains "nombre" or "precio"
-        if (index === 0 && (line.toLowerCase().includes('nombre') || line.toLowerCase().includes('precio'))) {
+        const lower = line.toLowerCase();
+        if (index === 0 && (lower.includes('nombre') || lower.includes('precio') || lower.includes('name') || lower.includes('price'))) {
             return;
         }
 
-        // Split by tabs, commas, or pipe
         let cols = [];
         if (line.includes('\t')) cols = line.split('\t');
         else if (line.includes('|')) cols = line.split('|');
@@ -1288,14 +2033,33 @@ window.parseExcelText = function() {
         cols = cols.map(c => c.trim().replace(/^["']|["']$/g, ''));
 
         if (cols[0]) {
-            const name = cols[0];
-            const brand = (cols[1] || 'AXXES').toUpperCase();
-            // Extract numeric price
-            const rawPrice = cols[2] ? cols[2].replace(/[^0-9]/g, '') : '0';
-            const price = parseFloat(rawPrice) || 0;
-            const gender = cols[3] && ['Hombre','Mujer','Unisex'].includes(cols[3]) ? cols[3] : 'Unisex';
-            const category = cols[4] || defaultCat;
-            const image = cols[5] || '';
+            let name = cols[0];
+            let brand = 'AXXES';
+            let price = 0;
+            let gender = 'Unisex';
+            let category = defaultCat;
+            let image = '';
+
+            if (cols.length === 2) {
+                const rawPrice = cols[1].replace(/[^0-9]/g, '');
+                price = parseFloat(rawPrice) || 0;
+            } else if (cols.length >= 3) {
+                const col1IsPrice = /^[\$\s]*\d+/.test(cols[1]);
+                if (col1IsPrice) {
+                    price = parseFloat(cols[1].replace(/[^0-9]/g, '')) || 0;
+                    brand = (cols[2] || 'AXXES').toUpperCase();
+                } else {
+                    brand = (cols[1] || 'AXXES').toUpperCase();
+                    price = parseFloat(cols[2].replace(/[^0-9]/g, '')) || 0;
+                }
+
+                if (cols[3]) {
+                    const g = cols[3].trim();
+                    if (['Hombre','Mujer','Unisex'].includes(g)) gender = g;
+                }
+                if (cols[4]) category = cols[4].trim() || defaultCat;
+                if (cols[5]) image = cols[5].trim();
+            }
 
             parsedExcelItems.push({ name, brand, price, gender, category, image });
         }
@@ -1314,7 +2078,7 @@ window.parseExcelText = function() {
     saveBtn.innerHTML = `<i class="fas fa-save"></i> Guardar ${parsedExcelItems.length} Productos`;
 
     previewDiv.innerHTML = `
-        <h4 style="font-size:0.95rem; margin-bottom:8px; color:var(--admin-success);">✓ Se detectaron ${parsedExcelItems.length} productos listos para importar:</h4>
+        <h4 style="font-size:0.95rem; margin-bottom:8px; color:var(--admin-success);"><i class="fas fa-check-circle"></i> Se detectaron ${parsedExcelItems.length} productos listos para importar:</h4>
         <div style="max-height:260px; overflow-y:auto; border:1px solid var(--admin-border); border-radius:8px;">
             <table class="bulk-table">
                 <thead><tr><th>#</th><th>Nombre</th><th>Marca</th><th>Precio</th><th>Género</th><th>Categoría</th></tr></thead>
@@ -1324,7 +2088,7 @@ window.parseExcelText = function() {
                             <td>${i + 1}</td>
                             <td><strong>${p.name}</strong></td>
                             <td>${p.brand}</td>
-                            <td>$${p.price.toLocaleString()}</td>
+                            <td>$${p.price.toLocaleString('es-CO')}</td>
                             <td>${p.gender}</td>
                             <td>${p.category}</td>
                         </tr>
@@ -1338,6 +2102,10 @@ window.parseExcelText = function() {
 window.saveParsedExcelProducts = async function() {
     if (parsedExcelItems.length === 0) return;
 
+    const saveBtn = document.getElementById('bulk-excel-save-btn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
     const newProducts = parsedExcelItems.map(p => ({
         id: 'axx-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
         name: p.name,
@@ -1350,8 +2118,8 @@ window.saveParsedExcelProducts = async function() {
         priceBottle: p.price,
         sellBottle: p.price > 0,
         decants: p.price > 0 ? [
-            { size: '5ml', price: Math.round(p.price * 0.08 / 1000) * 1000 || 35000 },
-            { size: '10ml', price: Math.round(p.price * 0.14 / 1000) * 1000 || 55000 }
+            { size: '5ML', price: Math.round(p.price * 0.08 / 1000) * 1000 || 35000 },
+            { size: '10ML', price: Math.round(p.price * 0.14 / 1000) * 1000 || 55000 }
         ] : [],
         active: true,
         featured: false,
@@ -1364,11 +2132,12 @@ window.saveParsedExcelProducts = async function() {
     
     document.getElementById('bulk-excel-input').value = '';
     document.getElementById('bulk-excel-preview').innerHTML = '';
-    document.getElementById('bulk-excel-save-btn').style.display = 'none';
+    saveBtn.style.display = 'none';
+    saveBtn.disabled = false;
     parsedExcelItems = [];
 
     renderAdminDashboard();
-    window.showToast(`✓ ¡Éxito! ${newProducts.length} productos importados correctamente.`);
+    window.showToast(`✅ ¡Éxito! ${newProducts.length} productos importados correctamente.`);
     document.querySelector('[data-tab="tab-products"]').click();
 };
 
@@ -1387,6 +2156,7 @@ window.renderAdminDashboard = function() {
     renderCategoriesManagement();
     renderAdminProductList('');
     updateSyncBadge();
+    updateLogsBadge();
 
     // Stats
     const pCount = window.axxesStore.products.length;
@@ -1410,75 +2180,119 @@ function updateSyncBadge() {
     const token = localStorage.getItem('axxes_github_token');
     const hasPending = localStorage.getItem('axxes_has_unsynced_changes');
 
-    if (!token) {
-        badge.className = 'admin-sync-badge not-configured';
-        badge.innerHTML = '<i class="fas fa-exclamation-circle"></i> Configurar GitHub Token';
-        badge.title = 'Haz clic para configurar tu token y que tus clientes vean los cambios';
-    } else if (hasPending) {
-        badge.className = 'admin-sync-badge pending';
+    if (hasPending) {
+        badge.className = 'admin-sync-indicator pending';
         badge.innerHTML = '<i class="fas fa-clock"></i> Cambios Pendientes (Clic en Publicar)';
-        badge.title = 'Tienes cambios locales. Haz clic en "Publicar para Todos"';
-    } else {
-        badge.className = 'admin-sync-badge synced';
+    } else if (token) {
+        badge.className = 'admin-sync-indicator';
         badge.innerHTML = '<i class="fas fa-check-circle"></i> Sincronizado en Vivo';
-        badge.title = 'Todos los clientes en internet ven la versión actual';
+    } else {
+        badge.className = 'admin-sync-indicator';
+        badge.innerHTML = '<i class="fas fa-hdd"></i> Guardado Local';
     }
 }
 
+function updateLogsBadge() {
+    const counter = document.getElementById('admin-logs-counter');
+    if (!counter || !window.axxesStore) return;
+    const total = (window.axxesStore.logs || []).length;
+    counter.textContent = total;
+
+    // Update filter counts
+    const allCountEl = document.getElementById('log-count-all');
+    const okCountEl = document.getElementById('log-count-ok');
+    const failedCountEl = document.getElementById('log-count-failed');
+
+    if (allCountEl) allCountEl.textContent = total;
+    if (okCountEl) okCountEl.textContent = (window.axxesStore.logs || []).filter(l => l.status === 'OK').length;
+    if (failedCountEl) failedCountEl.textContent = (window.axxesStore.logs || []).filter(l => l.status === 'FAILED').length;
+}
+
+window.cleanDuplicatesAction = async function() {
+    if (window.axxesStore) {
+        const removed = window.axxesStore.deduplicateProducts(true);
+        renderAdminDashboard();
+        window.showToast(`✨ ¡Listo! Se unificaron ${removed} perfumes repetidos.`);
+    }
+};
+
 function renderAdminProductList(searchQuery = '') {
-    let products = window.axxesStore.products;
-    
+    const list = document.getElementById('admin-product-list');
+    if (!list) return;
+
+    // Check for duplicate perfumes
+    const alertEl = document.getElementById('admin-duplicates-alert');
+    if (alertEl && window.axxesStore) {
+        const duplicates = window.axxesStore.findDuplicates();
+        if (duplicates.length > 0) {
+            alertEl.style.display = 'block';
+            alertEl.innerHTML = `
+                <div style="background:rgba(234,179,8,0.12); border:1px solid rgba(234,179,8,0.4); border-radius:10px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-exclamation-triangle" style="color:#eab308; font-size:1.1rem;"></i>
+                        <span style="color:#fef08a; font-size:0.86rem; font-weight:600;">
+                            Se detectaron ${duplicates.length} perfumes repetidos en el catálogo.
+                        </span>
+                    </div>
+                    <button class="admin-btn-sm" style="background:#eab308; color:#0f172a; font-weight:700; border:none; padding:7px 14px; border-radius:6px; cursor:pointer;" onclick="cleanDuplicatesAction()">
+                        <i class="fas fa-magic"></i> Unificar y Eliminar Duplicados
+                    </button>
+                </div>
+            `;
+        } else {
+            alertEl.style.display = 'none';
+            alertEl.innerHTML = '';
+        }
+    }
+
+    let prods = window.axxesStore.products;
     if (searchQuery) {
-        products = products.filter(p => 
-            p.name.toLowerCase().includes(searchQuery) ||
-            (p.brand && p.brand.toLowerCase().includes(searchQuery)) ||
-            (p.categories && p.categories.some(c => c.toLowerCase().includes(searchQuery)))
+        const q = searchQuery.toLowerCase();
+        prods = prods.filter(p => 
+            (p.name || '').toLowerCase().includes(q) || 
+            (p.brand || '').toLowerCase().includes(q)
         );
     }
-    
-    const prodList = document.getElementById('admin-product-list');
-    if (!prodList) return;
 
-    if (products.length === 0) {
-        prodList.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align:center; padding:40px; color:var(--admin-muted);">
-                <i class="fas fa-box-open fa-3x" style="margin-bottom:12px; opacity:0.4;"></i>
-                <p>No se encontraron productos.</p>
-                <button class="admin-btn-primary admin-btn-sm" onclick="document.querySelector('[data-tab=tab-bulk]').click()">
-                    + Cargar Productos Ahora
-                </button>
-            </div>
-        `;
+    if (prods.length === 0) {
+        list.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color:var(--admin-muted);">
+            <i class="fas fa-box-open fa-2x" style="margin-bottom:8px;"></i>
+            <p>No se encontraron productos.</p>
+        </div>`;
         return;
     }
-    
-    prodList.innerHTML = products.map(p => {
-        const catsHtml = (p.categories || []).map(c => `<span class="cat-tag">${c}</span>`).join('');
-        const decantInfo = Array.isArray(p.decants) && p.decants.length > 0 
-            ? p.decants.map(d => d.size).join(', ')
-            : 'Sin decants';
+
+    list.innerHTML = prods.map(p => {
         const statusDot = p.active 
-            ? '<span style="color:#22c55e;">● Activo</span>' 
-            : '<span style="color:#ef4444;">○ Inactivo</span>';
-        const priceDisplay = p.priceBottle > 0 ? `$${p.priceBottle.toLocaleString()}` : 'Solo decants';
-        const imgSrc = p.image || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80';
+            ? '<span style="color:var(--admin-success); font-weight:700;">● Activo</span>' 
+            : '<span style="color:var(--admin-danger); font-weight:700;">● Oculto</span>';
+
+        const decantInfo = (Array.isArray(p.decants) && p.decants.length > 0)
+            ? p.decants.map(d => `${d.size}: $${(d.price || 0).toLocaleString('es-CO')}`).join(' | ')
+            : 'Sin decants';
+
+        const catsHtml = (p.categories || [p.category || 'Unisex']).map(c => `<span class="badge" style="background:#1e1e2d; padding:2px 6px; border-radius:4px; font-size:0.7rem; color:var(--admin-accent); margin-right:4px;">${c}</span>`).join('');
 
         return `
-        <div class="admin-prod-card">
-            <div class="admin-prod-card-main">
-                <img src="${imgSrc}" class="admin-prod-thumb" alt="${p.name}">
-                <div class="admin-prod-info">
-                    <div class="name">${p.name}</div>
-                    <div class="meta"><strong>${p.brand || 'AXXES'}</strong> · ${priceDisplay}</div>
-                    <div class="meta" style="font-size:0.72rem;">${statusDot} · Decants: ${decantInfo}</div>
+        <div class="admin-prod-card ${p.active ? '' : 'is-inactive'}">
+            <div class="admin-prod-card-top">
+                <img src="${p.image || 'logo.webp'}" class="admin-prod-thumb" alt="${p.name}" onerror="this.src='logo.webp'">
+                <div class="admin-prod-details">
+                    <div class="admin-prod-brand">${p.brand || 'AXXES'}</div>
+                    <div class="admin-prod-name" title="${p.name}">${p.name}</div>
+                    <div class="admin-prod-price">Botella: ${p.sellBottle !== false ? `$${(p.priceBottle || 0).toLocaleString('es-CO')}` : 'No disponible'}</div>
+                    <div class="meta" style="font-size:0.72rem; margin: 4px 0;">${statusDot} • Decants: ${decantInfo}</div>
                     <div class="cats">${catsHtml}</div>
                 </div>
             </div>
             <div class="admin-prod-actions">
-                <button class="admin-action-btn" style="background:var(--admin-accent); color:white;" onclick="editProduct('${p.id}')">
+                <button type="button" class="admin-action-btn" style="background:var(--admin-accent); color:white;" onclick="editProduct('${p.id}')">
                     <i class="fas fa-edit"></i> Editar
                 </button>
-                <button class="admin-action-btn admin-btn-danger" onclick="deleteProduct('${p.id}')">
+                <button type="button" class="admin-action-btn" onclick="toggleProductActive('${p.id}')" title="Mostrar u ocultar en tienda">
+                    <i class="fas ${p.active ? 'fa-eye-slash' : 'fa-eye'}"></i> ${p.active ? 'Ocultar' : 'Mostrar'}
+                </button>
+                <button type="button" class="admin-action-btn admin-btn-danger" onclick="deleteProduct('${p.id}')">
                     <i class="fas fa-trash"></i> Borrar
                 </button>
             </div>
@@ -1487,16 +2301,42 @@ function renderAdminProductList(searchQuery = '') {
     }).join('');
 }
 
+window.startNewProductFromTab = function() {
+    resetAdminForm();
+    document.querySelector('[data-tab="tab-add"]').click();
+};
+
 window.resetAdminForm = function() {
     const form = document.getElementById('admin-product-form');
     if (form) form.reset();
 
     document.getElementById('admin-product-id').value = '';
     document.getElementById('admin-product-image-url').value = '';
-    document.getElementById('admin-image-preview-wrap').style.display = 'none';
-    document.getElementById('admin-image-preview-img').src = '';
+    
+    const fileInput = document.getElementById('admin-product-image-file');
+    if (fileInput) fileInput.value = '';
+
+    const previewWrap = document.getElementById('admin-image-preview-wrap');
+    if (previewWrap) previewWrap.style.display = 'none';
+
+    const previewImg = document.getElementById('admin-image-preview-img');
+    if (previewImg) previewImg.src = '';
+
+    const infoEl = document.getElementById('admin-single-img-info');
+    if (infoEl) infoEl.remove();
+
     document.getElementById('admin-decants-list').innerHTML = '';
-    document.getElementById('admin-form-heading').textContent = 'Agregar Nuevo Producto';
+    document.getElementById('admin-form-heading').innerHTML = '<i class="fas fa-plus-circle" style="color:var(--admin-accent);"></i> Agregar Nuevo Producto';
+    
+    const submitBtn = document.getElementById('admin-product-submit-btn');
+    if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Producto';
+        submitBtn.disabled = false;
+    }
+
+    const cancelEditBtn = document.getElementById('admin-product-cancel-edit-btn');
+    if (cancelEditBtn) cancelEditBtn.style.display = 'none';
+
     document.getElementById('admin-product-sell-bottle').checked = true;
     document.getElementById('admin-bottle-price-group').style.opacity = '1';
     
@@ -1525,7 +2365,7 @@ function renderCategoriesManagement() {
     list.innerHTML = window.axxesStore.categories.map(cat => `
         <div class="admin-cat-pill">
             <span>${cat.name}</span>
-            <button onclick="deleteCategory('${cat.name}')" title="Eliminar categoría">✕</button>
+            <button type="button" onclick="deleteCategory('${cat.name}')" title="Eliminar categoría" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer;"><i class="fas fa-trash"></i></button>
         </div>
     `).join('');
 }
@@ -1537,21 +2377,22 @@ window.addDecantRow = function(size = '', price = '') {
     const row = document.createElement('div');
     row.className = 'decant-row';
     row.innerHTML = `
-        <input type="text" placeholder="Tamaño (Ej: 5ml)" value="${size}" class="decant-size" style="max-width:120px;">
+        <input type="text" placeholder="Tamaño (Ej: 5ML)" value="${size}" class="decant-size" style="max-width:120px;">
         <input type="number" placeholder="Precio ($)" value="${price}" class="decant-price">
-        <button type="button" class="admin-btn-danger admin-btn-sm" onclick="this.parentElement.remove()">✕</button>
+        <button type="button" class="admin-btn-danger admin-btn-sm" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
     `;
     container.appendChild(row);
 };
 
 window.editProduct = function(id) {
     resetAdminForm();
-    const p = window.axxesStore.products.find(x => x.id === id);
+    const strId = String(id);
+    const p = window.axxesStore.products.find(x => String(x.id) === strId);
     if (!p) return;
     
     document.querySelector('[data-tab="tab-add"]').click();
     
-    document.getElementById('admin-form-heading').textContent = 'Editando: ' + p.name;
+    document.getElementById('admin-form-heading').innerHTML = `<i class="fas fa-edit" style="color:var(--admin-accent);"></i> Editando: ${p.name}`;
     document.getElementById('admin-product-id').value = p.id;
     document.getElementById('admin-product-name').value = p.name;
     document.getElementById('admin-product-brand').value = p.brand;
@@ -1580,13 +2421,25 @@ window.editProduct = function(id) {
     if (Array.isArray(p.decants)) {
         p.decants.forEach(d => addDecantRow(d.size, d.price));
     }
+
+    const submitBtn = document.getElementById('admin-product-submit-btn');
+    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Actualizar Producto';
+
+    const cancelEditBtn = document.getElementById('admin-product-cancel-edit-btn');
+    if (cancelEditBtn) cancelEditBtn.style.display = 'inline-flex';
+};
+
+window.toggleProductActive = async function(id) {
+    const newState = await window.axxesStore.toggleProductActive(id);
+    renderAdminProductList(document.getElementById('admin-product-search') ? document.getElementById('admin-product-search').value.toLowerCase().trim() : '');
+    window.showToast(newState ? '✅ Producto visible en la tienda.' : '👁️ Producto ocultado de la tienda.');
 };
 
 window.deleteProduct = async function(id) {
     if (confirm('¿Seguro que deseas eliminar este producto?')) {
         await window.axxesStore.deleteProduct(id);
         renderAdminDashboard();
-        window.showToast('✓ Producto eliminado.');
+        window.showToast('🗑️ Producto eliminado.');
     }
 };
 
@@ -1594,7 +2447,7 @@ window.deleteCategory = async function(name) {
     if (confirm(`¿Seguro que deseas eliminar la categoría "${name}"?`)) {
         await window.axxesStore.deleteCategory(name);
         renderAdminDashboard();
-        window.showToast(`✓ Categoría "${name}" eliminada.`);
+        window.showToast(`🗑️ Categoría "${name}" eliminada.`);
     }
 };
 
@@ -1607,7 +2460,7 @@ window.saveLogo = async function() {
     try {
         const compressed = await window.compressProductImage(fileInput.files[0], 600, 300, 0.85);
         await window.axxesStore.updateLogo(compressed);
-        window.showToast('✓ Logo actualizado correctamente.');
+        window.showToast('✅ Logo actualizado correctamente.');
     } catch(err) {
         alert('Error al procesar el logo: ' + err.message);
     }
@@ -1633,11 +2486,131 @@ window.importBackupFile = function() {
 };
 
 window.resetAllData = function() {
-    if (confirm('⚠️ Esto restaurará el catálogo original inicial. ¿Estás seguro?')) {
-        if (confirm('Esta acción eliminará cambios locales. ¿Continuar?')) {
-            localStorage.clear();
-            location.reload();
-        }
+    if (confirm('¿Restaurar el catálogo original inicial? Se eliminarán los cambios locales no publicados.')) {
+        localStorage.clear();
+        location.reload();
+    }
+};
+
+// ================== DEVELOPER LOGS SUBSYSTEM ==================
+window.setLogsFilter = function(filter) {
+    currentLogFilter = filter;
+    document.querySelectorAll('.log-filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+    });
+    const searchVal = document.getElementById('admin-logs-search') ? document.getElementById('admin-logs-search').value.toLowerCase().trim() : '';
+    renderLogs(filter, searchVal);
+};
+
+window.renderLogs = function(filter = 'all', searchQuery = '') {
+    const container = document.getElementById('admin-logs-list');
+    if (!container || !window.axxesStore) return;
+
+    updateLogsBadge();
+
+    let logs = (window.axxesStore.logs || []).slice();
+
+    // 1. Filter by category/status
+    if (filter === 'ok') {
+        logs = logs.filter(l => l.status === 'OK');
+    } else if (filter === 'failed') {
+        logs = logs.filter(l => l.status === 'FAILED');
+    } else if (filter === 'edit') {
+        logs = logs.filter(l => l.action.includes('UPDATE'));
+    } else if (filter === 'delete') {
+        logs = logs.filter(l => l.action.includes('DELETE'));
+    } else if (filter === 'sync') {
+        logs = logs.filter(l => l.action.includes('SYNC'));
+    } else if (filter === 'create') {
+        logs = logs.filter(l => l.action.includes('CREATE') || l.action.includes('BULK'));
+    }
+
+    // 2. Filter by search query
+    if (searchQuery) {
+        logs = logs.filter(l => 
+            (l.message || '').toLowerCase().includes(searchQuery) ||
+            (l.action || '').toLowerCase().includes(searchQuery) ||
+            (l.status || '').toLowerCase().includes(searchQuery) ||
+            (l.details ? JSON.stringify(l.details).toLowerCase().includes(searchQuery) : false)
+        );
+    }
+
+    if (logs.length === 0) {
+        container.innerHTML = `
+            <div style="padding: 40px 20px; text-align: center; color: #6b7280;">
+                <i class="fas fa-terminal fa-2x" style="margin-bottom: 10px; opacity: 0.5;"></i>
+                <p style="margin: 0; font-size: 0.85rem;">No hay registros de log que coincidan con el filtro seleccionado.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = logs.map(l => {
+        const isOk = l.status === 'OK';
+        const statusClass = isOk ? 'ok' : (l.level === 'warn' ? 'warn' : (l.level === 'info' ? 'info' : 'failed'));
+        const hasDetails = l.details !== null && l.details !== undefined;
+        const detailsJson = hasDetails ? JSON.stringify(l.details, null, 2) : '';
+
+        return `
+            <div class="log-entry-row" onclick="toggleLogDetails('${l.id}')">
+                <div class="log-entry-main">
+                    <span class="log-time">${l.timeFormatted || l.timestamp.slice(11, 19)}</span>
+                    <span class="log-badge-status ${statusClass}">[${l.status}]</span>
+                    <span class="log-action-tag">${l.action}</span>
+                    <span class="log-msg">${escapeHtml(l.message)}</span>
+                    ${hasDetails ? '<span class="log-expand-icon" title="Ver detalles JSON"><i class="fas fa-chevron-down"></i> payload</span>' : ''}
+                </div>
+                ${hasDetails ? `<pre class="log-details-block" id="log-details-${l.id}">${escapeHtml(detailsJson)}</pre>` : ''}
+            </div>
+        `;
+    }).join('');
+};
+
+window.toggleLogDetails = function(logId) {
+    const el = document.getElementById('log-details-' + logId);
+    if (el) {
+        el.classList.toggle('active');
+    }
+};
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+window.copyLogsJson = function() {
+    if (!window.axxesStore || !window.axxesStore.logs) return;
+    const jsonStr = JSON.stringify(window.axxesStore.logs, null, 2);
+    navigator.clipboard.writeText(jsonStr).then(() => {
+        window.showToast('📋 Logs copiados al portapapeles en formato JSON.');
+    }).catch(() => {
+        window.showToast('Error al copiar logs.', 'error');
+    });
+};
+
+window.downloadLogsFile = function() {
+    if (!window.axxesStore || !window.axxesStore.logs) return;
+    const jsonStr = JSON.stringify(window.axxesStore.logs, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `axxes-audit-logs-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    window.showToast('📥 Archivo de logs descargado.');
+};
+
+window.clearAllLogs = function() {
+    if (confirm('¿Seguro que deseas vaciar todo el registro de logs del sistema?')) {
+        window.axxesStore.clearLogs();
+        renderLogs('all');
+        window.showToast('🗑️ Registro de logs vaciado.');
     }
 };
 
@@ -1646,7 +2619,10 @@ window.saveGithubToken = function() {
     const token = document.getElementById('admin-github-token').value.trim();
     if (token) {
         localStorage.setItem('axxes_github_token', token);
-        window.showToast('✓ Token de GitHub guardado correctamente.');
+        window.showToast('✅ Token de GitHub guardado correctamente.');
+        if (window.axxesStore) {
+            window.axxesStore.addLog('info', 'GITHUB_TOKEN_SAVE', 'Token de GitHub actualizado y almacenado en navegador.', null, 'OK');
+        }
         updateSyncBadge();
         testGithubConnection();
     } else {
@@ -1658,7 +2634,7 @@ window.testGithubConnection = async function() {
     const token = localStorage.getItem('axxes_github_token');
     const statusMsg = document.getElementById('admin-token-status-msg');
     if (!token) {
-        if (statusMsg) statusMsg.innerHTML = '<span style="color:var(--admin-danger);">❌ No hay token guardado.</span>';
+        if (statusMsg) statusMsg.innerHTML = '<span style="color:var(--admin-danger);"><i class="fas fa-exclamation-triangle"></i> No hay token guardado.</span>';
         return;
     }
 
@@ -1672,13 +2648,22 @@ window.testGithubConnection = async function() {
 
         if (res.ok) {
             const data = await res.json();
-            if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--admin-success);">✓ Conexión exitosa con <strong>${data.full_name}</strong>. Permisos activos.</span>`;
+            if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--admin-success);"><i class="fas fa-check-circle"></i> Conexión exitosa con <strong>${data.full_name}</strong>. Permisos activos.</span>`;
+            if (window.axxesStore) {
+                window.axxesStore.addLog('success', 'GITHUB_PING', `Conexión exitosa con GitHub (${data.full_name}).`, { repo: data.full_name }, 'OK');
+            }
             updateSyncBadge();
         } else {
-            if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--admin-danger);">❌ Error de autenticación (${res.status}): Verifica que el token tenga permisos 'repo'.</span>`;
+            if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--admin-danger);"><i class="fas fa-times-circle"></i> Error de autenticación (${res.status}): Verifica que el token tenga permisos 'repo'.</span>`;
+            if (window.axxesStore) {
+                window.axxesStore.addLog('error', 'GITHUB_PING_FAIL', `Error de autenticación con GitHub (${res.status}).`, { status: res.status }, 'FAILED');
+            }
         }
     } catch (e) {
         if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--admin-danger);">Error de conexión: ${e.message}</span>`;
+        if (window.axxesStore) {
+            window.axxesStore.addLog('error', 'GITHUB_PING_ERROR', 'Error al probar conexión con GitHub: ' + e.message, { error: e.message }, 'FAILED');
+        }
     }
 };
 
@@ -1704,7 +2689,7 @@ window.publishChanges = async function() {
     }
 
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Publicar para Todos';
+    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Publicar en Vivo';
 };
 
 // Toast Notifications
@@ -1748,6 +2733,5 @@ document.addEventListener('DOMContentLoaded', () => {
             const input = document.getElementById('admin-github-token');
             if (input) input.value = storedToken;
         }
-        updateSyncBadge();
-    }, 800);
+    }, 500);
 });

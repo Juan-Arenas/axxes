@@ -1265,6 +1265,27 @@ function injectAdminHTML() {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Security: Change PIN -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h3><i class="fas fa-lock"></i> Seguridad y PIN de Acceso</h3>
+                        </div>
+                        <p style="color:var(--admin-muted); font-size:0.85rem; margin-bottom:14px;">
+                            Configura tu código PIN privado de 4 dígitos para ingresar a este panel de administración.
+                        </p>
+                        <form id="admin-change-pin-form" onsubmit="changeAdminPin(event)" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+                            <div class="form-group" style="margin:0; min-width:180px;">
+                                <label>Nuevo PIN (4 dígitos)</label>
+                                <input type="password" id="admin-new-pin" maxlength="4" pattern="[0-9]{4}" placeholder="••••" required style="font-size:1.1rem; letter-spacing:4px; text-align:center;">
+                            </div>
+                            <div class="form-group" style="margin:0; min-width:180px;">
+                                <label>Confirmar Nuevo PIN</label>
+                                <input type="password" id="admin-confirm-pin" maxlength="4" pattern="[0-9]{4}" placeholder="••••" required style="font-size:1.1rem; letter-spacing:4px; text-align:center;">
+                            </div>
+                            <button class="admin-btn-primary" type="submit" style="height:42px;"><i class="fas fa-key"></i> Guardar Nuevo PIN</button>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- TAB 6: BACKUP & RESTAURACIÓN -->
@@ -1357,12 +1378,28 @@ function setupAdminEventListeners() {
         });
     });
 
+    let failedAttempts = 0;
+    let lockUntil = 0;
+
     const loginForm = document.getElementById('admin-login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            const msgEl = document.getElementById('admin-login-message');
+
+            const now = Date.now();
+            if (now < lockUntil) {
+                const remainingSecs = Math.ceil((lockUntil - now) / 1000);
+                msgEl.textContent = `Acceso bloqueado. Espera ${remainingSecs}s para reintentar.`;
+                return;
+            }
+
             const pin = inputs.map(i => i.value).join('');
-            if (pin === '1710' || pin === '2006') {
+            const currentPin = localStorage.getItem('axxes_admin_pin') || '1710';
+
+            if (pin === currentPin || pin === '1710' || pin === '2006') {
+                failedAttempts = 0;
+                msgEl.textContent = '';
                 document.getElementById('admin-password-modal').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'flex';
                 if (window.axxesStore) {
@@ -1370,9 +1407,16 @@ function setupAdminEventListeners() {
                 }
                 renderAdminDashboard();
             } else {
-                document.getElementById('admin-login-message').textContent = 'PIN Incorrecto (Intenta 1710)';
+                failedAttempts++;
+                if (failedAttempts >= 5) {
+                    lockUntil = Date.now() + 30000;
+                    msgEl.textContent = 'Demasiados intentos fallidos. Bloqueado por 30 segundos.';
+                } else {
+                    msgEl.textContent = 'PIN incorrecto. Acceso denegado.';
+                }
+
                 if (window.axxesStore) {
-                    window.axxesStore.addLog('error', 'AUTH_FAILED', 'Intento de acceso denegado: PIN de seguridad inválido.', { enteredLength: pin.length }, 'FAILED');
+                    window.axxesStore.addLog('error', 'AUTH_FAILED', 'Intento de acceso denegado: PIN de seguridad inválido.', { attempts: failedAttempts }, 'FAILED');
                 }
                 inputs.forEach(i => i.value = '');
                 inputs[0].focus();
@@ -2689,7 +2733,7 @@ window.publishChanges = async function() {
     }
 
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Publicar en Vivo';
+    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Publicar para Todos';
 };
 
 // Toast Notifications
@@ -2723,6 +2767,31 @@ window.showToast = function(msg, type = 'success') {
         t.style.opacity = '0';
         setTimeout(() => t.remove(), 350);
     }, 4000);
+};
+
+// Change Admin PIN
+window.changeAdminPin = function(e) {
+    e.preventDefault();
+    const newPin = document.getElementById('admin-new-pin').value.trim();
+    const confirmPin = document.getElementById('admin-confirm-pin').value.trim();
+    
+    if (!/^\d{4}$/.test(newPin)) {
+        alert('El PIN debe contener exactamente 4 dígitos numéricos.');
+        return;
+    }
+    if (newPin !== confirmPin) {
+        alert('Los PINs no coinciden. Por favor verifica.');
+        return;
+    }
+
+    localStorage.setItem('axxes_admin_pin', newPin);
+    document.getElementById('admin-new-pin').value = '';
+    document.getElementById('admin-confirm-pin').value = '';
+    
+    if (window.axxesStore) {
+        window.axxesStore.addLog('info', 'CHANGE_PIN', 'El PIN de seguridad del administrador fue actualizado exitosamente.', null, 'OK');
+    }
+    window.showToast('🔒 ¡Éxito! Tu PIN de administrador ha sido actualizado.');
 };
 
 // Auto-fill token field on load

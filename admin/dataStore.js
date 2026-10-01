@@ -137,7 +137,17 @@ window.compressProductImage = function(fileOrDataUrl, maxWidth = 800, maxHeight 
     });
 };
 
-// 3. DataStore Engine with Developer Activity Logger
+// Firebase Realtime Cloud Database Configuration
+const AXXES_FIREBASE_CONFIG = {
+    apiKey: 'AIzaSyBPJ0A3DS-zVDYw7BZKNHSQRsdFJOu7iLU',
+    authDomain: 'hermida-cadfd.firebaseapp.com',
+    projectId: 'hermida-cadfd',
+    storageBucket: 'hermida-cadfd.appspot.com',
+    messagingSenderId: '107412702130',
+    appId: '1:107412702130:web:96e27ab08b292e3a8fa996'
+};
+
+// 3. DataStore Engine with Developer Activity Logger & Cloud Sync
 class DataStore {
     constructor() {
         this.version = 'v2';
@@ -153,6 +163,7 @@ class DataStore {
             logs: 'axxes_system_logs_v1'
         };
         this.idb = new AxxesIDB();
+        this.db = null;
         this.products = [];
         this.categories = [];
         this.siteConfig = {};
@@ -168,7 +179,10 @@ class DataStore {
         // 2. Asynchronous deep check against IndexedDB
         this.loadFromIDB();
 
-        // 3. Live cloud check
+        // 3. Connect to Firebase Firestore for Real-time Cloud Database Sync across all devices
+        this.initFirebase();
+
+        // 4. Live cloud check fallback
         this.syncFromLiveCloud();
     }
 
@@ -410,8 +424,86 @@ class DataStore {
         }
     }
 
+    initFirebase() {
+        if (typeof firebase === 'undefined') {
+            console.warn('Firebase SDK no cargado en window. Operando en modo local.');
+            return;
+        }
+        try {
+            if (!firebase.apps || firebase.apps.length === 0) {
+                firebase.initializeApp(AXXES_FIREBASE_CONFIG);
+            }
+            this.db = firebase.firestore();
+            this.addLog('info', 'FIREBASE_INIT', 'Conexión con Firebase Firestore establecida. Sincronización multidispositivo en tiempo real activada.', null, 'OK');
+            this.initFirestoreRealtime();
+        } catch (e) {
+            console.warn('Error inicializando Firebase:', e);
+            this.addLog('warn', 'FIREBASE_ERROR', 'No se pudo conectar a Firebase Firestore: ' + e.message, null, 'WARN');
+        }
+    }
+
+    initFirestoreRealtime() {
+        if (!this.db) return;
+
+        // 1. Escuchar cambios de productos en tiempo real desde cualquier dispositivo (PC, Celular, etc.)
+        try {
+            this.db.collection('axxes_products').onSnapshot((snapshot) => {
+                if (!snapshot || snapshot.empty) return;
+
+                const cloudProducts = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data && (data.name || data.id)) {
+                        cloudProducts.push({
+                            ...data,
+                            id: String(data.id || doc.id)
+                        });
+                    }
+                });
+
+                if (cloudProducts.length > 0) {
+                    this.products = this.migrateProducts(cloudProducts);
+                    this.deduplicateProducts(false);
+                    this.safeLocalStorageSave();
+                    if (this.idb) {
+                        this.idb.set('products', this.products);
+                    }
+                    document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
+                    if (typeof window.renderAdminDashboard === 'function') {
+                        window.renderAdminDashboard();
+                    }
+                    this.addLog('success', 'CLOUD_SYNC_REALTIME', `Nube sincronizada: ${this.products.length} productos sincronizados en vivo.`, null, 'OK');
+                }
+            }, (err) => {
+                console.warn('Aviso en listener de Firestore axxes_products:', err);
+            });
+        } catch (err) {
+            console.warn('Error configurando onSnapshot en axxes_products:', err);
+        }
+
+        // 2. Escuchar cambios en categorías en tiempo real
+        try {
+            this.db.collection('axxes_meta').doc('categories').onSnapshot((docSnap) => {
+                if (docSnap && docSnap.exists) {
+                    const data = docSnap.data();
+                    if (data && Array.isArray(data.list) && data.list.length > 0) {
+                        this.categories = data.list;
+                        this.saveCategories(false);
+                    }
+                }
+            }, (err) => {
+                console.warn('Aviso en listener categorías Firestore:', err);
+            });
+        } catch (err) {}
+    }
+
     async syncFromLiveCloud() {
         try {
+            // If Firebase Firestore is active and running, it has higher authority than GitHub raw files
+            if (this.db && this.products.length > 0) {
+                return;
+            }
+
             const hasUnsavedEdits = localStorage.getItem(this.keys.hasUnsynced) === 'true';
             const lastLocalEdit = parseInt(localStorage.getItem(this.keys.lastEdit) || '0', 10);
             const lastPublish = parseInt(localStorage.getItem('axxes_last_published_time') || '0', 10);
@@ -669,6 +761,17 @@ class DataStore {
         this.products.unshift(migrated);
         await this.saveProducts(true);
 
+        // Real-time Cloud Sync with Firebase Firestore (instantly visible on mobile and all devices)
+        if (this.db) {
+            try {
+                await this.db.collection('axxes_products').doc(String(migrated.id)).set(migrated);
+                this.addLog('success', 'CLOUD_SYNC', `Producto "${migrated.name}" sincronizado con la nube para todos los dispositivos.`, { id: migrated.id }, 'OK');
+            } catch (cloudErr) {
+                console.error('Error guardando en Firestore:', cloudErr);
+                this.addLog('error', 'CLOUD_SYNC_FAIL', `Fallo al sincronizar con la nube: ${cloudErr.message}`, null, 'FAILED');
+            }
+        }
+
         this.addLog('success', 'CREATE_PRODUCT', `Producto creado: "${migrated.name}" (${migrated.brand})`, {
             id: migrated.id,
             name: migrated.name,
@@ -709,6 +812,21 @@ class DataStore {
 
         await this.saveProducts(true);
 
+        // Real-time Cloud Sync with Firebase Firestore
+        if (this.db && Array.isArray(migrated) && migrated.length > 0) {
+            try {
+                const batch = this.db.batch();
+                migrated.slice(0, 450).forEach(p => {
+                    const docRef = this.db.collection('axxes_products').doc(String(p.id));
+                    batch.set(docRef, p, { merge: true });
+                });
+                await batch.commit();
+                this.addLog('success', 'CLOUD_BULK_SYNC', `Sincronizados ${migrated.length} productos en la nube para todos los dispositivos.`, null, 'OK');
+            } catch (err) {
+                console.error('Error en batch Firestore:', err);
+            }
+        }
+
         this.addLog('success', 'BULK_IMPORT', `Carga masiva: ${addedCount} productos nuevos agregados (existentes actualizados sin duplicar).`, {
             count: addedCount,
             sample: migrated.slice(0, 4).map(p => ({ id: p.id, name: p.name, brand: p.brand, price: p.priceBottle }))
@@ -726,6 +844,16 @@ class DataStore {
             this.products[idx] = this.migrateProducts([merged])[0];
             this.removeDeletedId(strId);
             await this.saveProducts(true);
+
+            // Real-time Cloud Sync with Firebase Firestore
+            if (this.db) {
+                try {
+                    await this.db.collection('axxes_products').doc(strId).set(this.products[idx], { merge: true });
+                    this.addLog('success', 'CLOUD_PRODUCT_UPDATED', `"${this.products[idx].name}" actualizado en la nube para todos los dispositivos.`, { id: strId }, 'OK');
+                } catch (cloudErr) {
+                    console.error('Error actualizando en Firestore:', cloudErr);
+                }
+            }
 
             // Track detailed changes for the log
             const diff = {};
@@ -755,6 +883,13 @@ class DataStore {
             prod.active = !prod.active;
             await this.saveProducts(true);
 
+            // Real-time Cloud Sync with Firebase Firestore
+            if (this.db) {
+                try {
+                    await this.db.collection('axxes_products').doc(strId).update({ active: prod.active });
+                } catch (e) {}
+            }
+
             this.addLog('info', 'TOGGLE_STATUS', `Visibilidad cambiada: "${prod.name}" ahora está ${prod.active ? 'ACTIVO' : 'OCULTO'}`, {
                 id: strId,
                 name: prod.name,
@@ -783,6 +918,9 @@ class DataStore {
                 const pBrand = (p.brand || '').trim().toLowerCase();
                 if (pNorm === targetNormName && pBrand === targetBrand) {
                     this.addDeletedId(p.id);
+                    if (this.db) {
+                        this.db.collection('axxes_products').doc(String(p.id)).delete().catch(() => {});
+                    }
                 }
             });
         }
@@ -797,6 +935,16 @@ class DataStore {
             }
             return true;
         });
+
+        // Delete from Firestore in real time
+        if (this.db) {
+            try {
+                await this.db.collection('axxes_products').doc(strId).delete();
+                this.addLog('success', 'CLOUD_DELETE', `Producto #${strId} eliminado de la nube para todos los dispositivos.`, null, 'OK');
+            } catch (cloudErr) {
+                console.error('Error eliminando de Firestore:', cloudErr);
+            }
+        }
 
         // Ensure deleted state is immediately written to IndexedDB
         if (this.idb) {
@@ -813,13 +961,18 @@ class DataStore {
         }, 'OK');
     }
 
-    // CRUD Categories with Logging
+    // CRUD Categories with Logging & Cloud Sync
     async addCategory(name) {
         const cleanName = String(name || '').trim();
         if (!cleanName) return;
         if (!this.categories.some(c => c.name.toLowerCase() === cleanName.toLowerCase())) {
             this.categories.push({ id: 'cat-' + Date.now(), name: cleanName });
             await this.saveCategories();
+            if (this.db) {
+                try {
+                    await this.db.collection('axxes_meta').doc('categories').set({ list: this.categories });
+                } catch(e) {}
+            }
             this.addLog('success', 'CREATE_CATEGORY', `Categoría creada: "${cleanName}"`, { name: cleanName }, 'OK');
         } else {
             this.addLog('warn', 'DUPLICATE_CATEGORY', `Intento de duplicar categoría existente: "${cleanName}"`, null, 'WARN');
@@ -839,6 +992,11 @@ class DataStore {
             }
         });
         await this.saveAll();
+        if (this.db) {
+            try {
+                await this.db.collection('axxes_meta').doc('categories').set({ list: this.categories });
+            } catch(e) {}
+        }
         this.addLog('warn', 'DELETE_CATEGORY', `Categoría eliminada: "${name}" (productos actualizados)`, { name }, 'OK');
     }
     
@@ -858,6 +1016,11 @@ class DataStore {
                 }
             });
             await this.saveAll();
+            if (this.db) {
+                try {
+                    await this.db.collection('axxes_meta').doc('categories').set({ list: this.categories });
+                } catch(e) {}
+            }
             this.addLog('info', 'UPDATE_CATEGORY', `Categoría renombrada: "${oldName}" ➔ "${cleanNew}"`, { oldName, cleanNew }, 'OK');
         }
     }

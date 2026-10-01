@@ -299,6 +299,7 @@ class DataStore {
 
     loadSyncData() {
         try {
+            const hasUnsavedEdits = localStorage.getItem(this.keys.hasUnsynced) === 'true';
             const p = localStorage.getItem(this.keys.products);
             const c = localStorage.getItem(this.keys.categories);
             const s = localStorage.getItem(this.keys.siteConfig);
@@ -306,21 +307,43 @@ class DataStore {
             const initialProds = Array.isArray(window.INITIAL_PRODUCTS) ? window.INITIAL_PRODUCTS : [];
             const initialCats = Array.isArray(window.INITIAL_CATEGORIES) ? window.INITIAL_CATEGORIES : [];
 
-            const rawProds = p ? JSON.parse(p) : initialProds;
+            let rawProds;
+            // If the visitor is a public user (no unsaved local admin edits):
+            // The bundled window.INITIAL_PRODUCTS is the authoritative source!
+            if (!hasUnsavedEdits && initialProds.length > 0) {
+                if (!p) {
+                    rawProds = initialProds;
+                } else {
+                    try {
+                        const parsedP = JSON.parse(p);
+                        // If bundled catalog has more items or visitor has stale cache, adopt initialProds
+                        if (!Array.isArray(parsedP) || parsedP.length < initialProds.length) {
+                            rawProds = initialProds;
+                        } else {
+                            rawProds = parsedP;
+                        }
+                    } catch(e) {
+                        rawProds = initialProds;
+                    }
+                }
+            } else {
+                rawProds = p ? JSON.parse(p) : initialProds;
+            }
+
             this.products = this.migrateProducts(rawProds);
             
             // Clean any duplicates that might have been stored previously
             this.deduplicateProducts(false);
 
             const deletedIds = this.getDeletedIds();
-            if (deletedIds.length > 0) {
+            if (deletedIds.length > 0 && hasUnsavedEdits) {
                 this.products = this.products.filter(item => !deletedIds.includes(String(item.id)));
             }
 
             this.categories = c ? JSON.parse(c) : initialCats;
             this.siteConfig = s ? JSON.parse(s) : (window.INITIAL_SITE_CONFIG || {});
 
-            if (!p || !c || !s) {
+            if (!p || !c || !s || (!hasUnsavedEdits && initialProds.length > 0)) {
                 this.saveAll(false);
             }
         } catch (e) {
@@ -342,6 +365,7 @@ class DataStore {
 
             let updated = false;
             const deletedIds = this.getDeletedIds();
+            const hasUnsavedEdits = localStorage.getItem(this.keys.hasUnsynced) === 'true';
 
             if (Array.isArray(idbProducts) && idbProducts.length > 0) {
                 const filteredIDB = idbProducts.filter(item => !deletedIds.includes(String(item.id)));
@@ -351,7 +375,7 @@ class DataStore {
                     this.products = this.migrateProducts(filteredIDB);
                     this.deduplicateProducts(false);
                     updated = true;
-                } else {
+                } else if (hasUnsavedEdits) {
                     // Enrich in-memory products with any high-res images from IDB if localStorage stripped them
                     this.products.forEach(p => {
                         if (!p.image || p.image.length === 0) {
@@ -425,12 +449,15 @@ class DataStore {
                             }
                         });
                         
-                        // Only overwrite if this.products is empty (e.g. pure visitor on new device)
-                        if (this.products.length === 0) {
+                        // Overwrite if local has fewer products or different items from cloud
+                        const localKeys = new Set(this.products.map(p => `${(p.brand || '').trim().toLowerCase()}:::${(p.name || '').trim().toLowerCase().replace(/myslf/g, 'myself')}`));
+                        const hasDifferences = uniqueCloud.length !== this.products.length || uniqueCloud.some(cp => !localKeys.has(`${(cp.brand || '').trim().toLowerCase()}:::${(cp.name || '').trim().toLowerCase().replace(/myslf/g, 'myself')}`));
+
+                        if (this.products.length === 0 || hasDifferences) {
                             this.products = uniqueCloud;
                             await this.saveAll(false);
                             document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
-                            this.addLog('info', 'CLOUD_SYNC_FETCH', `Sincronización en vivo: ${this.products.length} productos obtenidos de GitHub.`, null, 'OK');
+                            this.addLog('info', 'CLOUD_SYNC_FETCH', `Sincronización en vivo: ${this.products.length} productos actualizados desde GitHub.`, null, 'OK');
                         }
                     }
                 }

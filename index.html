@@ -3,499 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Axxes Parfum | Lujo Contemporáneo</title>
-    <meta name="description" content="Descubre fragancias seleccionadas para quienes no pasan desapercibidos. Tu aroma, tu firma.">
-    <link rel="stylesheet" href="styles.css?v=5">
-    
-    <!-- Fonts -->
+    <title>AXXES PARFUM | Servicio Suspendido</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #08080c;
+            --card-bg: #121218;
+            --border-color: #242432;
+            --accent-gold: #c5a059;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background-image: 
+                radial-gradient(circle at 50% 10%, rgba(239, 68, 68, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 50% 90%, rgba(197, 160, 89, 0.08) 0%, transparent 50%);
+        }
+
+        .suspension-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            max-width: 580px;
+            width: 100%;
+            padding: 48px 36px;
+            text-align: center;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .suspension-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #ef4444);
+        }
+
+        .brand-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.2rem;
+            letter-spacing: 4px;
+            color: #ffffff;
+            margin-bottom: 24px;
+            display: inline-block;
+        }
+
+        .brand-logo span {
+            color: var(--accent-gold);
+        }
+
+        .icon-wrapper {
+            width: 84px;
+            height: 84px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.28);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 28px;
+            color: var(--danger-color);
+            font-size: 2.2rem;
+            animation: pulse-glow 2.5s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            50% {
+                transform: scale(1.04);
+                box-shadow: 0 0 0 14px rgba(239, 68, 68, 0);
+            }
+        }
+
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239, 68, 68, 0.16);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 100px;
+            margin-bottom: 20px;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--danger-color);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 14px;
+            color: #ffffff;
+        }
+
+        .lead-text {
+            color: var(--text-muted);
+            font-size: 0.98rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .details-box {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 0.88rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .detail-row:first-child {
+            padding-top: 0;
+        }
+
+        .detail-label {
+            color: var(--text-muted);
+        }
+
+        .detail-val {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .detail-val.highlight {
+            color: var(--danger-color);
+        }
+
+        .notice-box {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 12px;
+            padding: 16px;
+            color: #fde68a;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .footer-note {
+            color: #64748b;
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+        }
+    </style>
 </head>
-<body class="loading-state">
-
-    <!-- 1. HEADER -->
-    <div class="top-announcement">
-        <div class="marquee-content-top">
-            <span>PERFUMES 100% ORIGINALES • 🇪🇨 ENVÍO GRATIS EN PERFUMES SELLADOS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA</span>
-            <span>PERFUMES 100% ORIGINALES • 🇪🇨 ENVÍO GRATIS EN PERFUMES SELLADOS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA</span>
-            <span>PERFUMES 100% ORIGINALES • 🇪🇨 ENVÍO GRATIS EN PERFUMES SELLADOS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA</span>
-        </div>
-    </div>
-    <header class="header" id="header">
-        <div class="header-container">
-            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menú">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-
-            <div class="header-logo">
-                <a href="#">
-                    <img src="logo.webp" alt="AXXES PARFUM" class="logo-img" id="site-logo">
-                </a>
-            </div>
-            
-            <nav class="desktop-nav">
-                <ul class="nav-links">
-                    <li><a href="#hero">Inicio</a></li>
-                    <li><a href="#catalogo-seccion">Tienda</a></li>
-                    <li><a href="#" data-filter-gender="Hombre">Hombre</a></li>
-                    <li><a href="#" data-filter-gender="Mujer">Mujer</a></li>
-                    <li><a href="#" data-filter-gender="Unisex">Unisex</a></li>
-                    <li><a href="#" data-filter-category="Árabes">Árabes</a></li>
-                    <li><a href="#" data-filter-category="Diseñador">Diseñador</a></li>
-                </ul>
-            </nav>
-
-            <div class="header-icons">
-                <button aria-label="Buscar" class="icon-btn" id="open-search"><i class="fa-solid fa-magnifying-glass"></i></button>
-                <button aria-label="Admin" class="icon-btn" id="admin-login-btn"><i class="fa-regular fa-user"></i></button>
-                <button aria-label="Carrito" class="icon-btn cart-btn" id="open-cart">
-                    <i class="fa-solid fa-bag-shopping"></i>
-                    <span class="cart-count">0</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Mobile Nav Overlay -->
-    <div class="mobile-nav-overlay" id="mobile-nav">
-        <div class="mobile-nav-content">
-            <div class="mobile-nav-header">
-                <img src="logo.webp" alt="AXXES" style="height:30px;">
-                <button class="close-mobile-nav" id="close-mobile-nav"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <ul class="mobile-links">
-                <li><a href="#hero">Inicio</a></li>
-                <li><a href="#catalogo-seccion">Tienda</a></li>
-                <li><a href="#" data-filter-gender="Hombre">Hombre</a></li>
-                <li><a href="#" data-filter-gender="Mujer">Mujer</a></li>
-                <li><a href="#" data-filter-gender="Unisex">Unisex</a></li>
-                <li><a href="#" data-filter-category="Árabes">Árabes</a></li>
-                <li><a href="#" data-filter-category="Diseñador">Diseñador</a></li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <main>
-        <!-- 2. BANNERS PRINCIPALES CON FLECHAS -->
-        <section class="hero-slider" id="hero">
-            <div class="slider-track" id="main-slider">
-                <div class="slide">
-                    <img src="banner2.webp" alt="Banner Axxes" class="slide-img">
-                </div>
-                <div class="slide">
-                    <img src="banner1.webp" alt="Banner Axxes" class="slide-img">
-                </div>
-            </div>
-            <button class="slider-arrow slider-arrow-left" id="slider-prev" aria-label="Anterior">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <button class="slider-arrow slider-arrow-right" id="slider-next" aria-label="Siguiente">
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-            <div class="slider-indicators" id="slider-indicators"></div>
-        </section>
-
-        <!-- 3. CATÁLOGO / TIENDA (INMEDIATAMENTE DESPUÉS DE BANNERS) -->
-        <section class="full-store-section section-padding light-bg" id="catalogo-seccion">
-            <div class="container">
-                <h2 class="serif mb-4">NUESTRA COLECCIÓN</h2>
-                <div class="store-layout">
-                    <aside class="store-filters" id="store-filters">
-                        <button id="close-filters-mobile" class="mobile-only btn-close-filter"><i class="fa-solid fa-xmark"></i></button>
-                        
-                        <div class="filter-group">
-                            <h4>GÉNERO</h4>
-                            <label><input type="checkbox" value="Hombre" class="filter-gender"> Hombre</label>
-                            <label><input type="checkbox" value="Mujer" class="filter-gender"> Mujer</label>
-                            <label><input type="checkbox" value="Unisex" class="filter-gender"> Unisex</label>
-                        </div>
-                        <div class="filter-group">
-                            <h4>CATEGORÍA</h4>
-                            <div id="filter-categories-list"></div>
-                        </div>
-                        <div class="filter-group">
-                            <h4>MARCA</h4>
-                            <div id="filter-brands-list"></div>
-                        </div>
-                        <div class="filter-group">
-                            <h4>PRESENTACIÓN</h4>
-                            <div id="filter-sizes-list"></div>
-                        </div>
-                        <div class="filter-group">
-                            <h4>PRECIO</h4>
-                            <input type="range" min="0" max="2000000" step="50000" value="2000000" id="filter-price-slider">
-                            <div class="price-range-labels">
-                                <span>$0</span>
-                                <span id="filter-price-val">$2.000.000</span>
-                            </div>
-                        </div>
-                    </aside>
-                    <div class="store-content">
-                        <div class="store-toolbar">
-                            <button id="open-filters-mobile" class="btn-secondary mobile-only"><i class="fa-solid fa-filter"></i> Filtros</button>
-                            <div class="sort-dropdown">
-                                <select id="sort-select">
-                                    <option value="relevance">Relevancia</option>
-                                    <option value="recent">Más recientes</option>
-                                    <option value="price-asc">Precio menor</option>
-                                    <option value="price-desc">Precio mayor</option>
-                                    <option value="bestseller">Más vendidos</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="product-grid" id="main-store-grid">
-                            <!-- JS Render -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 4. COMPRA CON CONFIANZA — SECCIÓN AZUL/NEGRO ESTILO LUZENTS -->
-        <section class="trust-section-luzents" id="trust-section">
-            <div class="trust-bg-gradient"></div>
-            <div class="container trust-content-wrap">
-                <h2 class="section-title text-center reveal" style="color:#fff;">COMPRA CON CONFIANZA</h2>
-                <div class="trust-stats-row reveal">
-                    <div class="trust-stat-item">
-                        <h3 class="counter-animated" data-target="2500" data-suffix="+">2500+</h3>
-                        <p>PEDIDOS ENTREGADOS</p>
-                    </div>
-                    <div class="trust-stat-item">
-                        <h3 class="counter-static">100%</h3>
-                        <p>ENVÍOS SEGUROS</p>
-                    </div>
-                    <div class="trust-stat-item">
-                        <h3 class="counter-animated" id="dynamic-products-count" data-target="0" data-suffix="">0</h3>
-                        <p>PERFUMES & DECANTS</p>
-                    </div>
-                </div>
-                <div class="trust-steps-row reveal">
-                    <div class="trust-step-card">
-                        <div class="trust-step-header">
-                            <span class="trust-step-badge">01</span>
-                            <h4 class="trust-step-title">ELIGE TU PRODUCTO</h4>
-                        </div>
-                        <p class="trust-step-desc">Explora la tienda, selecciona tu fragancia o decant y agrégalo al carrito.</p>
-                    </div>
-                    <div class="trust-step-card">
-                        <div class="trust-step-header">
-                            <span class="trust-step-badge">02</span>
-                            <h4 class="trust-step-title">WEB O WHATSAPP</h4>
-                        </div>
-                        <p class="trust-step-desc">Finaliza tu pedido directo en la web o contáctanos para asesoría por WhatsApp.</p>
-                    </div>
-                    <div class="trust-step-card">
-                        <div class="trust-step-header">
-                            <span class="trust-step-badge">03</span>
-                            <h4 class="trust-step-title">PAGO & REGALO</h4>
-                        </div>
-                        <p class="trust-step-desc">Aceptamos transferencias y tarjetas. Tu pedido incluye un obsequio.</p>
-                    </div>
-                    <div class="trust-step-card">
-                        <div class="trust-step-header">
-                            <span class="trust-step-badge">04</span>
-                            <h4 class="trust-step-title">RECIBE Y DISFRUTA</h4>
-                        </div>
-                        <p class="trust-step-desc">Despachamos tu pedido hasta la puerta de tu casa u oficina.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 5. CÓMO COMPRAR — SECCIÓN NEGRA MEJORADA CON ICONOS E IMÁGENES -->
-        <section class="how-to-buy-enhanced dark-bg reveal">
-            <div class="container text-center">
-                <h2 class="section-title mb-4">CÓMO COMPRAR</h2>
-                <p class="how-subtitle">Comprar en AXXES es fácil, rápido y seguro. Sigue estos simples pasos:</p>
-                <div class="steps-carousel-container">
-                    <div class="steps-enhanced-grid" id="steps-enhanced-track">
-                        <div class="step-enhanced-item reveal">
-                            <div class="step-icon-circle">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                            </div>
-                            <div class="step-num-enhanced">PASO 01</div>
-                            <h4>ELIGE TU PERFUME</h4>
-                            <p>Navega nuestro catálogo y descubre tu fragancia ideal entre cientos de opciones.</p>
-                        </div>
-                        <div class="step-enhanced-item reveal delay-1">
-                            <div class="step-icon-circle">
-                                <i class="fa-solid fa-cart-plus"></i>
-                            </div>
-                            <div class="step-num-enhanced">PASO 02</div>
-                            <h4>AGRÉGALO AL CARRITO</h4>
-                            <p>Selecciona la presentación que prefieras: decant o botella completa.</p>
-                        </div>
-                        <div class="step-enhanced-item reveal delay-2">
-                            <div class="step-icon-circle">
-                                <i class="fa-solid fa-credit-card"></i>
-                            </div>
-                            <div class="step-num-enhanced">PASO 03</div>
-                            <h4>CONFIRMA TU PEDIDO</h4>
-                            <p>Completa tu compra de forma segura con múltiples métodos de pago.</p>
-                        </div>
-                        <div class="step-enhanced-item reveal delay-3">
-                            <div class="step-icon-circle">
-                                <i class="fa-solid fa-box-open"></i>
-                            </div>
-                            <div class="step-num-enhanced">PASO 04</div>
-                            <h4>RECÍBELO</h4>
-                            <p>Disfruta tu fragancia con envío seguro y empaque premium a tu puerta.</p>
-                        </div>
-                    </div>
-                    <!-- Indicator dots on mobile for horizontal track -->
-                    <div class="steps-nav-dots mobile-only" id="steps-nav-dots">
-                        <button class="step-dot active" data-step="0" aria-label="Paso 1"></button>
-                        <button class="step-dot" data-step="1" aria-label="Paso 2"></button>
-                        <button class="step-dot" data-step="2" aria-label="Paso 3"></button>
-                        <button class="step-dot" data-step="3" aria-label="Paso 4"></button>
-                    </div>
-                    <div class="steps-swipe-hint mobile-only">
-                        <span><i class="fa-solid fa-arrows-left-right"></i> Desliza para ver los pasos</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 6. ¿POR QUÉ AXXES? -->
-        <section class="benefits-section section-padding light-bg reveal">
-            <div class="container">
-                <div class="benefits-grid">
-                    <div class="benefit-item">
-                        <i class="fa-solid fa-gem"></i>
-                        <h4>PRODUCTOS ORIGINALES</h4>
-                        <p>Perfumería seleccionada cuidadosamente.</p>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fa-solid fa-truck-fast"></i>
-                        <h4>ENVÍOS</h4>
-                        <p>Envíos rápidos y seguros.</p>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fa-solid fa-box-open"></i>
-                        <h4>EXPERIENCIA AXXES</h4>
-                        <p>Detalles especiales en tus compras.</p>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fa-regular fa-comments"></i>
-                        <h4>ASESORÍA</h4>
-                        <p>Te ayudamos a encontrar tu fragancia.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 7. SECCIÓN EDITORIAL CON BANNER3 -->
-        <section class="editorial-block reveal" id="editorial">
-            <div class="editorial-img-col">
-                <img src="banner3.webp" alt="Descubre AXXES">
-            </div>
-            <div class="editorial-text-col">
-                <h2 class="serif">DESCUBRE AXXES</h2>
-                <p>El aroma es invisible. La impresión no. Creamos momentos, recuerdos y primeras impresiones que permanecen en el tiempo. Seleccionamos cuidadosamente cada fragancia de nuestra colección para asegurar exclusividad y calidad.</p>
-                <a href="#catalogo-seccion" class="btn btn-primary-dark mt-2">EXPLORAR COLECCIÓN</a>
-            </div>
-        </section>
-
-        <!-- 9. QUIZ -->
-        <section class="quiz-banner section-padding light-bg text-center reveal" id="quiz-section">
-            <div class="container">
-                <h2 class="serif">¿NO SABES QUÉ PERFUME ELEGIR?</h2>
-                <p>Déjanos ayudarte a encontrar una fragancia que vaya contigo.</p>
-                <button class="btn btn-primary-dark mt-2" id="start-quiz">DESCUBRIR MI PERFUME <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-        </section>
-
-        <!-- 10. ENVÍOS -->
-        <section class="shipping-banner reveal dark-bg">
-            <div class="shipping-overlay"></div>
-            <img src="https://images.unsplash.com/photo-1586528116311-ad8ed7c663be?auto=format&fit=crop&w=1200&q=80" alt="Envíos a todo Colombia" class="shipping-img">
-            <div class="shipping-content">
-                <h2 class="serif">ENVIAMOS TU PERFUME HASTA DONDE ESTÉS</h2>
-                <p>Envíos seguros y confiables a todo el territorio colombiano.</p>
-            </div>
-        </section>
-
-        <!-- 11. TESTIMONIOS -->
-        <section class="testimonials-section section-padding light-bg">
-            <div class="container text-center">
-                <h2 class="section-title reveal">LO QUE DICEN NUESTROS CLIENTES</h2>
-                <div class="testim-carousel mt-4 reveal delay-1" id="testim-track">
-                    <div class="testim-card">
-                        <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                        <p>"Compré un perfume a ciegas y se ha convertido en mi firma personal. El empaque y la experiencia de unboxing es puro lujo."</p>
-                        <strong>Carlos M.</strong>
-                    </div>
-                    <div class="testim-card">
-                        <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                        <p>"100% originales. Llevo años usando Baccarat Rouge y puedo confirmar su autenticidad. El envío fue rapidísimo."</p>
-                        <strong>Valeria R.</strong>
-                    </div>
-                    <div class="testim-card">
-                        <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                        <p>"La página es increíble, me ayudaron a encontrar un regalo perfecto para mi esposo. La presentación es impecable."</p>
-                        <strong>Andrea P.</strong>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 12. SÍGUENOS -->
-        <section class="instagram-section section-padding dark-bg text-center">
-            <h2 class="section-title reveal">SÍGUENOS</h2>
-            <div class="insta-grid mt-4 reveal delay-1">
-                <div class="insta-item"><img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80" alt="Ig"><i class="fa-brands fa-instagram"></i></div>
-                <div class="insta-item"><img src="https://images.unsplash.com/photo-1557170334-a9632e77c6e4?auto=format&fit=crop&w=400&q=80" alt="Ig"><i class="fa-brands fa-instagram"></i></div>
-                <div class="insta-item"><img src="https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=400&q=80" alt="Ig"><i class="fa-brands fa-instagram"></i></div>
-                <div class="insta-item"><img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80" alt="Ig"><i class="fa-brands fa-instagram"></i></div>
-            </div>
-            <a href="https://www.instagram.com/axxes_parfum/" target="_blank" class="btn btn-outline-light mt-4 reveal delay-2">IR A INSTAGRAM</a>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer dark-bg">
-        <div class="footer-top container">
-            <div class="footer-col brand-col">
-                <img src="logo.webp" alt="AXXES PARFUM" class="footer-logo" id="footer-logo">
-                <p>El lujo contemporáneo en perfumería. Fragancias que definen tu identidad.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Colecciones</h4>
-                <ul>
-                    <li><a href="#">Hombre</a></li>
-                    <li><a href="#">Mujer</a></li>
-                    <li><a href="#">Unisex</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Servicio al Cliente</h4>
-                <ul>
-                    <li><a href="#">Contacto</a></li>
-                    <li><a href="#">Envíos y devoluciones</a></li>
-                    <li><a href="#">Preguntas frecuentes</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Síguenos</h4>
-                <div class="footer-socials">
-                    <a href="https://www.instagram.com/axxes_parfum/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://www.tiktok.com/@axxes_parfum" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
-                    <a href="https://wa.me/5217531058888" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom container">
-            <p>&copy; 2026 AXXES PARFUM. Todos los derechos reservados.</p>
-        </div>
-    </footer>
-
-    <!-- CARRITO DRAWER -->
-    <div class="cart-drawer" id="cart-drawer">
-        <div class="cart-header">
-            <h3 class="serif">TU CARRITO</h3>
-            <button class="close-cart" id="close-cart"><i class="fa-solid fa-xmark"></i></button>
-        </div>
+<body>
+    <div class="suspension-card">
+        <div class="brand-logo">AXXES <span>PARFUM</span></div>
         
-        <div class="cart-items" id="cart-items">
-            <!-- JS -->
+        <div class="icon-wrapper">
+            <i class="fa-solid fa-lock"></i>
         </div>
 
-        <div class="cart-footer">
-            <div class="cart-subtotal">
-                <span>Subtotal</span>
-                <span id="cart-subtotal">$0</span>
-            </div>
-            <button class="btn btn-outline-dark btn-full mb-2" id="continue-shopping">CONTINUAR COMPRANDO</button>
-            <button class="btn btn-primary-dark btn-full">FINALIZAR PEDIDO</button>
+        <div class="badge-status">
+            <span class="badge-dot"></span> Servicio Suspendido
         </div>
+
+        <h1>Sitio Web Suspendido</h1>
+        
+        <p class="lead-text">
+            Este sitio web ha sido temporalmente desactivado por el desarrollador debido a pagos pendientes de liquidación y servicios de desarrollo web.
+        </p>
+
+        <div class="details-box">
+            <div class="detail-row">
+                <span class="detail-label">Motivo:</span>
+                <span class="detail-val highlight">Falta de Pago / Liquidación</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Código de Suspensión:</span>
+                <span class="detail-val">#AXX-PAY-402</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Estado de la Plataforma:</span>
+                <span class="detail-val highlight">Inactiva (Bloqueo de Acceso)</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Catálogo y Pedidos:</span>
+                <span class="detail-val">Deshabilitados</span>
+            </div>
+        </div>
+
+        <div class="notice-box">
+            <i class="fa-solid fa-circle-exclamation"></i> Para reactivar el acceso y restaurar la tienda en línea inmediatamente, por favor comuníquese con el <strong>desarrollador encargado</strong> para formalizar el pago correspondiente.
+        </div>
+
+        <p class="footer-note">
+            AXXES PARFUM &copy; 2026 &bull; Plataforma en custodia técnica
+        </p>
     </div>
-    <div class="overlay" id="cart-overlay"></div>
-
-    <!-- BUSCADOR PREMIUM -->
-    <div class="search-modal" id="search-modal">
-        <button class="close-search" id="close-search"><i class="fa-solid fa-xmark"></i></button>
-        <div class="search-content">
-            <div class="search-input-wrapper">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="mega-search" placeholder="Buscar perfume, marca, categoría..." autocomplete="off">
-            </div>
-            <div class="search-results-instant" id="search-results-instant">
-                <!-- JS Results -->
-            </div>
-        </div>
-    </div>
-
-    <!-- QUIZ MODAL -->
-    <div class="quiz-modal" id="quiz-modal">
-        <button class="close-quiz" id="close-quiz"><i class="fa-solid fa-xmark"></i></button>
-        <div class="quiz-content">
-            <!-- Step 1 -->
-            <div class="quiz-step active" id="q-step-1">
-                <span class="step-num">01 / 03</span>
-                <h2 class="serif">¿Para quién es la fragancia?</h2>
-                <div class="quiz-options">
-                    <button class="quiz-btn" onclick="nextQuizStep(2, 'gender', 'Hombre')">Para Hombre</button>
-                    <button class="quiz-btn" onclick="nextQuizStep(2, 'gender', 'Mujer')">Para Mujer</button>
-                    <button class="quiz-btn" onclick="nextQuizStep(2, 'gender', 'Unisex')">Unisex</button>
-                </div>
-            </div>
-            <!-- Step 2 -->
-            <div class="quiz-step" id="q-step-2">
-                <span class="step-num">02 / 03</span>
-                <h2 class="serif">¿Qué estilo buscas?</h2>
-                <div class="quiz-options">
-                    <button class="quiz-btn" onclick="nextQuizStep(3, 'style', 'Elegante')">Elegante</button>
-                    <button class="quiz-btn" onclick="nextQuizStep(3, 'style', 'Casual')">Casual</button>
-                    <button class="quiz-btn" onclick="nextQuizStep(3, 'style', 'Seductor')">Seductor</button>
-                    <button class="quiz-btn" onclick="nextQuizStep(3, 'style', 'Fresco')">Fresco</button>
-                </div>
-            </div>
-            <!-- Step 3 -->
-            <div class="quiz-step" id="q-step-3">
-                <span class="step-num">03 / 03</span>
-                <h2 class="serif">¿Qué familia olfativa prefieres?</h2>
-                <div class="quiz-options">
-                    <button class="quiz-btn" onclick="finishQuiz('aroma', 'Dulce')">Dulce / Avainillado</button>
-                    <button class="quiz-btn" onclick="finishQuiz('aroma', 'Fresca')">Cítrica / Fresca</button>
-                    <button class="quiz-btn" onclick="finishQuiz('aroma', 'Amaderada')">Amaderada / Especiada</button>
-                    <button class="quiz-btn" onclick="finishQuiz('aroma', 'Floral')">Floral / Frutal</button>
-                </div>
-            </div>
-            <!-- Result -->
-            <div class="quiz-step" id="q-result">
-                <h2 class="serif mb-4">TUS RECOMENDACIONES</h2>
-                <div class="quiz-results-grid" id="quiz-results-grid"></div>
-                <button class="btn btn-outline-dark mt-4" onclick="closeQuiz()">CERRAR</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- WhatsApp Float -->
-    <a href="https://wa.me/5217531058888" target="_blank" class="whatsapp-float" aria-label="WhatsApp">
-        <i class="fa-brands fa-whatsapp"></i>
-    </a>
-
-    <!-- Admin Float -->
-    <button id="floating-admin-btn" class="floating-admin-btn" aria-label="Admin Access">
-        <i class="fa-regular fa-user"></i>
-    </button>
-
-    <!-- Firebase Realtime Cloud Database SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-    <!-- Scripts with Cache Busting -->
-    <script src="data/categories.js?v=2.3"></script>
-    <script src="data/products.js?v=2.3"></script>
-    <script src="admin/dataStore.js?v=2.3"></script>
-    <script src="js/render.js?v=2.3"></script>
-    <script src="app.js?v=2.3"></script>
-    <script src="admin/adminUI.js?v=2.3"></script>
 </body>
 </html>

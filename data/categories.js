@@ -26,5 +26,13 @@ window.INITIAL_CATEGORIES = [
   {
     "id": "cat-7",
     "name": "Nicho"
+  },
+  {
+    "id": "cat-8",
+    "name": "Perfumes Completos"
+  },
+  {
+    "id": "cat-9",
+    "name": "Testers"
   }
 ];

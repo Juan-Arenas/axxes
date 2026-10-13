@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capital Perfumes | Lujo Contemporáneo</title>
-    <meta name="description" content="Descubre fragancias seleccionadas para quienes no pasan desapercibidos. Tu aroma, tu firma.">
+    <title>Capital Perfumes | Perfumería 100% Original y Exclusiva</title>
+    <meta name="description" content="Capital Perfumes: Perfumería 100% original y exclusiva, decants de 5-10ML y testers. Tienda virtual con envíos a todo Colombia en 1 a 3 días. Addi, tarjetas y contra entrega en Medellín.">
     <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
     <link rel="icon" type="image/webp" href="logo.webp?v=2">
     <link rel="apple-touch-icon" href="favicon.png?v=2">
-    <link rel="stylesheet" href="styles.css?v=7">
+    <link rel="stylesheet" href="styles.css?v=8">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,9 +23,9 @@
     <!-- 1. HEADER -->
     <div class="top-announcement">
         <div class="marquee-content-top">
-            <span>PERFUMES 100% ORIGINALES • 🇨🇴 ENVÍO SEGURO A TODO EL PAÍS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA: +57 300 5130634</span>
-            <span>PERFUMES 100% ORIGINALES • 🇨🇴 ENVÍO SEGURO A TODO EL PAÍS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA: +57 300 5130634</span>
-            <span>PERFUMES 100% ORIGINALES • 🇨🇴 ENVÍO SEGURO A TODO EL PAÍS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA: +57 300 5130634</span>
+            <span>PERFUMERÍA 100% ORIGINAL Y EXCLUSIVA • 🇨🇴 TIENDA VIRTUAL • ENVÍOS A TODO COLOMBIA (1 A 3 DÍAS) • 🚚 ENVÍO GRATIS POR 2 PERFUMES COMPLETOS • 💳 PAGA CON ADDI, TARJETAS, TRANSFERENCIA Y CONTRA ENTREGA EN MEDELLÍN • 💬 WHATSAPP: +57 300 5130634</span>
+            <span>PERFUMERÍA 100% ORIGINAL Y EXCLUSIVA • 🇨🇴 TIENDA VIRTUAL • ENVÍOS A TODO COLOMBIA (1 A 3 DÍAS) • 🚚 ENVÍO GRATIS POR 2 PERFUMES COMPLETOS • 💳 PAGA CON ADDI, TARJETAS, TRANSFERENCIA Y CONTRA ENTREGA EN MEDELLÍN • 💬 WHATSAPP: +57 300 5130634</span>
+            <span>PERFUMERÍA 100% ORIGINAL Y EXCLUSIVA • 🇨🇴 TIENDA VIRTUAL • ENVÍOS A TODO COLOMBIA (1 A 3 DÍAS) • 🚚 ENVÍO GRATIS POR 2 PERFUMES COMPLETOS • 💳 PAGA CON ADDI, TARJETAS, TRANSFERENCIA Y CONTRA ENTREGA EN MEDELLÍN • 💬 WHATSAPP: +57 300 5130634</span>
         </div>
     </div>
     <header class="header" id="header">
@@ -43,12 +43,14 @@
             <nav class="desktop-nav">
                 <ul class="nav-links">
                     <li><a href="#hero">Inicio</a></li>
-                    <li><a href="#catalogo-seccion">Tienda</a></li>
+                    <li><a href="#" data-filter-all="true">Todo</a></li>
                     <li><a href="#" data-filter-gender="Hombre">Hombre</a></li>
                     <li><a href="#" data-filter-gender="Mujer">Mujer</a></li>
                     <li><a href="#" data-filter-gender="Unisex">Unisex</a></li>
                     <li><a href="#" data-filter-category="Árabes">Árabes</a></li>
-                    <li><a href="#" data-filter-category="Diseñador">Diseñador</a></li>
+                    <li><a href="#" data-filter-category="Nicho">Nicho</a></li>
+                    <li><a href="#" data-filter-category="Decants">Decants</a></li>
+                    <li><a href="#" data-filter-size="bottle">Perfumes Completos</a></li>
                 </ul>
             </nav>
 
@@ -72,12 +74,14 @@
             </div>
             <ul class="mobile-links">
                 <li><a href="#hero">Inicio</a></li>
-                <li><a href="#catalogo-seccion">Tienda</a></li>
+                <li><a href="#" data-filter-all="true">Ver Todo</a></li>
                 <li><a href="#" data-filter-gender="Hombre">Hombre</a></li>
                 <li><a href="#" data-filter-gender="Mujer">Mujer</a></li>
                 <li><a href="#" data-filter-gender="Unisex">Unisex</a></li>
                 <li><a href="#" data-filter-category="Árabes">Árabes</a></li>
-                <li><a href="#" data-filter-category="Diseñador">Diseñador</a></li>
+                <li><a href="#" data-filter-category="Nicho">Nicho</a></li>
+                <li><a href="#" data-filter-category="Decants">Decants (5-10ML)</a></li>
+                <li><a href="#" data-filter-size="bottle">Perfumes Completos</a></li>
             </ul>
         </div>
     </div>
@@ -106,7 +110,24 @@
         <!-- 3. CATÁLOGO / TIENDA (INMEDIATAMENTE DESPUÉS DE BANNERS) -->
         <section class="full-store-section section-padding light-bg" id="catalogo-seccion">
             <div class="container">
-                <h2 class="serif mb-4">NUESTRA COLECCIÓN</h2>
+                <div class="text-center mb-4">
+                    <span class="catalog-slogan-highlight"><i class="fa-solid fa-gem"></i> PERFUMERÍA 100% ORIGINAL Y EXCLUSIVA</span>
+                    <h2 class="serif">NUESTRA COLECCIÓN</h2>
+                    <p class="subtitle" style="margin-bottom:20px;">Perfumería completa, decants exclusivos de 5-10ML y testers. Envíos express a todo Colombia en 1 a 3 días hábiles.</p>
+                </div>
+
+                <!-- Pestañas Rápidas de Categoría -->
+                <div class="store-quick-pills" id="store-quick-pills">
+                    <button class="quick-pill active" data-filter-quick="all"><i class="fa-solid fa-border-all"></i> TODO</button>
+                    <button class="quick-pill" data-filter-quick="nicho"><i class="fa-solid fa-crown"></i> NICHO</button>
+                    <button class="quick-pill" data-filter-quick="arabes"><i class="fa-solid fa-moon"></i> ÁRABES</button>
+                    <button class="quick-pill" data-filter-quick="decants"><i class="fa-solid fa-flask"></i> DECANTS (5-10ML)</button>
+                    <button class="quick-pill" data-filter-quick="completos"><i class="fa-solid fa-wine-bottle"></i> PERFUMES COMPLETOS</button>
+                    <button class="quick-pill" data-filter-quick="hombre"><i class="fa-solid fa-mars"></i> HOMBRE</button>
+                    <button class="quick-pill" data-filter-quick="mujer"><i class="fa-solid fa-venus"></i> MUJER</button>
+                    <button class="quick-pill" data-filter-quick="unisex"><i class="fa-solid fa-genderless"></i> UNISEX</button>
+                </div>
+
                 <div class="store-layout">
                     <aside class="store-filters" id="store-filters">
                         <button id="close-filters-mobile" class="mobile-only btn-close-filter"><i class="fa-solid fa-xmark"></i></button>
@@ -168,6 +189,55 @@
             </div>
         </section>
 
+        <!-- SECCIÓN MÉTODOS DE PAGO & BENEFICIOS -->
+        <section class="payment-methods-strip reveal">
+            <div class="container">
+                <div class="payment-strip-card">
+                    <div class="payment-strip-header">
+                        <span class="payment-badge-tag"><i class="fa-solid fa-shield-halved"></i> PAGOS FÁCILES & SEGUROS</span>
+                        <h3>MÉTODOS DE PAGO DISPONIBLES</h3>
+                        <p>Sin complicaciones: nosotros generamos tu link de pago seguro oficial o coordinamos contra entrega en Medellín.</p>
+                    </div>
+                    <div class="payment-methods-grid">
+                        <div class="pay-method-item">
+                            <div class="pay-icon-box addi-box">addi</div>
+                            <strong>Paga con Addi</strong>
+                            <span>Compra a cuotas fácil y rápido sin tarjeta de crédito.</span>
+                        </div>
+                        <div class="pay-method-item">
+                            <div class="pay-icon-box"><i class="fa-solid fa-credit-card"></i></div>
+                            <strong>Tarjetas de Crédito</strong>
+                            <span>Visa, Mastercard, Amex a través de links de pago seguros.</span>
+                        </div>
+                        <div class="pay-method-item">
+                            <div class="pay-icon-box"><i class="fa-solid fa-building-columns"></i></div>
+                            <strong>Transferencias</strong>
+                            <span>Transferencias directas por Bancolombia, Nequi y Daviplata.</span>
+                        </div>
+                        <div class="pay-method-item">
+                            <div class="pay-icon-box"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                            <strong>Contra Entrega</strong>
+                            <span>Paga en efectivo o transferencia al recibir en Medellín.</span>
+                        </div>
+                    </div>
+                    <div class="shipping-perks-strip">
+                        <div class="shipping-perk">
+                            <i class="fa-solid fa-truck-fast"></i>
+                            <span><strong>Envíos a todo Colombia</strong> (1 a 3 días hábiles)</span>
+                        </div>
+                        <div class="shipping-perk">
+                            <i class="fa-solid fa-gift"></i>
+                            <span><strong>Envío GRATIS</strong> por la compra de 2 perfumes completos</span>
+                        </div>
+                        <div class="shipping-perk">
+                            <i class="fa-solid fa-store"></i>
+                            <span><strong>Tienda Virtual Oficial</strong> con atención personalizada</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- 4. COMPRA CON CONFIANZA — SECCIÓN AZUL/NEGRO ESTILO LUZENTS -->
         <section class="trust-section-luzents" id="trust-section">
             <div class="trust-bg-gradient"></div>
@@ -193,28 +263,28 @@
                             <span class="trust-step-badge">01</span>
                             <h4 class="trust-step-title">ELIGE TU PRODUCTO</h4>
                         </div>
-                        <p class="trust-step-desc">Explora la tienda, selecciona tu fragancia o decant y agrégalo al carrito.</p>
+                        <p class="trust-step-desc">Explora la tienda, selecciona tu fragancia, decant (5-10ML) o tester y agrégalo al carrito.</p>
                     </div>
                     <div class="trust-step-card">
                         <div class="trust-step-header">
                             <span class="trust-step-badge">02</span>
                             <h4 class="trust-step-title">WEB O WHATSAPP</h4>
                         </div>
-                        <p class="trust-step-desc">Finaliza tu pedido directo en la web o contáctanos para asesoría por WhatsApp.</p>
+                        <p class="trust-step-desc">Finaliza tu pedido directo en la web o contáctanos para asesoría personalizada por WhatsApp.</p>
                     </div>
                     <div class="trust-step-card">
                         <div class="trust-step-header">
                             <span class="trust-step-badge">03</span>
-                            <h4 class="trust-step-title">PAGO & REGALO</h4>
+                            <h4 class="trust-step-title">PAGO FÁCIL</h4>
                         </div>
-                        <p class="trust-step-desc">Aceptamos transferencias y tarjetas. Tu pedido incluye un obsequio.</p>
+                        <p class="trust-step-desc">Aceptamos Addi, tarjetas de crédito, transferencias y pago contra entrega en Medellín.</p>
                     </div>
                     <div class="trust-step-card">
                         <div class="trust-step-header">
                             <span class="trust-step-badge">04</span>
                             <h4 class="trust-step-title">RECIBE Y DISFRUTA</h4>
                         </div>
-                        <p class="trust-step-desc">Despachamos tu pedido hasta la puerta de tu casa u oficina.</p>
+                        <p class="trust-step-desc">Despachamos a todo Colombia en 1 a 3 días. ¡Envío gratis por 2 perfumes completos!</p>
                     </div>
                 </div>
             </div>
@@ -233,7 +303,7 @@
                             </div>
                             <div class="step-num-enhanced">PASO 01</div>
                             <h4>ELIGE TU PERFUME</h4>
-                            <p>Navega nuestro catálogo y descubre tu fragancia ideal entre cientos de opciones.</p>
+                            <p>Navega nuestro catálogo y descubre tu fragancia ideal entre decants, testers y perfumes completos.</p>
                         </div>
                         <div class="step-enhanced-item reveal delay-1">
                             <div class="step-icon-circle">
@@ -241,7 +311,7 @@
                             </div>
                             <div class="step-num-enhanced">PASO 02</div>
                             <h4>AGRÉGALO AL CARRITO</h4>
-                            <p>Selecciona la presentación que prefieras: decant o botella completa.</p>
+                            <p>Selecciona la presentación que prefieras: decant (5-10ML), tester o botella completa.</p>
                         </div>
                         <div class="step-enhanced-item reveal delay-2">
                             <div class="step-icon-circle">
@@ -249,7 +319,7 @@
                             </div>
                             <div class="step-num-enhanced">PASO 03</div>
                             <h4>CONFIRMA TU PEDIDO</h4>
-                            <p>Completa tu compra de forma segura con múltiples métodos de pago.</p>
+                            <p>Paga con Addi, tarjetas de crédito, transferencia o contra entrega en Medellín.</p>
                         </div>
                         <div class="step-enhanced-item reveal delay-3">
                             <div class="step-icon-circle">
@@ -257,7 +327,7 @@
                             </div>
                             <div class="step-num-enhanced">PASO 04</div>
                             <h4>RECÍBELO</h4>
-                            <p>Disfruta tu fragancia con envío seguro y empaque premium a tu puerta.</p>
+                            <p>Envío seguro a todo Colombia en 1 a 3 días hábiles. Envío gratis por 2 perfumes completos.</p>
                         </div>
                     </div>
                     <!-- Indicator dots on mobile for horizontal track -->
@@ -280,23 +350,23 @@
                 <div class="benefits-grid">
                     <div class="benefit-item">
                         <i class="fa-solid fa-gem"></i>
-                        <h4>PRODUCTOS ORIGINALES</h4>
-                        <p>Perfumería seleccionada cuidadosamente.</p>
+                        <h4>100% ORIGINAL Y EXCLUSIVA</h4>
+                        <p>Perfumería completa, decants de 5-10ML y testers garantizados.</p>
                     </div>
                     <div class="benefit-item">
                         <i class="fa-solid fa-truck-fast"></i>
-                        <h4>ENVÍOS</h4>
-                        <p>Envíos rápidos y seguros.</p>
+                        <h4>ENVÍOS A TODO COLOMBIA</h4>
+                        <p>Tiempos de entrega de 1 a 3 días hábiles. ¡Envío gratis por 2 perfumes completos!</p>
                     </div>
                     <div class="benefit-item">
-                        <i class="fa-solid fa-box-open"></i>
-                        <h4>EXPERIENCIA CAPITAL PERFUMES</h4>
-                        <p>Detalles especiales en tus compras.</p>
+                        <i class="fa-solid fa-credit-card"></i>
+                        <h4>ADDI, TARJETAS Y CONTRA ENTREGA</h4>
+                        <p>Múltiples métodos de pago con links seguros y contra entrega en Medellín.</p>
                     </div>
                     <div class="benefit-item">
                         <i class="fa-regular fa-comments"></i>
-                        <h4>ASESORÍA</h4>
-                        <p>Te ayudamos a encontrar tu fragancia.</p>
+                        <h4>ASESORÍA PERSONALIZADA</h4>
+                        <p>Tienda virtual con atención inmediata por WhatsApp para resolver tus dudas.</p>
                     </div>
                 </div>
             </div>
@@ -309,15 +379,15 @@
             </div>
             <div class="editorial-text-col">
                 <h2 class="serif">DESCUBRE CAPITAL PERFUMES</h2>
-                <p>El aroma es invisible. La impresión no. Creamos momentos, recuerdos y primeras impresiones que permanecen en el tiempo. Seleccionamos cuidadosamente cada fragancia de nuestra colección para asegurar exclusividad y calidad.</p>
+                <p>El aroma es invisible. La impresión no. Perfumería 100% original y exclusiva seleccionada cuidadosamente para asegurar la máxima calidad y fijación en cada botella y decant.</p>
                 <div class="editorial-social-strip" style="display:flex; gap:12px; margin: 15px 0; flex-wrap:wrap;">
                     <a href="https://wa.me/573005130634" target="_blank" class="btn btn-outline-dark" style="padding:8px 16px; font-size:13px;">
                         <i class="fa-brands fa-whatsapp" style="color:#25d366;"></i> +57 300 5130634
                     </a>
-                    <a href="https://www.instagram.com/capitalperfumesmed/" target="_blank" class="btn btn-outline-dark" style="padding:8px 16px; font-size:13px;">
+                    <a href="https://instagram.com/capitalperfumesmed?cplk=MXJ2dXp0Y3NtcGtqeg%3D%3D" target="_blank" class="btn btn-outline-dark" style="padding:8px 16px; font-size:13px;">
                         <i class="fa-brands fa-instagram" style="color:#e1306c;"></i> @capitalperfumesmed
                     </a>
-                    <a href="https://www.tiktok.com/@capital_perfumes" target="_blank" class="btn btn-outline-dark" style="padding:8px 16px; font-size:13px;">
+                    <a href="https://www.tiktok.com/@capital_perfumes?_r=1&_t=ZS-9AWYYuVZjfR" target="_blank" class="btn btn-outline-dark" style="padding:8px 16px; font-size:13px;">
                         <i class="fa-brands fa-tiktok"></i> @capital_perfumes
                     </a>
                 </div>
@@ -330,8 +400,14 @@
             <div class="shipping-overlay"></div>
             <img src="https://images.unsplash.com/photo-1586528116311-ad8ed7c663be?auto=format&fit=crop&w=1200&q=80" alt="Envíos a todo Colombia" class="shipping-img">
             <div class="shipping-content">
-                <h2 class="serif">ENVIAMOS TU PERFUME HASTA DONDE ESTÉS</h2>
-                <p>Envíos seguros y confiables a todo el territorio colombiano.</p>
+                <div style="margin-bottom:12px;">
+                    <span style="display:inline-block; background:var(--c-accent); color:#000; font-weight:700; padding:6px 14px; border-radius:50px; font-size:12px; letter-spacing:1px;"><i class="fa-solid fa-truck-fast"></i> TIENDA VIRTUAL • ENVÍOS A TODO COLOMBIA</span>
+                </div>
+                <h2 class="serif">ENTREGAS RÁPIDAS EN 1 A 3 DÍAS HÁBILES</h2>
+                <p>Despachos a todo el territorio nacional. <strong>¡ENVÍO GRATIS por la compra de 2 perfumes completos!</strong></p>
+                <div style="margin-top:18px;">
+                    <a href="#catalogo-seccion" class="btn btn-primary-dark">COMPRAR AHORA</a>
+                </div>
             </div>
         </section>
 
@@ -370,10 +446,10 @@
                 <div class="insta-item"><img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80" alt="Ig"><i class="fa-brands fa-instagram"></i></div>
             </div>
             <div style="display:flex; justify-content:center; gap:15px; margin-top:25px; flex-wrap:wrap;">
-                <a href="https://www.instagram.com/capitalperfumesmed/" target="_blank" class="btn btn-outline-light reveal delay-2">
+                <a href="https://instagram.com/capitalperfumesmed?cplk=MXJ2dXp0Y3NtcGtqeg%3D%3D" target="_blank" class="btn btn-outline-light reveal delay-2">
                     <i class="fa-brands fa-instagram" style="margin-right:6px;"></i> Instagram: @capitalperfumesmed
                 </a>
-                <a href="https://www.tiktok.com/@capital_perfumes" target="_blank" class="btn btn-outline-light reveal delay-2">
+                <a href="https://www.tiktok.com/@capital_perfumes?_r=1&_t=ZS-9AWYYuVZjfR" target="_blank" class="btn btn-outline-light reveal delay-2">
                     <i class="fa-brands fa-tiktok" style="margin-right:6px;"></i> TikTok: @capital_perfumes
                 </a>
                 <a href="https://wa.me/573005130634" target="_blank" class="btn btn-outline-light reveal delay-2">
@@ -388,36 +464,37 @@
         <div class="footer-top container">
             <div class="footer-col brand-col">
                 <img src="logo.webp?v=2" alt="CAPITAL PERFUMES" class="footer-logo" id="footer-logo">
-                <p>El lujo contemporáneo en perfumería y decants. Fragancias originales que definen tu identidad.</p>
+                <p>PERFUMERÍA 100% ORIGINAL Y EXCLUSIVA. Tienda virtual con envíos a todo Colombia en 1 a 3 días. Addi, tarjetas y contra entrega en Medellín.</p>
             </div>
             <div class="footer-col">
                 <h4>Colecciones</h4>
                 <ul>
-                    <li><a href="#catalogo-seccion">Hombre</a></li>
-                    <li><a href="#catalogo-seccion">Mujer</a></li>
-                    <li><a href="#catalogo-seccion">Unisex</a></li>
-                    <li><a href="#catalogo-seccion">Decants 5ML & 10ML</a></li>
+                    <li><a href="#catalogo-seccion" data-filter-all="true">Ver Todo el Catálogo</a></li>
+                    <li><a href="#catalogo-seccion" data-filter-category="Nicho">Perfumes Nicho</a></li>
+                    <li><a href="#catalogo-seccion" data-filter-category="Árabes">Perfumes Árabes</a></li>
+                    <li><a href="#catalogo-seccion" data-filter-category="Decants">Decants 5ML & 10ML</a></li>
+                    <li><a href="#catalogo-seccion" data-filter-size="bottle">Perfumes Completos & Testers</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h4>Contacto Directo</h4>
                 <ul>
                     <li><a href="https://wa.me/573005130634" target="_blank"><i class="fa-brands fa-whatsapp" style="color:#25d366;"></i> +57 300 5130634</a></li>
-                    <li><a href="https://www.instagram.com/capitalperfumesmed/" target="_blank"><i class="fa-brands fa-instagram" style="color:#e1306c;"></i> @capitalperfumesmed</a></li>
-                    <li><a href="https://www.tiktok.com/@capital_perfumes" target="_blank"><i class="fa-brands fa-tiktok"></i> @capital_perfumes</a></li>
+                    <li><a href="https://instagram.com/capitalperfumesmed?cplk=MXJ2dXp0Y3NtcGtqeg%3D%3D" target="_blank"><i class="fa-brands fa-instagram" style="color:#e1306c;"></i> @capitalperfumesmed</a></li>
+                    <li><a href="https://www.tiktok.com/@capital_perfumes?_r=1&_t=ZS-9AWYYuVZjfR" target="_blank"><i class="fa-brands fa-tiktok"></i> @capital_perfumes</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h4>Síguenos</h4>
                 <div class="footer-socials">
-                    <a href="https://www.instagram.com/capitalperfumesmed/" target="_blank" title="Instagram @capitalperfumesmed"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://www.tiktok.com/@capital_perfumes" target="_blank" title="TikTok @capital_perfumes"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="https://instagram.com/capitalperfumesmed?cplk=MXJ2dXp0Y3NtcGtqeg%3D%3D" target="_blank" title="Instagram @capitalperfumesmed"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@capital_perfumes?_r=1&_t=ZS-9AWYYuVZjfR" target="_blank" title="TikTok @capital_perfumes"><i class="fa-brands fa-tiktok"></i></a>
                     <a href="https://wa.me/573005130634" target="_blank" title="WhatsApp +57 300 5130634"><i class="fa-brands fa-whatsapp"></i></a>
                 </div>
             </div>
         </div>
         <div class="footer-bottom container">
-            <p>&copy; 2026 CAPITAL PERFUMES. Todos los derechos reservados. WhatsApp: +57 300 5130634</p>
+            <p>&copy; 2026 CAPITAL PERFUMES. PERFUMERÍA 100% ORIGINAL Y EXCLUSIVA. WhatsApp: +57 300 5130634</p>
         </div>
     </footer>
 
@@ -428,6 +505,9 @@
             <button class="close-cart" id="close-cart"><i class="fa-solid fa-xmark"></i></button>
         </div>
         
+        <!-- Banner promocional dinámico de envío gratis -->
+        <div id="cart-promo-container"></div>
+
         <div class="cart-items" id="cart-items">
             <!-- JS -->
         </div>
@@ -436,6 +516,10 @@
             <div class="cart-subtotal">
                 <span>Subtotal</span>
                 <span id="cart-subtotal">$0</span>
+            </div>
+            <div class="cart-payment-note">
+                <strong><i class="fa-solid fa-shield-halved"></i> Métodos de Pago: Addi, Tarjetas, Transferencia y Contra Entrega en Medellín</strong>
+                <span>Al finalizar tu pedido, coordinamos los detalles y te generamos tu link de pago seguro de inmediato.</span>
             </div>
             <button class="btn btn-outline-dark btn-full mb-2" id="continue-shopping">CONTINUAR COMPRANDO</button>
             <button class="btn btn-primary-dark btn-full" id="checkout-btn">
@@ -470,11 +554,11 @@
     </button>
 
     <!-- Scripts with Cache Busting -->
-    <script src="data/categories.js?v=3.1"></script>
-    <script src="data/products.js?v=3.1"></script>
-    <script src="admin/dataStore.js?v=3.1"></script>
-    <script src="js/render.js?v=3.1"></script>
-    <script src="app.js?v=3.1"></script>
-    <script src="admin/adminUI.js?v=3.1"></script>
+    <script src="data/categories.js?v=3.2"></script>
+    <script src="data/products.js?v=3.2"></script>
+    <script src="admin/dataStore.js?v=3.2"></script>
+    <script src="js/render.js?v=3.2"></script>
+    <script src="app.js?v=3.2"></script>
+    <script src="admin/adminUI.js?v=3.2"></script>
 </body>
 </html>

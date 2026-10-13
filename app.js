@@ -259,12 +259,15 @@ function initCartUI() {
             }
 
             let total = 0;
-            let message = `*¡HOLA! DESEO REALIZAR UN PEDIDO EN CAPITAL PERFUMES* 💎✨\n\n`;
+            let bottlesCount = 0;
+            let message = `*¡HOLA! DESEO REALIZAR UN PEDIDO EN CAPITAL PERFUMES* 💎✨\n`;
+            message += `_PERFUMERÍA 100% ORIGINAL Y EXCLUSIVA_\n\n`;
             message += `*Detalle de mi pedido:*\n`;
             
             cart.forEach((item, index) => {
                 const itemTotal = item.price * item.qty;
                 total += itemTotal;
+                if (item.size === 'bottle') bottlesCount += item.qty;
                 const sizeLabel = item.size === 'bottle' ? 'Botella Completa' : item.size;
                 message += `${index + 1}. *${item.name}*\n`;
                 message += `   • Presentación: ${sizeLabel}\n`;
@@ -273,7 +276,18 @@ function initCartUI() {
             });
             
             message += `*TOTAL A PAGAR: $${total.toLocaleString('es-CO')} COP*\n\n`;
-            message += `Por favor indíquenme los métodos de pago disponibles y entrega. ¡Muchas gracias!`;
+
+            if (bottlesCount >= 2) {
+                message += `🚚 *¡Aplica a ENVÍO GRATIS por compra de 2 perfumes completos!* 💨\n\n`;
+            } else {
+                message += `🇨🇴 *Envíos a todo Colombia (1 a 3 días hábiles)*\n\n`;
+            }
+
+            message += `*Mis datos para el pedido:*\n`;
+            message += `• Nombre:\n`;
+            message += `• Ciudad y Dirección de entrega:\n`;
+            message += `• Método de pago elegido: (Addi / Tarjeta de Crédito / Transferencia Bancaria / Contra Entrega Medellín)\n\n`;
+            message += `Por favor envíenme el link de pago seguro o coordinemos la entrega. ¡Muchas gracias!`;
 
             const encodedMsg = encodeURIComponent(message);
             window.open(`https://wa.me/573005130634?text=${encodedMsg}`, '_blank');
@@ -308,19 +322,24 @@ function updateCartUI() {
 
     if (!container) return;
 
+    const promoEl = document.getElementById('cart-promo-container');
+
     if (cart.length === 0) {
         container.innerHTML = '<p style="text-align:center; margin-top:2rem; color:#888;">Tu carrito está vacío.</p>';
         subtotalEl.innerText = '$0';
         countEls.forEach(el => el.innerText = '0');
+        if (promoEl) promoEl.innerHTML = '<div class="cart-promo-banner"><i class="fa-solid fa-truck"></i> Envío GRATIS por 2 perfumes completos (Envíos 1-3 días)</div>';
         return;
     }
 
     let totalQty = 0;
     let subtotal = 0;
+    let bottlesCount = 0;
 
     container.innerHTML = cart.map(item => {
         totalQty += item.qty;
         subtotal += item.price * item.qty;
+        if (item.size === 'bottle') bottlesCount += item.qty;
         let sizeDisplay = item.size === 'bottle' ? 'Botella Completa' : item.size;
         return `
             <div class="cart-item">
@@ -339,6 +358,14 @@ function updateCartUI() {
 
     subtotalEl.innerText = '$' + subtotal.toLocaleString('es-CO');
     countEls.forEach(el => el.innerText = totalQty);
+
+    if (promoEl) {
+        if (bottlesCount >= 2) {
+            promoEl.innerHTML = '<div class="cart-promo-banner" style="background:#059669;"><i class="fa-solid fa-truck-fast"></i> ¡ENVÍO GRATIS APLICADO! (2+ Perfumes completos)</div>';
+        } else {
+            promoEl.innerHTML = '<div class="cart-promo-banner"><i class="fa-solid fa-truck"></i> Envío GRATIS por 2 perfumes completos (Envíos 1-3 días a todo Colombia)</div>';
+        }
+    }
 }
 
 function saveCart() {
@@ -381,26 +408,91 @@ function initStoreFilters() {
     const sortSelect = document.getElementById('sort-select');
     if(sortSelect) sortSelect.addEventListener('change', window.applyFilters);
 
-    // Initial nav links intercept to set filter and scroll
-    document.querySelectorAll('a[data-filter-gender], a[data-filter-category]').forEach(link => {
+    // Nav links intercept to set filter and scroll
+    document.querySelectorAll('a[data-filter-all], a[data-filter-gender], a[data-filter-category], a[data-filter-size]').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
+            const isAll = link.hasAttribute('data-filter-all');
             const g = link.getAttribute('data-filter-gender');
             const c = link.getAttribute('data-filter-category');
+            const s = link.getAttribute('data-filter-size');
             
-            // reset all checkboxes
+            // Reset all checkboxes
             document.querySelectorAll('#store-filters input[type="checkbox"]').forEach(cb => cb.checked = false);
             
-            if(g) {
-                const cb = document.querySelector(`.filter-gender[value="${g}"]`);
-                if(cb) cb.checked = true;
-            }
-            if(c) {
-                const cb = document.querySelector(`.filter-category[value="${c}"]`);
-                if(cb) cb.checked = true;
+            if (isAll) {
+                // Reset slider
+                if (priceSlider) priceSlider.value = priceSlider.max;
+                if (priceVal) priceVal.innerText = '$' + parseInt(priceSlider.max).toLocaleString('es-CO');
+                updateActiveQuickPill('all');
+            } else {
+                if(g) {
+                    const cb = document.querySelector(`.filter-gender[value="${g}"]`);
+                    if(cb) cb.checked = true;
+                    updateActiveQuickPill(g.toLowerCase());
+                }
+                if(c) {
+                    const cb = document.querySelector(`.filter-category[value="${c}"]`);
+                    if(cb) cb.checked = true;
+                    if (c === 'Árabes') updateActiveQuickPill('arabes');
+                    else if (c === 'Nicho') updateActiveQuickPill('nicho');
+                    else if (c === 'Decants') updateActiveQuickPill('decants');
+                }
+                if(s) {
+                    const cb = document.querySelector(`.filter-size[value="${s}"]`);
+                    if(cb) cb.checked = true;
+                    if (s === 'bottle') updateActiveQuickPill('completos');
+                }
             }
             window.applyFilters();
-            document.getElementById('catalogo-seccion').scrollIntoView({behavior: 'smooth'});
+            const catSec = document.getElementById('catalogo-seccion');
+            if (catSec) catSec.scrollIntoView({behavior: 'smooth'});
+        });
+    });
+
+    // Quick filter pills listener
+    function updateActiveQuickPill(key) {
+        document.querySelectorAll('.quick-pill').forEach(pill => {
+            if (pill.getAttribute('data-filter-quick') === key) pill.classList.add('active');
+            else pill.classList.remove('active');
+        });
+    }
+
+    document.querySelectorAll('.quick-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            const quick = pill.getAttribute('data-filter-quick');
+            updateActiveQuickPill(quick);
+
+            // Reset all checkboxes
+            document.querySelectorAll('#store-filters input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+            if (quick === 'all') {
+                if (priceSlider) priceSlider.value = priceSlider.max;
+                if (priceVal) priceVal.innerText = '$' + parseInt(priceSlider.max).toLocaleString('es-CO');
+            } else if (quick === 'nicho') {
+                const cb = document.querySelector('.filter-category[value="Nicho"]');
+                if(cb) cb.checked = true;
+            } else if (quick === 'arabes') {
+                const cb = document.querySelector('.filter-category[value="Árabes"]');
+                if(cb) cb.checked = true;
+            } else if (quick === 'decants') {
+                const cb = document.querySelector('.filter-category[value="Decants"]');
+                if(cb) cb.checked = true;
+            } else if (quick === 'completos') {
+                const cb = document.querySelector('.filter-size[value="bottle"]');
+                if(cb) cb.checked = true;
+            } else if (quick === 'hombre') {
+                const cb = document.querySelector('.filter-gender[value="Hombre"]');
+                if(cb) cb.checked = true;
+            } else if (quick === 'mujer') {
+                const cb = document.querySelector('.filter-gender[value="Mujer"]');
+                if(cb) cb.checked = true;
+            } else if (quick === 'unisex') {
+                const cb = document.querySelector('.filter-gender[value="Unisex"]');
+                if(cb) cb.checked = true;
+            }
+
+            window.applyFilters();
         });
     });
 }

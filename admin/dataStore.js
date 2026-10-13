@@ -1064,7 +1064,7 @@ class DataStore {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `axxes-backup-${new Date().toISOString().slice(0,10)}.json`;
+        a.download = `capital-backup-${new Date().toISOString().slice(0,10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
         this.addLog('info', 'EXPORT_BACKUP', `Copia de seguridad exportada (${this.products.length} productos, ${this.categories.length} categorías).`, null, 'OK');
@@ -1182,4 +1182,4 @@ class DataStore {
 }
 
 // Global store instance
-window.axxesStore = new DataStore();
+window.capitalStore = window.axxesStore = new DataStore();

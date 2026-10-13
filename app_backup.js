@@ -1,4 +1,4 @@
-// AXXES PARFUM - Premium Logic
+// CAPITAL PERFUMES - Premium Logic
 
 document.addEventListener("DOMContentLoaded", () => {
     // Remove loading state

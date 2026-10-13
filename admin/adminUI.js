@@ -1,4 +1,4 @@
-// adminUI.js - Full Admin Panel for AXXES PARFUM with Bulk Upload, Image Optimization, Live Sync & Developer Activity Logs
+// adminUI.js - Full Admin Panel for CAPITAL PERFUMES with Bulk Upload, Image Optimization, Live Sync & Developer Activity Logs
 
 function initAdmin() {
     const adminBtn = document.getElementById('admin-login-btn');
@@ -929,7 +929,7 @@ function injectAdminHTML() {
             <div class="admin-top-bar">
                 <div class="admin-brand-title">
                     <i class="fas fa-crown" style="color:#f59e0b;"></i>
-                    <span>AXXES PARFUM</span>
+                    <span>CAPITAL PERFUMES</span>
                     <span class="admin-brand-badge">ADMIN v2.5</span>
                 </div>
                 <div class="admin-top-actions">
@@ -1559,7 +1559,7 @@ function setupAdminEventListeners() {
                 const priceBottle = parseFloat(document.getElementById('admin-product-price').value) || 0;
 
                 const name = document.getElementById('admin-product-name').value.trim();
-                const brand = (document.getElementById('admin-product-brand').value.trim() || 'AXXES').toUpperCase();
+                const brand = (document.getElementById('admin-product-brand').value.trim() || 'CAPITAL PERFUMES').toUpperCase();
 
                 if (!name) {
                     alert('Ingresa el nombre del producto.');
@@ -1734,7 +1734,7 @@ async function handleBulkImagesFiles(fileList) {
             const compressed = await window.compressProductImage(file, 800, 800, 0.78);
             const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').trim();
             const parts = cleanName.split(/\s+/);
-            let brand = 'AXXES';
+            let brand = 'CAPITAL PERFUMES';
             let name = cleanName;
             if (parts.length > 1) {
                 brand = parts[0].toUpperCase();
@@ -1858,7 +1858,7 @@ window.saveBulkImagesProducts = async function() {
             const name = (item.name || '').trim();
             if (!name) return;
 
-            const brand = (item.brand || 'AXXES').trim().toUpperCase();
+            const brand = (item.brand || 'CAPITAL PERFUMES').trim().toUpperCase();
             const price = parseFloat(item.price) || 0;
             const gender = item.gender || 'Unisex';
             const category = item.category || 'Unisex';
@@ -2003,7 +2003,7 @@ window.saveBulkTableProducts = async function() {
 
     rows.forEach(row => {
         const name = (row.querySelector('.tbl-name').value || '').trim();
-        const brand = (row.querySelector('.tbl-brand').value || 'AXXES').trim().toUpperCase();
+        const brand = (row.querySelector('.tbl-brand').value || 'CAPITAL PERFUMES').trim().toUpperCase();
         const price = parseFloat(row.querySelector('.tbl-price').value) || 0;
         const gender = row.querySelector('.tbl-gender').value;
         const category = row.querySelector('.tbl-cat').value;
@@ -2078,7 +2078,7 @@ window.parseExcelText = function() {
 
         if (cols[0]) {
             let name = cols[0];
-            let brand = 'AXXES';
+            let brand = 'CAPITAL PERFUMES';
             let price = 0;
             let gender = 'Unisex';
             let category = defaultCat;
@@ -2091,9 +2091,9 @@ window.parseExcelText = function() {
                 const col1IsPrice = /^[\$\s]*\d+/.test(cols[1]);
                 if (col1IsPrice) {
                     price = parseFloat(cols[1].replace(/[^0-9]/g, '')) || 0;
-                    brand = (cols[2] || 'AXXES').toUpperCase();
+                    brand = (cols[2] || 'CAPITAL PERFUMES').toUpperCase();
                 } else {
-                    brand = (cols[1] || 'AXXES').toUpperCase();
+                    brand = (cols[1] || 'CAPITAL PERFUMES').toUpperCase();
                     price = parseFloat(cols[2].replace(/[^0-9]/g, '')) || 0;
                 }
 

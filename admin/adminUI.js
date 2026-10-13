@@ -1343,6 +1343,9 @@ function injectAdminHTML() {
                                 </p>
                             </div>
                             <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="admin-btn-primary admin-btn-sm" type="button" onclick="refreshAdminLogs()" title="Recargar logs en tiempo real desde Neon DB">
+                                    <i class="fas fa-sync-alt"></i> Recargar Logs
+                                </button>
                                 <button class="admin-btn-secondary admin-btn-sm" type="button" onclick="copyLogsJson()" title="Copiar logs completos al portapapeles">
                                     <i class="fas fa-copy"></i> Copiar JSON
                                 </button>
@@ -1361,6 +1364,7 @@ function injectAdminHTML() {
                                 <button class="log-filter-btn active" data-filter="all" onclick="setLogsFilter('all')">Todos (<span id="log-count-all">0</span>)</button>
                                 <button class="log-filter-btn" data-filter="ok" onclick="setLogsFilter('ok')">🟢 Éxitos [OK] (<span id="log-count-ok">0</span>)</button>
                                 <button class="log-filter-btn" data-filter="failed" onclick="setLogsFilter('failed')">🔴 Errores [FAILED] (<span id="log-count-failed">0</span>)</button>
+                                <button class="log-filter-btn" data-filter="security" onclick="setLogsFilter('security')">🔐 Seguridad & PIN (<span id="log-count-security">0</span>)</button>
                                 <button class="log-filter-btn" data-filter="edit" onclick="setLogsFilter('edit')">✏️ Ediciones</button>
                                 <button class="log-filter-btn" data-filter="delete" onclick="setLogsFilter('delete')">🗑️ Eliminaciones</button>
                                 <button class="log-filter-btn" data-filter="sync" onclick="setLogsFilter('sync')">☁️ Sincronización</button>
@@ -1479,7 +1483,11 @@ function setupAdminEventListeners() {
             if (targetContent) targetContent.classList.add('active');
 
             if (tab.dataset.tab === 'tab-logs') {
-                renderLogs(currentLogFilter);
+                if (window.axxesStore && typeof window.axxesStore.fetchRemoteLogs === 'function') {
+                    window.axxesStore.fetchRemoteLogs().then(() => renderLogs(currentLogFilter));
+                } else {
+                    renderLogs(currentLogFilter);
+                }
             }
         });
     });
@@ -2693,6 +2701,16 @@ function updateLogsBadge() {
 
     const countFailed = document.getElementById('log-count-failed');
     if (countFailed) countFailed.textContent = allLogs.filter(l => l.status === 'FAILED').length;
+
+    const countSecurity = document.getElementById('log-count-security');
+    if (countSecurity) {
+        countSecurity.textContent = allLogs.filter(l => 
+            (l.action || '').includes('AUTH') || 
+            (l.action || '').includes('PIN') || 
+            (l.action || '').includes('PASSWORD') || 
+            (l.action || '').includes('LOGIN')
+        ).length;
+    }
 }
 
 document.addEventListener('axxesLogAdded', () => {
@@ -2709,36 +2727,86 @@ window.changeAdminPin = async function(event) {
     const confirmPin = (document.getElementById('admin-confirm-pin')?.value || '').trim();
 
     if (!newPin || newPin.length < 4) {
-        alert('El PIN debe tener al menos 4 dígitos.');
+        alert('El PIN debe tener al menos 4 dígitos numéricos.');
+        return;
+    }
+    if (!/^\d+$/.test(newPin)) {
+        alert('El PIN debe contener únicamente números.');
         return;
     }
     if (newPin !== confirmPin) {
-        alert('Los dos campos de PIN no coinciden.');
+        alert('Los dos campos de PIN no coinciden. Por favor verifica.');
         return;
+    }
+
+    const currentAuth = sessionStorage.getItem('admin_password') || 
+                        localStorage.getItem('admin_password') || 
+                        localStorage.getItem('axxes_admin_pin') || 
+                        '2006';
+
+    const submitBtn = document.querySelector('#admin-change-pin-form button[type="submit"]');
+    const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando en Neon DB...';
     }
 
     try {
         const res = await window.fetchApi('/api/admin/password', {
             method: 'POST',
-            body: JSON.stringify({ newPin })
+            body: JSON.stringify({
+                newPin: newPin,
+                adminPassword: currentAuth
+            })
         });
+
         if (res.ok) {
             localStorage.setItem('axxes_admin_pin', newPin);
             localStorage.setItem('admin_password', newPin);
             sessionStorage.setItem('admin_password', newPin);
-            window.showToast('✅ PIN de administrador actualizado exitosamente en Neon PostgreSQL.');
+
+            window.showToast('🔒 ¡PIN de administrador actualizado exitosamente en Neon PostgreSQL!');
+
             if (document.getElementById('admin-new-pin')) document.getElementById('admin-new-pin').value = '';
             if (document.getElementById('admin-confirm-pin')) document.getElementById('admin-confirm-pin').value = '';
+
             if (window.axxesStore) {
-                window.axxesStore.addLog('info', 'PIN_CHANGED', 'PIN de seguridad del administrador modificado en la base de datos central.', null, 'OK');
+                window.axxesStore.addLog('success', 'ADMIN_PIN_CHANGED', `PIN de acceso del administrador modificado exitosamente en la base de datos central (${newPin.length} dígitos).`, { updatedInDb: true, newPinLength: newPin.length }, 'OK');
+                await window.axxesStore.fetchRemoteLogs();
+            }
+            if (typeof renderLogs === 'function') {
+                renderLogs(currentLogFilter);
             }
         } else {
             const data = await res.json().catch(() => ({}));
-            alert('Error al actualizar PIN: ' + (data.message || 'Error en servidor'));
+            const errMsg = data.message || data.error || 'Error en servidor';
+            alert('Error al actualizar PIN: ' + errMsg);
+            if (window.axxesStore) {
+                window.axxesStore.addLog('error', 'ADMIN_PIN_CHANGE_FAIL', 'Error al modificar PIN en Neon DB: ' + errMsg, { error: errMsg }, 'FAILED');
+            }
         }
     } catch (e) {
         localStorage.setItem('axxes_admin_pin', newPin);
-        window.showToast('✅ PIN guardado localmente.');
+        localStorage.setItem('admin_password', newPin);
+        sessionStorage.setItem('admin_password', newPin);
+        window.showToast('⚠️ PIN guardado localmente (sin conexión a Neon DB).', 'warn');
+        if (window.axxesStore) {
+            window.axxesStore.addLog('warn', 'ADMIN_PIN_OFFLINE', 'PIN guardado localmente: ' + e.message, null, 'WARN');
+        }
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origBtnHtml;
+        }
+    }
+};
+
+window.refreshAdminLogs = async function() {
+    if (window.axxesStore && typeof window.axxesStore.fetchRemoteLogs === 'function') {
+        window.showToast('🔄 Obteniendo logs en tiempo real...');
+        await window.axxesStore.fetchRemoteLogs();
+        renderLogs(currentLogFilter);
+        window.showToast('✅ Logs sincronizados desde Neon PostgreSQL.');
     }
 };
 
@@ -2755,14 +2823,21 @@ window.renderLogs = function(filter = 'all', searchQuery = '') {
         logs = logs.filter(l => l.status === 'OK');
     } else if (filter === 'failed') {
         logs = logs.filter(l => l.status === 'FAILED');
+    } else if (filter === 'security') {
+        logs = logs.filter(l => 
+            (l.action || '').includes('AUTH') || 
+            (l.action || '').includes('PIN') || 
+            (l.action || '').includes('PASSWORD') || 
+            (l.action || '').includes('LOGIN')
+        );
     } else if (filter === 'edit') {
-        logs = logs.filter(l => l.action.includes('UPDATE'));
+        logs = logs.filter(l => (l.action || '').includes('UPDATE'));
     } else if (filter === 'delete') {
-        logs = logs.filter(l => l.action.includes('DELETE'));
+        logs = logs.filter(l => (l.action || '').includes('DELETE'));
     } else if (filter === 'sync') {
-        logs = logs.filter(l => l.action.includes('SYNC') || l.action.includes('NEON') || l.action.includes('CLOUD'));
+        logs = logs.filter(l => (l.action || '').includes('SYNC') || (l.action || '').includes('NEON') || (l.action || '').includes('CLOUD'));
     } else if (filter === 'create') {
-        logs = logs.filter(l => l.action.includes('CREATE') || l.action.includes('BULK'));
+        logs = logs.filter(l => (l.action || '').includes('CREATE') || (l.action || '').includes('BULK'));
     }
 
     // 2. Filter by search query
@@ -2969,31 +3044,6 @@ window.showToast = function(msg, type = 'success') {
         t.style.opacity = '0';
         setTimeout(() => t.remove(), 350);
     }, 4000);
-};
-
-// Change Admin PIN
-window.changeAdminPin = function(e) {
-    e.preventDefault();
-    const newPin = document.getElementById('admin-new-pin').value.trim();
-    const confirmPin = document.getElementById('admin-confirm-pin').value.trim();
-    
-    if (!/^\d{4}$/.test(newPin)) {
-        alert('El PIN debe contener exactamente 4 dígitos numéricos.');
-        return;
-    }
-    if (newPin !== confirmPin) {
-        alert('Los PINs no coinciden. Por favor verifica.');
-        return;
-    }
-
-    localStorage.setItem('axxes_admin_pin', newPin);
-    document.getElementById('admin-new-pin').value = '';
-    document.getElementById('admin-confirm-pin').value = '';
-    
-    if (window.axxesStore) {
-        window.axxesStore.addLog('info', 'CHANGE_PIN', 'El PIN de seguridad del administrador fue actualizado exitosamente.', null, 'OK');
-    }
-    window.showToast('🔒 ¡Éxito! Tu PIN de administrador ha sido actualizado.');
 };
 
 // Auto-fill token field on load

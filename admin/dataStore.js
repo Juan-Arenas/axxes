@@ -150,9 +150,9 @@ const AXXES_FIREBASE_CONFIG = {
 // 3. DataStore Engine with Developer Activity Logger & Cloud Sync
 class DataStore {
     constructor() {
-        this.version = 'v2';
+        this.version = 'v4_capital';
         this.keys = {
-            products: `axxes_products_${this.version}`,
+            products: `capital_products_${this.version}`,
             categories: `axxes_categories_${this.version}`,
             siteConfig: `axxes_site_config_${this.version}`,
             token: 'axxes_github_token',
@@ -447,7 +447,7 @@ class DataStore {
 
         // 1. Escuchar cambios de productos en tiempo real desde cualquier dispositivo (PC, Celular, etc.)
         try {
-            this.db.collection('axxes_products').onSnapshot((snapshot) => {
+            this.db.collection('capital_products').onSnapshot((snapshot) => {
                 if (!snapshot || snapshot.empty) return;
 
                 const cloudProducts = [];
@@ -475,15 +475,15 @@ class DataStore {
                     this.addLog('success', 'CLOUD_SYNC_REALTIME', `Nube sincronizada: ${this.products.length} productos sincronizados en vivo.`, null, 'OK');
                 }
             }, (err) => {
-                console.warn('Aviso en listener de Firestore axxes_products:', err);
+                console.warn('Aviso en listener de Firestore capital_products:', err);
             });
         } catch (err) {
-            console.warn('Error configurando onSnapshot en axxes_products:', err);
+            console.warn('Error configurando onSnapshot en capital_products:', err);
         }
 
         // 2. Escuchar cambios en categorías en tiempo real
         try {
-            this.db.collection('axxes_meta').doc('categories').onSnapshot((docSnap) => {
+            this.db.collection('capital_meta').doc('categories').onSnapshot((docSnap) => {
                 if (docSnap && docSnap.exists) {
                     const data = docSnap.data();
                     if (data && Array.isArray(data.list) && data.list.length > 0) {
@@ -764,7 +764,7 @@ class DataStore {
         // Real-time Cloud Sync with Firebase Firestore (instantly visible on mobile and all devices)
         if (this.db) {
             try {
-                await this.db.collection('axxes_products').doc(String(migrated.id)).set(migrated);
+                await this.db.collection('capital_products').doc(String(migrated.id)).set(migrated);
                 this.addLog('success', 'CLOUD_SYNC', `Producto "${migrated.name}" sincronizado con la nube para todos los dispositivos.`, { id: migrated.id }, 'OK');
             } catch (cloudErr) {
                 console.error('Error guardando en Firestore:', cloudErr);
@@ -817,7 +817,7 @@ class DataStore {
             try {
                 const batch = this.db.batch();
                 migrated.slice(0, 450).forEach(p => {
-                    const docRef = this.db.collection('axxes_products').doc(String(p.id));
+                    const docRef = this.db.collection('capital_products').doc(String(p.id));
                     batch.set(docRef, p, { merge: true });
                 });
                 await batch.commit();
@@ -848,7 +848,7 @@ class DataStore {
             // Real-time Cloud Sync with Firebase Firestore
             if (this.db) {
                 try {
-                    await this.db.collection('axxes_products').doc(strId).set(this.products[idx], { merge: true });
+                    await this.db.collection('capital_products').doc(strId).set(this.products[idx], { merge: true });
                     this.addLog('success', 'CLOUD_PRODUCT_UPDATED', `"${this.products[idx].name}" actualizado en la nube para todos los dispositivos.`, { id: strId }, 'OK');
                 } catch (cloudErr) {
                     console.error('Error actualizando en Firestore:', cloudErr);
@@ -886,7 +886,7 @@ class DataStore {
             // Real-time Cloud Sync with Firebase Firestore
             if (this.db) {
                 try {
-                    await this.db.collection('axxes_products').doc(strId).update({ active: prod.active });
+                    await this.db.collection('capital_products').doc(strId).update({ active: prod.active });
                 } catch (e) {}
             }
 
@@ -919,7 +919,7 @@ class DataStore {
                 if (pNorm === targetNormName && pBrand === targetBrand) {
                     this.addDeletedId(p.id);
                     if (this.db) {
-                        this.db.collection('axxes_products').doc(String(p.id)).delete().catch(() => {});
+                        this.db.collection('capital_products').doc(String(p.id)).delete().catch(() => {});
                     }
                 }
             });
@@ -939,7 +939,7 @@ class DataStore {
         // Delete from Firestore in real time
         if (this.db) {
             try {
-                await this.db.collection('axxes_products').doc(strId).delete();
+                await this.db.collection('capital_products').doc(strId).delete();
                 this.addLog('success', 'CLOUD_DELETE', `Producto #${strId} eliminado de la nube para todos los dispositivos.`, null, 'OK');
             } catch (cloudErr) {
                 console.error('Error eliminando de Firestore:', cloudErr);
@@ -970,7 +970,7 @@ class DataStore {
             await this.saveCategories();
             if (this.db) {
                 try {
-                    await this.db.collection('axxes_meta').doc('categories').set({ list: this.categories });
+                    await this.db.collection('capital_meta').doc('categories').set({ list: this.categories });
                 } catch(e) {}
             }
             this.addLog('success', 'CREATE_CATEGORY', `Categoría creada: "${cleanName}"`, { name: cleanName }, 'OK');
@@ -994,7 +994,7 @@ class DataStore {
         await this.saveAll();
         if (this.db) {
             try {
-                await this.db.collection('axxes_meta').doc('categories').set({ list: this.categories });
+                await this.db.collection('capital_meta').doc('categories').set({ list: this.categories });
             } catch(e) {}
         }
         this.addLog('warn', 'DELETE_CATEGORY', `Categoría eliminada: "${name}" (productos actualizados)`, { name }, 'OK');
@@ -1018,7 +1018,7 @@ class DataStore {
             await this.saveAll();
             if (this.db) {
                 try {
-                    await this.db.collection('axxes_meta').doc('categories').set({ list: this.categories });
+                    await this.db.collection('capital_meta').doc('categories').set({ list: this.categories });
                 } catch(e) {}
             }
             this.addLog('info', 'UPDATE_CATEGORY', `Categoría renombrada: "${oldName}" ➔ "${cleanNew}"`, { oldName, cleanNew }, 'OK');

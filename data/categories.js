@@ -13,7 +13,7 @@ window.INITIAL_CATEGORIES = [
   },
   {
     "id": "cat-4",
-    "name": "Nicho"
+    "name": "Decants"
   },
   {
     "id": "cat-5",
@@ -25,10 +25,6 @@ window.INITIAL_CATEGORIES = [
   },
   {
     "id": "cat-7",
-    "name": "Decants"
-  },
-  {
-    "id": "cat-8",
-    "name": "Ofertas"
+    "name": "Nicho"
   }
 ];

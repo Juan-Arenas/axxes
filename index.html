@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Capital Perfumes | Lujo Contemporáneo</title>
     <meta name="description" content="Descubre fragancias seleccionadas para quienes no pasan desapercibidos. Tu aroma, tu firma.">
-    <link rel="stylesheet" href="styles.css?v=5">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
+    <link rel="icon" type="image/webp" href="logo.webp?v=2">
+    <link rel="apple-touch-icon" href="favicon.png?v=2">
+    <link rel="stylesheet" href="styles.css?v=7">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,9 +23,9 @@
     <!-- 1. HEADER -->
     <div class="top-announcement">
         <div class="marquee-content-top">
-            <span>PERFUMES 100% ORIGINALES • 🇪🇨 ENVÍO GRATIS EN PERFUMES SELLADOS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA</span>
-            <span>PERFUMES 100% ORIGINALES • 🇪🇨 ENVÍO GRATIS EN PERFUMES SELLADOS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA</span>
-            <span>PERFUMES 100% ORIGINALES • 🇪🇨 ENVÍO GRATIS EN PERFUMES SELLADOS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA</span>
+            <span>PERFUMES 100% ORIGINALES • 🇨🇴 ENVÍO SEGURO A TODO EL PAÍS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA: +57 300 5130634</span>
+            <span>PERFUMES 100% ORIGINALES • 🇨🇴 ENVÍO SEGURO A TODO EL PAÍS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA: +57 300 5130634</span>
+            <span>PERFUMES 100% ORIGINALES • 🇨🇴 ENVÍO SEGURO A TODO EL PAÍS • 🎁 REGALOS EN TUS COMPRAS • 💬 ASESORÍA PERSONALIZADA: +57 300 5130634</span>
         </div>
     </div>
     <header class="header" id="header">
@@ -33,7 +36,7 @@
 
             <div class="header-logo">
                 <a href="#">
-                    <img src="logo.webp" alt="CAPITAL PERFUMES" class="logo-img" id="site-logo">
+                    <img src="logo.webp?v=2" alt="CAPITAL PERFUMES" class="logo-img" id="site-logo">
                 </a>
             </div>
             
@@ -64,7 +67,7 @@
     <div class="mobile-nav-overlay" id="mobile-nav">
         <div class="mobile-nav-content">
             <div class="mobile-nav-header">
-                <img src="logo.webp" alt="CAPITAL PERFUMES" style="height:30px;">
+                <img src="logo.webp?v=2" alt="CAPITAL PERFUMES" style="height:34px;">
                 <button class="close-mobile-nav" id="close-mobile-nav"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <ul class="mobile-links">
@@ -84,6 +87,9 @@
         <!-- 2. BANNERS PRINCIPALES CON FLECHAS -->
         <section class="hero-slider" id="hero">
             <div class="slider-track" id="main-slider">
+                <div class="slide">
+                    <img src="banner3.webp?v=2" alt="Banner Capital Perfumes" class="slide-img">
+                </div>
                 <div class="slide">
                     <img src="banner2.webp" alt="Banner Capital Perfumes" class="slide-img">
                 </div>
@@ -108,31 +114,40 @@
                     <aside class="store-filters" id="store-filters">
                         <button id="close-filters-mobile" class="mobile-only btn-close-filter"><i class="fa-solid fa-xmark"></i></button>
                         
+                        <!-- 1. PRESENTACIÓN (PRIORIDAD #1) -->
+                        <div class="filter-group filter-group-priority">
+                            <h4><i class="fa-solid fa-flask" style="color:var(--c-accent); margin-right:4px;"></i> PRESENTACIÓN</h4>
+                            <div id="filter-sizes-list"></div>
+                        </div>
+
+                        <!-- 2. PRECIO (PRIORIDAD #2) -->
+                        <div class="filter-group filter-group-priority">
+                            <h4><i class="fa-solid fa-tag" style="color:var(--c-accent); margin-right:4px;"></i> PRECIO</h4>
+                            <input type="range" min="0" max="2000000" step="10000" value="2000000" id="filter-price-slider">
+                            <div class="price-range-labels">
+                                <span>$0</span>
+                                <span id="filter-price-val">$2.000.000</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. CATEGORÍA -->
+                        <div class="filter-group">
+                            <h4>CATEGORÍA</h4>
+                            <div id="filter-categories-list"></div>
+                        </div>
+
+                        <!-- 4. GÉNERO -->
                         <div class="filter-group">
                             <h4>GÉNERO</h4>
                             <label><input type="checkbox" value="Hombre" class="filter-gender"> Hombre</label>
                             <label><input type="checkbox" value="Mujer" class="filter-gender"> Mujer</label>
                             <label><input type="checkbox" value="Unisex" class="filter-gender"> Unisex</label>
                         </div>
-                        <div class="filter-group">
-                            <h4>CATEGORÍA</h4>
-                            <div id="filter-categories-list"></div>
-                        </div>
+
+                        <!-- 5. MARCA -->
                         <div class="filter-group">
                             <h4>MARCA</h4>
                             <div id="filter-brands-list"></div>
-                        </div>
-                        <div class="filter-group">
-                            <h4>PRESENTACIÓN</h4>
-                            <div id="filter-sizes-list"></div>
-                        </div>
-                        <div class="filter-group">
-                            <h4>PRECIO</h4>
-                            <input type="range" min="0" max="2000000" step="50000" value="2000000" id="filter-price-slider">
-                            <div class="price-range-labels">
-                                <span>$0</span>
-                                <span id="filter-price-val">$2.000.000</span>
-                            </div>
                         </div>
                     </aside>
                     <div class="store-content">
@@ -293,25 +308,27 @@
         <!-- 7. SECCIÓN EDITORIAL CON BANNER3 -->
         <section class="editorial-block reveal" id="editorial">
             <div class="editorial-img-col">
-                <img src="banner3.webp" alt="Descubre CAPITAL PERFUMES">
+                <img src="banner3.webp?v=2" alt="Descubre CAPITAL PERFUMES">
             </div>
             <div class="editorial-text-col">
                 <h2 class="serif">DESCUBRE CAPITAL PERFUMES</h2>
                 <p>El aroma es invisible. La impresión no. Creamos momentos, recuerdos y primeras impresiones que permanecen en el tiempo. Seleccionamos cuidadosamente cada fragancia de nuestra colección para asegurar exclusividad y calidad.</p>
+                <div class="editorial-social-strip" style="display:flex; gap:12px; margin: 15px 0; flex-wrap:wrap;">
+                    <a href="https://wa.me/573005130634" target="_blank" class="btn btn-outline-dark" style="padding:8px 16px; font-size:13px;">
+                        <i class="fa-brands fa-whatsapp" style="color:#25d366;"></i> +57 300 5130634
+                    </a>
+                    <a href="https://www.instagram.com/capitalperfumesmed/" target="_blank" class="btn btn-outline-dark" style="padding:8px 16px; font-size:13px;">
+                        <i class="fa-brands fa-instagram" style="color:#e1306c;"></i> @capitalperfumesmed
+                    </a>
+                    <a href="https://www.tiktok.com/@capital_perfumes" target="_blank" class="btn btn-outline-dark" style="padding:8px 16px; font-size:13px;">
+                        <i class="fa-brands fa-tiktok"></i> @capital_perfumes
+                    </a>
+                </div>
                 <a href="#catalogo-seccion" class="btn btn-primary-dark mt-2">EXPLORAR COLECCIÓN</a>
             </div>
         </section>
 
-        <!-- 9. QUIZ -->
-        <section class="quiz-banner section-padding light-bg text-center reveal" id="quiz-section">
-            <div class="container">
-                <h2 class="serif">¿NO SABES QUÉ PERFUME ELEGIR?</h2>
-                <p>Déjanos ayudarte a encontrar una fragancia que vaya contigo.</p>
-                <button class="btn btn-primary-dark mt-2" id="start-quiz">DESCUBRIR MI PERFUME <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-        </section>
-
-        <!-- 10. ENVÍOS -->
+        <!-- 8. ENVÍOS -->
         <section class="shipping-banner reveal dark-bg">
             <div class="shipping-overlay"></div>
             <img src="https://images.unsplash.com/photo-1586528116311-ad8ed7c663be?auto=format&fit=crop&w=1200&q=80" alt="Envíos a todo Colombia" class="shipping-img">
@@ -321,7 +338,7 @@
             </div>
         </section>
 
-        <!-- 11. TESTIMONIOS -->
+        <!-- 9. TESTIMONIOS -->
         <section class="testimonials-section section-padding light-bg">
             <div class="container text-center">
                 <h2 class="section-title reveal">LO QUE DICEN NUESTROS CLIENTES</h2>
@@ -345,16 +362,27 @@
             </div>
         </section>
 
-        <!-- 12. SÍGUENOS -->
+        <!-- 10. SÍGUENOS -->
         <section class="instagram-section section-padding dark-bg text-center">
-            <h2 class="section-title reveal">SÍGUENOS</h2>
+            <h2 class="section-title reveal">SÍGUENOS EN REDES</h2>
+            <p style="color:#aaa; font-size:14px; margin-top:5px;">Conoce nuestras novedades diarias, decants y reseñas exclusivas</p>
             <div class="insta-grid mt-4 reveal delay-1">
                 <div class="insta-item"><img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=400&q=80" alt="Ig"><i class="fa-brands fa-instagram"></i></div>
                 <div class="insta-item"><img src="https://images.unsplash.com/photo-1557170334-a9632e77c6e4?auto=format&fit=crop&w=400&q=80" alt="Ig"><i class="fa-brands fa-instagram"></i></div>
                 <div class="insta-item"><img src="https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=400&q=80" alt="Ig"><i class="fa-brands fa-instagram"></i></div>
                 <div class="insta-item"><img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80" alt="Ig"><i class="fa-brands fa-instagram"></i></div>
             </div>
-            <a href="https://www.instagram.com/capitalperfumes/" target="_blank" class="btn btn-outline-light mt-4 reveal delay-2">IR A INSTAGRAM</a>
+            <div style="display:flex; justify-content:center; gap:15px; margin-top:25px; flex-wrap:wrap;">
+                <a href="https://www.instagram.com/capitalperfumesmed/" target="_blank" class="btn btn-outline-light reveal delay-2">
+                    <i class="fa-brands fa-instagram" style="margin-right:6px;"></i> Instagram: @capitalperfumesmed
+                </a>
+                <a href="https://www.tiktok.com/@capital_perfumes" target="_blank" class="btn btn-outline-light reveal delay-2">
+                    <i class="fa-brands fa-tiktok" style="margin-right:6px;"></i> TikTok: @capital_perfumes
+                </a>
+                <a href="https://wa.me/573005130634" target="_blank" class="btn btn-outline-light reveal delay-2">
+                    <i class="fa-brands fa-whatsapp" style="margin-right:6px; color:#25d366;"></i> WhatsApp: +57 300 5130634
+                </a>
+            </div>
         </section>
     </main>
 
@@ -362,36 +390,37 @@
     <footer class="footer dark-bg">
         <div class="footer-top container">
             <div class="footer-col brand-col">
-                <img src="logo.webp" alt="CAPITAL PERFUMES" class="footer-logo" id="footer-logo">
-                <p>El lujo contemporáneo en perfumería. Fragancias que definen tu identidad.</p>
+                <img src="logo.webp?v=2" alt="CAPITAL PERFUMES" class="footer-logo" id="footer-logo">
+                <p>El lujo contemporáneo en perfumería y decants. Fragancias originales que definen tu identidad.</p>
             </div>
             <div class="footer-col">
                 <h4>Colecciones</h4>
                 <ul>
-                    <li><a href="#">Hombre</a></li>
-                    <li><a href="#">Mujer</a></li>
-                    <li><a href="#">Unisex</a></li>
+                    <li><a href="#catalogo-seccion">Hombre</a></li>
+                    <li><a href="#catalogo-seccion">Mujer</a></li>
+                    <li><a href="#catalogo-seccion">Unisex</a></li>
+                    <li><a href="#catalogo-seccion">Decants 5ML & 10ML</a></li>
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Servicio al Cliente</h4>
+                <h4>Contacto Directo</h4>
                 <ul>
-                    <li><a href="#">Contacto</a></li>
-                    <li><a href="#">Envíos y devoluciones</a></li>
-                    <li><a href="#">Preguntas frecuentes</a></li>
+                    <li><a href="https://wa.me/573005130634" target="_blank"><i class="fa-brands fa-whatsapp" style="color:#25d366;"></i> +57 300 5130634</a></li>
+                    <li><a href="https://www.instagram.com/capitalperfumesmed/" target="_blank"><i class="fa-brands fa-instagram" style="color:#e1306c;"></i> @capitalperfumesmed</a></li>
+                    <li><a href="https://www.tiktok.com/@capital_perfumes" target="_blank"><i class="fa-brands fa-tiktok"></i> @capital_perfumes</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h4>Síguenos</h4>
                 <div class="footer-socials">
-                    <a href="https://www.instagram.com/capitalperfumes/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://www.tiktok.com/@capitalperfumes" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
-                    <a href="https://wa.me/5217531058888" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="https://www.instagram.com/capitalperfumesmed/" target="_blank" title="Instagram @capitalperfumesmed"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@capital_perfumes" target="_blank" title="TikTok @capital_perfumes"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="https://wa.me/573005130634" target="_blank" title="WhatsApp +57 300 5130634"><i class="fa-brands fa-whatsapp"></i></a>
                 </div>
             </div>
         </div>
         <div class="footer-bottom container">
-            <p>&copy; 2026 CAPITAL PERFUMES. Todos los derechos reservados.</p>
+            <p>&copy; 2026 CAPITAL PERFUMES. Todos los derechos reservados. WhatsApp: +57 300 5130634</p>
         </div>
     </footer>
 
@@ -412,7 +441,9 @@
                 <span id="cart-subtotal">$0</span>
             </div>
             <button class="btn btn-outline-dark btn-full mb-2" id="continue-shopping">CONTINUAR COMPRANDO</button>
-            <button class="btn btn-primary-dark btn-full">FINALIZAR PEDIDO</button>
+            <button class="btn btn-primary-dark btn-full" id="checkout-btn">
+                <i class="fa-brands fa-whatsapp"></i> FINALIZAR PEDIDO POR WHATSAPP
+            </button>
         </div>
     </div>
     <div class="overlay" id="cart-overlay"></div>
@@ -431,53 +462,8 @@
         </div>
     </div>
 
-    <!-- QUIZ MODAL -->
-    <div class="quiz-modal" id="quiz-modal">
-        <button class="close-quiz" id="close-quiz"><i class="fa-solid fa-xmark"></i></button>
-        <div class="quiz-content">
-            <!-- Step 1 -->
-            <div class="quiz-step active" id="q-step-1">
-                <span class="step-num">01 / 03</span>
-                <h2 class="serif">¿Para quién es la fragancia?</h2>
-                <div class="quiz-options">
-                    <button class="quiz-btn" onclick="nextQuizStep(2, 'gender', 'Hombre')">Para Hombre</button>
-                    <button class="quiz-btn" onclick="nextQuizStep(2, 'gender', 'Mujer')">Para Mujer</button>
-                    <button class="quiz-btn" onclick="nextQuizStep(2, 'gender', 'Unisex')">Unisex</button>
-                </div>
-            </div>
-            <!-- Step 2 -->
-            <div class="quiz-step" id="q-step-2">
-                <span class="step-num">02 / 03</span>
-                <h2 class="serif">¿Qué estilo buscas?</h2>
-                <div class="quiz-options">
-                    <button class="quiz-btn" onclick="nextQuizStep(3, 'style', 'Elegante')">Elegante</button>
-                    <button class="quiz-btn" onclick="nextQuizStep(3, 'style', 'Casual')">Casual</button>
-                    <button class="quiz-btn" onclick="nextQuizStep(3, 'style', 'Seductor')">Seductor</button>
-                    <button class="quiz-btn" onclick="nextQuizStep(3, 'style', 'Fresco')">Fresco</button>
-                </div>
-            </div>
-            <!-- Step 3 -->
-            <div class="quiz-step" id="q-step-3">
-                <span class="step-num">03 / 03</span>
-                <h2 class="serif">¿Qué familia olfativa prefieres?</h2>
-                <div class="quiz-options">
-                    <button class="quiz-btn" onclick="finishQuiz('aroma', 'Dulce')">Dulce / Avainillado</button>
-                    <button class="quiz-btn" onclick="finishQuiz('aroma', 'Fresca')">Cítrica / Fresca</button>
-                    <button class="quiz-btn" onclick="finishQuiz('aroma', 'Amaderada')">Amaderada / Especiada</button>
-                    <button class="quiz-btn" onclick="finishQuiz('aroma', 'Floral')">Floral / Frutal</button>
-                </div>
-            </div>
-            <!-- Result -->
-            <div class="quiz-step" id="q-result">
-                <h2 class="serif mb-4">TUS RECOMENDACIONES</h2>
-                <div class="quiz-results-grid" id="quiz-results-grid"></div>
-                <button class="btn btn-outline-dark mt-4" onclick="closeQuiz()">CERRAR</button>
-            </div>
-        </div>
-    </div>
-
     <!-- WhatsApp Float -->
-    <a href="https://wa.me/5217531058888" target="_blank" class="whatsapp-float" aria-label="WhatsApp">
+    <a href="https://wa.me/573005130634" target="_blank" class="whatsapp-float" aria-label="WhatsApp" title="Chatea con nosotros (+57 300 5130634)">
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
@@ -487,11 +473,11 @@
     </button>
 
     <!-- Scripts with Cache Busting -->
-    <script src="data/categories.js?v=3.0"></script>
-    <script src="data/products.js?v=3.0"></script>
-    <script src="admin/dataStore.js?v=3.0"></script>
-    <script src="js/render.js?v=3.0"></script>
-    <script src="app.js?v=3.0"></script>
-    <script src="admin/adminUI.js?v=3.0"></script>
+    <script src="data/categories.js?v=3.1"></script>
+    <script src="data/products.js?v=3.1"></script>
+    <script src="admin/dataStore.js?v=3.1"></script>
+    <script src="js/render.js?v=3.1"></script>
+    <script src="app.js?v=3.1"></script>
+    <script src="admin/adminUI.js?v=3.1"></script>
 </body>
 </html>

@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollReveal();
     initSearch();
     initCartUI();
-    initQuiz();
     initAdminAccess();
     initLogoUpdater();
     initStepsCarousel();
@@ -251,6 +250,36 @@ function initCartUI() {
     if(overlay) overlay.addEventListener('click', closeCart);
     if(btnContinue) btnContinue.addEventListener('click', closeCart);
 
+    const btnCheckout = document.getElementById('checkout-btn');
+    if(btnCheckout) {
+        btnCheckout.addEventListener('click', () => {
+            if (!cart || cart.length === 0) {
+                alert('Tu carrito está vacío. Agrega una presentación para ordenar.');
+                return;
+            }
+
+            let total = 0;
+            let message = `*¡HOLA! DESEO REALIZAR UN PEDIDO EN CAPITAL PERFUMES* 💎✨\n\n`;
+            message += `*Detalle de mi pedido:*\n`;
+            
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.qty;
+                total += itemTotal;
+                const sizeLabel = item.size === 'bottle' ? 'Botella Completa' : item.size;
+                message += `${index + 1}. *${item.name}*\n`;
+                message += `   • Presentación: ${sizeLabel}\n`;
+                message += `   • Cantidad: ${item.qty}\n`;
+                message += `   • Valor: $${itemTotal.toLocaleString('es-CO')} COP\n\n`;
+            });
+            
+            message += `*TOTAL A PAGAR: $${total.toLocaleString('es-CO')} COP*\n\n`;
+            message += `Por favor indíquenme los métodos de pago disponibles y entrega. ¡Muchas gracias!`;
+
+            const encodedMsg = encodeURIComponent(message);
+            window.open(`https://wa.me/573005130634?text=${encodedMsg}`, '_blank');
+        });
+    }
+
     loadCart();
 }
 
@@ -435,53 +464,7 @@ window.applyFilters = function() {
 };
 
 
-// 7. Quiz Logic
-let quizAnswers = {};
-
-function initQuiz() {
-    const btn = document.getElementById('start-quiz');
-    const modal = document.getElementById('quiz-modal');
-    if(!btn || !modal) return;
-    btn.addEventListener('click', () => modal.classList.add('active'));
-}
-
-window.nextQuizStep = function(nextStep, key, val) {
-    quizAnswers[key] = val;
-    document.querySelectorAll('.quiz-step').forEach(el => el.classList.remove('active'));
-    document.getElementById('q-step-' + nextStep).classList.add('active');
-};
-
-window.finishQuiz = function(key, val) {
-    quizAnswers[key] = val;
-    document.querySelectorAll('.quiz-step').forEach(el => el.classList.remove('active'));
-    
-    // Calculate recommendation based on gender and aroma
-    const prods = window.axxesStore.products.filter(p => p.active);
-    let recom = prods.filter(p => p.gender === quizAnswers.gender || p.gender === 'Unisex');
-    recom = recom.sort(() => 0.5 - Math.random()).slice(0, 3);
-    
-    const resGrid = document.getElementById('quiz-results-grid');
-    resGrid.innerHTML = recom.map(p => `
-        <div style="background:#f5f5f5; padding:15px; border-radius:8px;">
-            <img src="${p.image || 'logo.webp'}" onerror="this.onerror=null;this.src='logo.webp';" style="width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:10px;">
-            <h5 style="font-family:var(--font-heading); font-size:1.1rem; margin-bottom:5px;">${p.name}</h5>
-            <p style="font-weight:bold;">$${p.priceBottle.toLocaleString('es-CO')}</p>
-        </div>
-    `).join('');
-    
-    document.getElementById('q-result').classList.add('active');
-};
-
-window.closeQuiz = function() {
-    document.getElementById('quiz-modal').classList.remove('active');
-    setTimeout(() => {
-        document.querySelectorAll('.quiz-step').forEach(el => el.classList.remove('active'));
-        document.getElementById('q-step-1').classList.add('active');
-        quizAnswers = {};
-    }, 300);
-};
-
-// 8. Admin Access (User Icon + Logo 3-clicks + Floating Btn)
+// 7. Admin Access (User Icon + Logo 3-clicks + Floating Btn)
 function initAdminAccess() {
     // Access 1: User Icon
     const userBtn = document.getElementById('admin-login-btn');

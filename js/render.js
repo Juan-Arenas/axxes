@@ -68,7 +68,14 @@ function renderAll() {
             }
         });
         
-        const sizeArr = Array.from(allSizes);
+        // Logical order: 5ML, 10ML, 15ML, 30ML, bottle
+        const sizeOrder = {'5ML': 1, '10ML': 2, '15ML': 3, '30ML': 4, 'bottle': 5};
+        const sizeArr = Array.from(allSizes).sort((a, b) => {
+            const orderA = sizeOrder[a] || 99;
+            const orderB = sizeOrder[b] || 99;
+            return orderA - orderB;
+        });
+
         filterSizesList.innerHTML = sizeArr.map(s => {
             const label = s === 'bottle' ? 'Botella Completa' : s;
             return `<label><input type="checkbox" value="${s}" class="filter-size"> ${label}</label>`;
@@ -138,13 +145,17 @@ function createProductCardWithSizes(p) {
     }
     
     if (p.sellBottle !== false && p.priceBottle > 0) {
-        sizes.push({ label: 'Completo', value: 'bottle', price: p.priceBottle });
+        sizes.push({ label: 'Botella', value: 'bottle', price: p.priceBottle });
     }
     
     // If no sizes configured, show bottle price
     if (sizes.length === 0) {
-        sizes.push({ label: 'Completo', value: 'bottle', price: p.priceBottle || 0 });
+        sizes.push({ label: 'Botella', value: 'bottle', price: p.priceBottle || 0 });
     }
+
+    // Sort sizes logically: 5ML, 10ML, etc., then bottle
+    const sizeOrder = {'5ML': 1, '10ML': 2, '15ML': 3, '30ML': 4, 'bottle': 5};
+    sizes.sort((a, b) => (sizeOrder[a.value] || 99) - (sizeOrder[b.value] || 99));
     
     // Default to first size
     const defaultSize = sizes[0];
@@ -160,17 +171,24 @@ function createProductCardWithSizes(p) {
     // Description (optional)
     const descHtml = p.description ? `<div class="app-prod-desc">${p.description}</div>` : '';
     
-    // Size buttons
+    // Size buttons & presentation block
     const sizeButtons = sizes.length > 1 ? `
         <div class="app-prod-sizes">
-            ${sizes.map((s, i) => `
-                <button class="app-size-btn ${i === 0 ? 'active' : ''}" 
-                    data-size="${s.value}" 
-                    data-price="${s.price}"
-                    data-product-id="${p.id}">${s.label}</button>
-            `).join('')}
+            <span class="app-size-caption"><i class="fa-solid fa-flask"></i> PRESENTACIÓN:</span>
+            <div class="app-size-pills">
+                ${sizes.map((s, i) => `
+                    <button class="app-size-btn ${i === 0 ? 'active' : ''}" 
+                        data-size="${s.value}" 
+                        data-price="${s.price}"
+                        data-product-id="${p.id}">${s.label}</button>
+                `).join('')}
+            </div>
         </div>
-    ` : '';
+    ` : `
+        <div class="app-prod-sizes single">
+            <span class="app-single-badge"><i class="fa-solid fa-flask"></i> ${sizes[0].label === 'bottle' ? 'Botella Completa' : sizes[0].label}</span>
+        </div>
+    `;
     
     return `
         <div class="app-prod-card reveal is-visible" data-product-id="${p.id}">
@@ -180,7 +198,10 @@ function createProductCardWithSizes(p) {
             <h4 class="app-prod-name">${p.name}</h4>
             ${descHtml}
             ${sizeButtons}
-            <div class="app-prod-price" data-product-id="${p.id}">$${defaultSize.price.toLocaleString('es-CO')}</div>
+            <div class="app-prod-price-wrap">
+                <span class="app-price-label">PRECIO:</span>
+                <span class="app-prod-price" data-product-id="${p.id}">$${defaultSize.price.toLocaleString('es-CO')}</span>
+            </div>
             <button class="app-btn-add btn-add" 
                 data-id="${p.id}" 
                 data-name="${p.name}" 

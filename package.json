@@ -1,0 +1,12 @@
+{
+  "name": "capital-perfumes",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Capital Perfumes - Tienda Oficial y Catálogo de Perfumería y Decants",
+  "scripts": {
+    "start": "node api/[...rest].js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0"
+  }
+}

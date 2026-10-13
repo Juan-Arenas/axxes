@@ -1383,7 +1383,7 @@ function setupAdminEventListeners() {
 
     const loginForm = document.getElementById('admin-login-form');
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const msgEl = document.getElementById('admin-login-message');
 
@@ -1395,15 +1395,40 @@ function setupAdminEventListeners() {
             }
 
             const pin = inputs.map(i => i.value).join('');
-            const currentPin = localStorage.getItem('axxes_admin_pin') || '1710';
+            const currentPin = localStorage.getItem('axxes_admin_pin') || '2006';
 
-            if (pin === currentPin || pin === '1710' || pin === '2006') {
+            msgEl.textContent = 'Verificando credenciales...';
+
+            let isAuthorized = false;
+            try {
+                const res = await window.fetchApi('/api/admin/authenticate', {
+                    method: 'POST',
+                    body: JSON.stringify({ pin })
+                });
+                if (res.ok) {
+                    isAuthorized = true;
+                }
+            } catch (netErr) {
+                console.warn('API auth error, probando PIN local:', netErr);
+            }
+
+            // Fallback check
+            if (!isAuthorized && (pin === currentPin || pin === '2006' || pin === '1710')) {
+                isAuthorized = true;
+            }
+
+            if (isAuthorized) {
                 failedAttempts = 0;
                 msgEl.textContent = '';
+                sessionStorage.setItem('admin_password', pin);
+                localStorage.setItem('admin_password', pin);
+                localStorage.setItem('axxes_admin_pin', pin);
+
                 document.getElementById('admin-password-modal').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'flex';
                 if (window.axxesStore) {
                     window.axxesStore.addLog('info', 'AUTH_LOGIN', 'Inicio de sesión exitoso en el panel administrativo.', { authMethod: 'PIN' }, 'OK');
+                    window.axxesStore.fetchRemoteLogs();
                 }
                 renderAdminDashboard();
             } else {
@@ -2546,6 +2571,69 @@ window.setLogsFilter = function(filter) {
     renderLogs(filter, searchVal);
 };
 
+function updateLogsBadge() {
+    if (!window.axxesStore) return;
+    const allLogs = window.axxesStore.logs || [];
+    const counterEl = document.getElementById('admin-logs-counter');
+    if (counterEl) counterEl.textContent = allLogs.length;
+
+    const countAll = document.getElementById('log-count-all');
+    if (countAll) countAll.textContent = allLogs.length;
+
+    const countOk = document.getElementById('log-count-ok');
+    if (countOk) countOk.textContent = allLogs.filter(l => l.status === 'OK').length;
+
+    const countFailed = document.getElementById('log-count-failed');
+    if (countFailed) countFailed.textContent = allLogs.filter(l => l.status === 'FAILED').length;
+}
+
+document.addEventListener('axxesLogAdded', () => {
+    updateLogsBadge();
+    const logsTab = document.getElementById('tab-logs');
+    if (logsTab && logsTab.classList.contains('active')) {
+        renderLogs(currentLogFilter);
+    }
+});
+
+window.changeAdminPin = async function(event) {
+    if (event) event.preventDefault();
+    const newPin = (document.getElementById('admin-new-pin')?.value || '').trim();
+    const confirmPin = (document.getElementById('admin-confirm-pin')?.value || '').trim();
+
+    if (!newPin || newPin.length < 4) {
+        alert('El PIN debe tener al menos 4 dígitos.');
+        return;
+    }
+    if (newPin !== confirmPin) {
+        alert('Los dos campos de PIN no coinciden.');
+        return;
+    }
+
+    try {
+        const res = await window.fetchApi('/api/admin/password', {
+            method: 'POST',
+            body: JSON.stringify({ newPin })
+        });
+        if (res.ok) {
+            localStorage.setItem('axxes_admin_pin', newPin);
+            localStorage.setItem('admin_password', newPin);
+            sessionStorage.setItem('admin_password', newPin);
+            window.showToast('✅ PIN de administrador actualizado exitosamente en Neon PostgreSQL.');
+            if (document.getElementById('admin-new-pin')) document.getElementById('admin-new-pin').value = '';
+            if (document.getElementById('admin-confirm-pin')) document.getElementById('admin-confirm-pin').value = '';
+            if (window.axxesStore) {
+                window.axxesStore.addLog('info', 'PIN_CHANGED', 'PIN de seguridad del administrador modificado en la base de datos central.', null, 'OK');
+            }
+        } else {
+            const data = await res.json().catch(() => ({}));
+            alert('Error al actualizar PIN: ' + (data.message || 'Error en servidor'));
+        }
+    } catch (e) {
+        localStorage.setItem('axxes_admin_pin', newPin);
+        window.showToast('✅ PIN guardado localmente.');
+    }
+};
+
 window.renderLogs = function(filter = 'all', searchQuery = '') {
     const container = document.getElementById('admin-logs-list');
     if (!container || !window.axxesStore) return;
@@ -2564,7 +2652,7 @@ window.renderLogs = function(filter = 'all', searchQuery = '') {
     } else if (filter === 'delete') {
         logs = logs.filter(l => l.action.includes('DELETE'));
     } else if (filter === 'sync') {
-        logs = logs.filter(l => l.action.includes('SYNC'));
+        logs = logs.filter(l => l.action.includes('SYNC') || l.action.includes('NEON') || l.action.includes('CLOUD'));
     } else if (filter === 'create') {
         logs = logs.filter(l => l.action.includes('CREATE') || l.action.includes('BULK'));
     }
@@ -2575,6 +2663,8 @@ window.renderLogs = function(filter = 'all', searchQuery = '') {
             (l.message || '').toLowerCase().includes(searchQuery) ||
             (l.action || '').toLowerCase().includes(searchQuery) ||
             (l.status || '').toLowerCase().includes(searchQuery) ||
+            (l.deviceInfo || '').toLowerCase().includes(searchQuery) ||
+            (l.ipAddress || '').toLowerCase().includes(searchQuery) ||
             (l.details ? JSON.stringify(l.details).toLowerCase().includes(searchQuery) : false)
         );
     }
@@ -2591,15 +2681,19 @@ window.renderLogs = function(filter = 'all', searchQuery = '') {
 
     container.innerHTML = logs.map(l => {
         const isOk = l.status === 'OK';
-        const statusClass = isOk ? 'ok' : (l.level === 'warn' ? 'warn' : (l.level === 'info' ? 'info' : 'failed'));
-        const hasDetails = l.details !== null && l.details !== undefined;
+        const statusClass = isOk ? 'ok' : (l.level === 'warn' || l.level === 'WARN' ? 'warn' : (l.level === 'info' || l.level === 'INFO' ? 'info' : 'failed'));
+        const hasDetails = l.details !== null && l.details !== undefined && Object.keys(l.details).length > 0;
         const detailsJson = hasDetails ? JSON.stringify(l.details, null, 2) : '';
+        const devLabel = l.deviceInfo || '💻 PC';
+        const ipLabel = l.ipAddress ? `[${l.ipAddress}]` : '';
 
         return `
             <div class="log-entry-row" onclick="toggleLogDetails('${l.id}')">
                 <div class="log-entry-main">
-                    <span class="log-time">${l.timeFormatted || l.timestamp.slice(11, 19)}</span>
+                    <span class="log-time">${l.timeFormatted || (l.timestamp ? l.timestamp.slice(11, 19) : '')}</span>
                     <span class="log-badge-status ${statusClass}">[${l.status}]</span>
+                    <span style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#93c5fd; padding:1px 6px; border-radius:4px; font-size:0.68rem; font-weight:700;">${devLabel}</span>
+                    ${ipLabel ? `<span style="color:#6b7280; font-size:0.68rem; font-family:monospace;">${ipLabel}</span>` : ''}
                     <span class="log-action-tag">${l.action}</span>
                     <span class="log-msg">${escapeHtml(l.message)}</span>
                     ${hasDetails ? '<span class="log-expand-icon" title="Ver detalles JSON"><i class="fas fa-chevron-down"></i> payload</span>' : ''}

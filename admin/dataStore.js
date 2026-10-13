@@ -1,6 +1,6 @@
-// dataStore.js - Robust Unified Storage with IndexedDB, LocalStorage, Image Compression, GitHub Cloud Sync & Developer Activity Logger
+// dataStore.js - Unified Storage with Neon Serverless PostgreSQL, IndexedDB, LocalStorage, Image Compression & Real-Time Multi-Device Audit Logs
 
-// Helper: Safely encode UTF-8 string to Base64 (supporting multi-MB large files without stack overflow)
+// Helper: Safely encode UTF-8 string to Base64
 function safeUtf8ToBase64(str) {
     const bytes = new TextEncoder().encode(str);
     let binary = '';
@@ -14,7 +14,7 @@ function safeUtf8ToBase64(str) {
 
 // 1. Lightweight Native IndexedDB Engine (Unlimited quota, zero dependencies)
 class AxxesIDB {
-    constructor(dbName = 'AxxesStoreDB', storeName = 'store') {
+    constructor(dbName = 'CapitalPerfumesStoreDB', storeName = 'store') {
         this.dbName = dbName;
         this.storeName = storeName;
         this.dbPromise = null;
@@ -78,7 +78,7 @@ class AxxesIDB {
     }
 }
 
-// 2. High-Performance Canvas Image Compressor (Reduces 8MB photos to ~50KB WebP/JPEG)
+// 2. High-Performance Canvas Image Compressor (Reduces large photos to ~50KB WebP/JPEG)
 window.compressProductImage = function(fileOrDataUrl, maxWidth = 800, maxHeight = 800, quality = 0.78) {
     return new Promise((resolve, reject) => {
         if (!fileOrDataUrl) {
@@ -137,53 +137,106 @@ window.compressProductImage = function(fileOrDataUrl, maxWidth = 800, maxHeight 
     });
 };
 
-// Firebase Realtime Cloud Database Configuration
-const AXXES_FIREBASE_CONFIG = {
-    apiKey: 'AIzaSyBPJ0A3DS-zVDYw7BZKNHSQRsdFJOu7iLU',
-    authDomain: 'hermida-cadfd.firebaseapp.com',
-    projectId: 'hermida-cadfd',
-    storageBucket: 'hermida-cadfd.appspot.com',
-    messagingSenderId: '107412702130',
-    appId: '1:107412702130:web:96e27ab08b292e3a8fa996'
+// 3. Centralized API Fetcher for Neon Serverless PostgreSQL
+window.fetchApi = async function(endpoint, options = {}) {
+    const adminPassword = sessionStorage.getItem('admin_password') || 
+                          localStorage.getItem('admin_password') || 
+                          localStorage.getItem('axxes_admin_pin') || 
+                          '2006';
+
+    const defaultHeaders = {
+        'Accept': 'application/json',
+        'X-Admin-Password': adminPassword
+    };
+
+    if (options.body && typeof options.body === 'string' && !options.headers?.['Content-Type']) {
+        defaultHeaders['Content-Type'] = 'application/json';
+    }
+
+    const mergedOptions = {
+        ...options,
+        headers: {
+            ...defaultHeaders,
+            ...(options.headers || {})
+        }
+    };
+
+    return fetch(endpoint, mergedOptions);
 };
 
-// 3. DataStore Engine with Developer Activity Logger & Cloud Sync
+// Device info detection helper
+function getDeviceLabel() {
+    const ua = navigator.userAgent || '';
+    if (/iPhone/i.test(ua)) return 'iPhone 📱';
+    if (/iPad/i.test(ua)) return 'iPad 📱';
+    if (/Android/i.test(ua)) return 'Android 📱';
+    if (/Macintosh|Mac OS/i.test(ua)) return 'Mac 💻';
+    if (/Windows/i.test(ua)) return 'Windows 💻';
+    if (/Linux/i.test(ua)) return 'Linux 💻';
+    return 'Web Client 🌐';
+}
+
+function sanitizeDetailsForLog(obj, depth = 0) {
+    if (!obj || typeof obj !== 'object' || depth > 3) return obj;
+    if (Array.isArray(obj)) return obj.map(x => sanitizeDetailsForLog(x, depth + 1));
+    const clean = {};
+    for (const [k, v] of Object.entries(obj)) {
+        if (typeof v === 'string') {
+            if (v.startsWith('data:image')) {
+                clean[k] = `[Foto Base64: ${(v.length / 1024).toFixed(1)} KB]`;
+            } else if (v.length > 500) {
+                clean[k] = v.slice(0, 500) + '...';
+            } else {
+                clean[k] = v;
+            }
+        } else if (typeof v === 'object' && v !== null) {
+            clean[k] = sanitizeDetailsForLog(v, depth + 1);
+        } else {
+            clean[k] = v;
+        }
+    }
+    return clean;
+}
+
+// 4. DataStore Engine with Neon PostgreSQL Realtime Sync & Live Audit Logs
 class DataStore {
     constructor() {
-        this.version = 'v4_capital';
+        this.version = 'v5_neon_capital';
         this.keys = {
             products: `capital_products_${this.version}`,
-            categories: `axxes_categories_${this.version}`,
-            siteConfig: `axxes_site_config_${this.version}`,
+            categories: `capital_categories_${this.version}`,
+            siteConfig: `capital_site_config_${this.version}`,
             token: 'axxes_github_token',
             autoSync: 'axxes_auto_sync_enabled',
             hasUnsynced: 'axxes_has_unsynced_changes',
-            deletedIds: 'axxes_deleted_ids',
-            lastEdit: 'axxes_last_local_edit',
-            logs: 'axxes_system_logs_v1'
+            deletedIds: 'capital_deleted_ids',
+            lastEdit: 'capital_last_local_edit',
+            logs: 'capital_audit_logs_v1'
         };
         this.idb = new AxxesIDB();
-        this.db = null;
         this.products = [];
         this.categories = [];
         this.siteConfig = {};
         this.logs = this.loadLogs();
         this.isLoadedFromIDB = false;
+        this.isNeonConnected = false;
+        this._pollingInterval = null;
+        this._lastProductsHash = '';
 
         // Initial log on boot
-        this.addLog('info', 'SYSTEM_BOOT', 'Sistema Axxes DataStore iniciado correctamente.', { version: this.version }, 'OK');
+        this.addLog('info', 'SYSTEM_BOOT', 'Sistema Capital Perfumes DataStore iniciado.', { version: this.version }, 'OK');
 
-        // 1. Initial fast synchronous load
+        // 1. Initial synchronous load from local storage
         this.loadSyncData();
 
         // 2. Asynchronous deep check against IndexedDB
         this.loadFromIDB();
 
-        // 3. Connect to Firebase Firestore for Real-time Cloud Database Sync across all devices
-        this.initFirebase();
+        // 3. Connect to Neon Serverless PostgreSQL (Global Multi-Device Database)
+        this.initNeonSync();
 
-        // 4. Live cloud check fallback
-        this.syncFromLiveCloud();
+        // 4. Start real-time multi-device polling loop
+        this.startRealtimePolling();
     }
 
     // ================= LOGGER SUBSYSTEM =================
@@ -204,16 +257,21 @@ class DataStore {
 
     addLog(level = 'info', action = 'GENERAL', message = '', details = null, status = 'OK') {
         const now = new Date();
-        const timeFormatted = now.toLocaleTimeString('es-CO', { hour12: false }) + '.' + String(now.getMilliseconds()).padStart(3, '0');
+        const pad = (n) => String(n).padStart(2, '0');
+        const timeFormatted = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} ${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`;
+        const devLabel = getDeviceLabel();
+        const cleanDetails = sanitizeDetailsForLog(details && typeof details === 'object' ? details : (details ? { info: details } : {}));
+
         const entry = {
-            id: 'log-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+            id: 'cap_log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
             timestamp: now.toISOString(),
             timeFormatted: timeFormatted,
-            level: level, // 'success' | 'error' | 'warn' | 'info'
-            action: action,
+            level: String(level).toUpperCase(),
+            action: String(action).toUpperCase(),
+            status: String(status || (level === 'error' ? 'FAILED' : 'OK')).toUpperCase(),
             message: String(message || ''),
-            details: details,
-            status: status || (level === 'error' ? 'FAILED' : 'OK')
+            details: cleanDetails,
+            deviceInfo: devLabel
         };
 
         if (!Array.isArray(this.logs)) this.logs = [];
@@ -224,13 +282,49 @@ class DataStore {
 
         this.saveLogs();
         document.dispatchEvent(new CustomEvent('axxesLogAdded', { detail: entry }));
+
+        // Send to Neon PostgreSQL central database in the background
+        window.fetchApi('/api/logs', {
+            method: 'POST',
+            body: JSON.stringify(entry)
+        }).catch(() => {});
+
         return entry;
     }
 
-    clearLogs() {
+    async fetchRemoteLogs() {
+        try {
+            const res = await window.fetchApi('/api/logs?limit=300');
+            if (res.ok) {
+                const remoteLogs = await res.json();
+                if (Array.isArray(remoteLogs) && remoteLogs.length > 0) {
+                    const localLogs = this.logs || [];
+                    const logMap = new Map();
+                    remoteLogs.forEach(l => logMap.set(l.id, l));
+                    localLogs.forEach(l => {
+                        if (!logMap.has(l.id)) logMap.set(l.id, l);
+                    });
+                    const merged = Array.from(logMap.values());
+                    merged.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                    this.logs = merged.slice(0, 300);
+                    this.saveLogs();
+                    document.dispatchEvent(new CustomEvent('axxesLogAdded', { detail: { type: 'batch' } }));
+                    return this.logs;
+                }
+            }
+        } catch (e) {
+            // Neon offline or network unavailable
+        }
+        return this.logs;
+    }
+
+    async clearLogs() {
         this.logs = [];
         this.saveLogs();
-        this.addLog('info', 'CLEAR_LOGS', 'Registro de logs limpiado por el administrador.', null, 'OK');
+        try {
+            await window.fetchApi('/api/logs', { method: 'DELETE' });
+        } catch(e) {}
+        this.addLog('info', 'CLEAR_LOGS', 'Registro de auditoría reiniciado por el administrador.', null, 'OK');
         document.dispatchEvent(new CustomEvent('axxesLogAdded', { detail: { action: 'CLEAR_LOGS' } }));
     }
 
@@ -263,13 +357,12 @@ class DataStore {
         } catch (e) {}
     }
 
-    // Deduplication Engine: Detects and unifies perfumes with identical name + brand
     findDuplicates() {
         const counts = {};
         const duplicates = [];
         this.products.forEach(p => {
             const normName = (p.name || '').trim().toLowerCase().replace(/myslf/g, 'myself');
-            const normBrand = (p.brand || 'AXXES').trim().toLowerCase();
+            const normBrand = (p.brand || 'Capital').trim().toLowerCase();
             const key = `${normBrand}:::${normName}`;
             if (!counts[key]) counts[key] = [];
             counts[key].push(p);
@@ -289,7 +382,7 @@ class DataStore {
 
         for (const p of this.products) {
             const normName = (p.name || '').trim().toLowerCase().replace(/myslf/g, 'myself');
-            const normBrand = (p.brand || 'AXXES').trim().toLowerCase();
+            const normBrand = (p.brand || 'Capital').trim().toLowerCase();
             const key = `${normBrand}:::${normName}`;
 
             if (!seen.has(key)) {
@@ -306,14 +399,13 @@ class DataStore {
             if (autoSave) {
                 this.saveProducts(false);
             }
-            this.addLog('info', 'AUTO_DEDUPLICATE', `Deduplicación automática: se eliminaron ${dupesCount} productos repetidos del catálogo.`, { removedCount: dupesCount }, 'OK');
+            this.addLog('info', 'AUTO_DEDUPLICATE', `Deduplicación automática: se eliminaron ${dupesCount} productos repetidos.`, { removedCount: dupesCount }, 'OK');
         }
         return dupesCount;
     }
 
     loadSyncData() {
         try {
-            const hasUnsavedEdits = localStorage.getItem(this.keys.hasUnsynced) === 'true';
             const p = localStorage.getItem(this.keys.products);
             const c = localStorage.getItem(this.keys.categories);
             const s = localStorage.getItem(this.keys.siteConfig);
@@ -322,42 +414,24 @@ class DataStore {
             const initialCats = Array.isArray(window.INITIAL_CATEGORIES) ? window.INITIAL_CATEGORIES : [];
 
             let rawProds;
-            // If the visitor is a public user (no unsaved local admin edits):
-            // The bundled window.INITIAL_PRODUCTS is the authoritative source!
-            if (!hasUnsavedEdits && initialProds.length > 0) {
-                if (!p) {
+            if (p) {
+                try {
+                    const parsed = JSON.parse(p);
+                    rawProds = (Array.isArray(parsed) && parsed.length > 0) ? parsed : initialProds;
+                } catch(e) {
                     rawProds = initialProds;
-                } else {
-                    try {
-                        const parsedP = JSON.parse(p);
-                        // If bundled catalog has more items or visitor has stale cache, adopt initialProds
-                        if (!Array.isArray(parsedP) || parsedP.length < initialProds.length) {
-                            rawProds = initialProds;
-                        } else {
-                            rawProds = parsedP;
-                        }
-                    } catch(e) {
-                        rawProds = initialProds;
-                    }
                 }
             } else {
-                rawProds = p ? JSON.parse(p) : initialProds;
+                rawProds = initialProds;
             }
 
             this.products = this.migrateProducts(rawProds);
-            
-            // Clean any duplicates that might have been stored previously
             this.deduplicateProducts(false);
-
-            const deletedIds = this.getDeletedIds();
-            if (deletedIds.length > 0 && hasUnsavedEdits) {
-                this.products = this.products.filter(item => !deletedIds.includes(String(item.id)));
-            }
 
             this.categories = c ? JSON.parse(c) : initialCats;
             this.siteConfig = s ? JSON.parse(s) : (window.INITIAL_SITE_CONFIG || {});
 
-            if (!p || !c || !s || (!hasUnsavedEdits && initialProds.length > 0)) {
+            if (!p || !c || !s) {
                 this.saveAll(false);
             }
         } catch (e) {
@@ -367,7 +441,6 @@ class DataStore {
             this.deduplicateProducts(false);
             this.categories = Array.isArray(window.INITIAL_CATEGORIES) ? window.INITIAL_CATEGORIES : [];
             this.siteConfig = window.INITIAL_SITE_CONFIG || {};
-            this.addLog('warn', 'LOCAL_STORAGE_WARN', 'No se pudo leer localStorage por completo, usando valores iniciales.', { error: e.message }, 'WARN');
         }
     }
 
@@ -378,29 +451,11 @@ class DataStore {
             const idbSiteConfig = await this.idb.get('siteConfig');
 
             let updated = false;
-            const deletedIds = this.getDeletedIds();
-            const hasUnsavedEdits = localStorage.getItem(this.keys.hasUnsynced) === 'true';
 
-            if (Array.isArray(idbProducts) && idbProducts.length > 0) {
-                const filteredIDB = idbProducts.filter(item => !deletedIds.includes(String(item.id)));
-                
-                // If local in-memory products is empty, recover from IDB
-                if (this.products.length === 0 && filteredIDB.length > 0) {
-                    this.products = this.migrateProducts(filteredIDB);
-                    this.deduplicateProducts(false);
-                    updated = true;
-                } else if (hasUnsavedEdits) {
-                    // Enrich in-memory products with any high-res images from IDB if localStorage stripped them
-                    this.products.forEach(p => {
-                        if (!p.image || p.image.length === 0) {
-                            const match = filteredIDB.find(ip => String(ip.id) === String(p.id));
-                            if (match && match.image) {
-                                p.image = match.image;
-                                updated = true;
-                            }
-                        }
-                    });
-                }
+            if (Array.isArray(idbProducts) && idbProducts.length > 0 && this.products.length === 0) {
+                this.products = this.migrateProducts(idbProducts);
+                this.deduplicateProducts(false);
+                updated = true;
             }
 
             if (Array.isArray(idbCategories) && idbCategories.length > 0 && this.categories.length === 0) {
@@ -424,165 +479,72 @@ class DataStore {
         }
     }
 
-    initFirebase() {
-        if (typeof firebase === 'undefined') {
-            console.warn('Firebase SDK no cargado en window. Operando en modo local.');
-            return;
-        }
+    // ================= NEON SERVERLESS POSTGRESQL SYNC =================
+    async initNeonSync() {
         try {
-            if (!firebase.apps || firebase.apps.length === 0) {
-                firebase.initializeApp(AXXES_FIREBASE_CONFIG);
-            }
-            this.db = firebase.firestore();
-            this.addLog('info', 'FIREBASE_INIT', 'Conexión con Firebase Firestore establecida. Sincronización multidispositivo en tiempo real activada.', null, 'OK');
-            this.initFirestoreRealtime();
-        } catch (e) {
-            console.warn('Error inicializando Firebase:', e);
-            this.addLog('warn', 'FIREBASE_ERROR', 'No se pudo conectar a Firebase Firestore: ' + e.message, null, 'WARN');
-        }
-    }
-
-    initFirestoreRealtime() {
-        if (!this.db) return;
-
-        // 1. Escuchar cambios de productos en tiempo real desde cualquier dispositivo (PC, Celular, etc.)
-        try {
-            this.db.collection('capital_products').onSnapshot((snapshot) => {
-                if (!snapshot || snapshot.empty) return;
-
-                const cloudProducts = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data && (data.name || data.id)) {
-                        cloudProducts.push({
-                            ...data,
-                            id: String(data.id || doc.id)
-                        });
-                    }
-                });
-
-                if (cloudProducts.length > 0) {
-                    this.products = this.migrateProducts(cloudProducts);
+            // 1. Fetch live products from Neon PostgreSQL
+            const resProds = await window.fetchApi('/api/products?active=false');
+            if (resProds.ok) {
+                const neonProds = await resProds.json();
+                if (Array.isArray(neonProds) && neonProds.length > 0) {
+                    this.products = this.migrateProducts(neonProds);
                     this.deduplicateProducts(false);
+                    this.isNeonConnected = true;
                     this.safeLocalStorageSave();
-                    if (this.idb) {
-                        this.idb.set('products', this.products);
-                    }
                     document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
-                    if (typeof window.renderAdminDashboard === 'function') {
-                        window.renderAdminDashboard();
-                    }
-                    this.addLog('success', 'CLOUD_SYNC_REALTIME', `Nube sincronizada: ${this.products.length} productos sincronizados en vivo.`, null, 'OK');
+                    console.log(`[Neon DB] Conectado exitosamente: ${neonProds.length} perfumes sincronizados en tiempo real.`);
+                    this.addLog('success', 'NEON_CONNECT', `Conectado a Neon PostgreSQL: ${neonProds.length} productos sincronizados.`, { count: neonProds.length }, 'OK');
                 }
-            }, (err) => {
-                console.warn('Aviso en listener de Firestore capital_products:', err);
-            });
-        } catch (err) {
-            console.warn('Error configurando onSnapshot en capital_products:', err);
-        }
+            }
 
-        // 2. Escuchar cambios en categorías en tiempo real
-        try {
-            this.db.collection('capital_meta').doc('categories').onSnapshot((docSnap) => {
-                if (docSnap && docSnap.exists) {
-                    const data = docSnap.data();
-                    if (data && Array.isArray(data.list) && data.list.length > 0) {
-                        this.categories = data.list;
-                        this.saveCategories(false);
-                    }
+            // 2. Fetch live categories from Neon
+            const resCats = await window.fetchApi('/api/categories');
+            if (resCats.ok) {
+                const neonCats = await resCats.json();
+                if (Array.isArray(neonCats) && neonCats.length > 0) {
+                    this.categories = neonCats;
+                    this.saveCategories(false);
+                    document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
                 }
-            }, (err) => {
-                console.warn('Aviso en listener categorías Firestore:', err);
-            });
-        } catch (err) {}
+            }
+
+            // 3. Fetch audit logs from Neon
+            await this.fetchRemoteLogs();
+        } catch (err) {
+            console.warn('[Neon DB] No se pudo conectar a la base de datos central en inicio:', err);
+            this.addLog('warn', 'NEON_OFFLINE', 'Operando con respaldo local/IndexedDB: ' + err.message, null, 'WARN');
+        }
     }
 
-    async syncFromLiveCloud() {
-        try {
-            // If Firebase Firestore is active and running, it has higher authority than GitHub raw files
-            if (this.db && this.products.length > 0) {
-                return;
-            }
-
-            const hasUnsavedEdits = localStorage.getItem(this.keys.hasUnsynced) === 'true';
-            const lastLocalEdit = parseInt(localStorage.getItem(this.keys.lastEdit) || '0', 10);
-            const lastPublish = parseInt(localStorage.getItem('axxes_last_published_time') || '0', 10);
-            const timeSinceRecentActivity = Date.now() - Math.max(lastLocalEdit, lastPublish);
-            
-            // If the admin user has uncommitted edits OR has worked/published in the last 15 minutes,
-            // DO NOT overwrite local state with stale Fastly/GitHub raw CDN caches!
-            if (hasUnsavedEdits || timeSinceRecentActivity < 15 * 60 * 1000) {
-                return;
-            }
-
-            const deletedIds = this.getDeletedIds();
-
-            // 1. Sync Products
-            const url = `https://raw.githubusercontent.com/Juan-Arenas/axxes/master/data/products.js?_t=${Date.now()}`;
-            const res = await fetch(url, { cache: 'no-store' });
-            if (res.ok) {
-                const text = await res.text();
-                const match = text.match(/window\.INITIAL_PRODUCTS\s*=\s*(\[[\s\S]*?\])\s*;/);
-                if (match && match[1]) {
-                    const cloudProducts = JSON.parse(match[1]);
-                    
-                    if (Array.isArray(cloudProducts) && cloudProducts.length > 0) {
-                        const validCloud = cloudProducts.filter(p => !deletedIds.includes(String(p.id)));
-                        const migratedCloud = this.migrateProducts(validCloud);
-
-                        // Deduplicate cloud list
-                        const seen = new Set();
-                        const uniqueCloud = [];
-                        migratedCloud.forEach(p => {
-                            const normKey = `${(p.brand || '').trim().toLowerCase()}:::${(p.name || '').trim().toLowerCase().replace(/myslf/g, 'myself')}`;
-                            if (!seen.has(normKey)) {
-                                seen.add(normKey);
-                                uniqueCloud.push(p);
-                            }
-                        });
-                        
-                        // Overwrite if local has fewer products or different items from cloud
-                        const localKeys = new Set(this.products.map(p => `${(p.brand || '').trim().toLowerCase()}:::${(p.name || '').trim().toLowerCase().replace(/myslf/g, 'myself')}`));
-                        const hasDifferences = uniqueCloud.length !== this.products.length || uniqueCloud.some(cp => !localKeys.has(`${(cp.brand || '').trim().toLowerCase()}:::${(cp.name || '').trim().toLowerCase().replace(/myslf/g, 'myself')}`));
-
-                        if (this.products.length === 0 || hasDifferences) {
-                            this.products = uniqueCloud;
-                            await this.saveAll(false);
-                            document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
-                            this.addLog('info', 'CLOUD_SYNC_FETCH', `Sincronización en vivo: ${this.products.length} productos actualizados desde GitHub.`, null, 'OK');
-                        }
-                    }
-                }
-            }
-
-            // 2. Sync Categories
-            const catUrl = `https://raw.githubusercontent.com/Juan-Arenas/axxes/master/data/categories.js?_t=${Date.now()}`;
-            const catRes = await fetch(catUrl, { cache: 'no-store' });
-            if (catRes.ok) {
-                const catText = await catRes.text();
-                const catMatch = catText.match(/window\.INITIAL_CATEGORIES\s*=\s*(\[[\s\S]*?\])\s*;/);
-                if (catMatch && catMatch[1]) {
-                    const cloudCats = JSON.parse(catMatch[1]);
-                    if (Array.isArray(cloudCats) && cloudCats.length > 0 && !hasUnsavedEdits) {
-                        const existingNames = new Set(this.categories.map(c => c.name.toLowerCase()));
-                        let added = false;
-                        cloudCats.forEach(cc => {
-                            if (!existingNames.has(cc.name.toLowerCase())) {
-                                this.categories.push(cc);
-                                existingNames.add(cc.name.toLowerCase());
-                                added = true;
-                            }
-                        });
-                        if (added) {
-                            await this.saveCategories(false);
+    startRealtimePolling() {
+        if (this._pollingInterval) clearInterval(this._pollingInterval);
+        
+        // Check every 4.5 seconds for changes made on other devices (mobile or PC)
+        this._pollingInterval = setInterval(async () => {
+            try {
+                // Poll products
+                const res = await window.fetchApi('/api/products?active=false');
+                if (res.ok) {
+                    const fresh = await res.json();
+                    if (Array.isArray(fresh) && fresh.length > 0) {
+                        const hash = fresh.length + '_' + (fresh[0]?.id || '') + '_' + (fresh[0]?.name || '');
+                        if (this._lastProductsHash && this._lastProductsHash !== hash) {
+                            console.log('[Neon Realtime] Cambios detectados desde otro dispositivo. Actualizando...');
+                            this.products = this.migrateProducts(fresh);
+                            this.safeLocalStorageSave();
                             document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
                         }
+                        this._lastProductsHash = hash;
                     }
                 }
-            }
-        } catch (e) {
-            // Offline or rate-limited
-        }
+
+                // If Admin Panel is open, poll logs live
+                const adminPanel = document.getElementById('admin-panel');
+                if (adminPanel && adminPanel.style.display !== 'none') {
+                    await this.fetchRemoteLogs();
+                }
+            } catch (e) {}
+        }, 4500);
     }
 
     migrateProducts(products) {
@@ -613,9 +575,9 @@ class DataStore {
             
             return {
                 ...p,
-                id: String(p.id || ('axx-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4))),
+                id: String(p.id || ('cap_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4))),
                 name: String(p.name || '').trim(),
-                brand: String(p.brand || 'AXXES').trim().toUpperCase(),
+                brand: String(p.brand || 'Capital').trim(),
                 decants: decants,
                 categories: categories,
                 category: categories[0] || 'Unisex',
@@ -627,7 +589,7 @@ class DataStore {
                 bestseller: Boolean(p.bestseller),
                 offer: Boolean(p.offer),
                 isNew: Boolean(p.isNew),
-                priceBottle: parseFloat(p.priceBottle) || 0,
+                priceBottle: parseFloat(p.priceBottle || p.price_bottle) || 0,
                 image: p.image || ''
             };
         });
@@ -635,15 +597,6 @@ class DataStore {
 
     async saveAll(markUnsynced = true) {
         this.safeLocalStorageSave();
-
-        if (markUnsynced) {
-            try { 
-                localStorage.setItem(this.keys.hasUnsynced, 'true'); 
-                localStorage.setItem(this.keys.lastEdit, Date.now().toString());
-            } catch(e) {}
-            this.handleAutoSync();
-        }
-
         document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
 
         if (this.idb) {
@@ -657,15 +610,6 @@ class DataStore {
 
     async saveProducts(markUnsynced = true) {
         this.safeLocalStorageSave();
-
-        if (markUnsynced) {
-            try { 
-                localStorage.setItem(this.keys.hasUnsynced, 'true'); 
-                localStorage.setItem(this.keys.lastEdit, Date.now().toString());
-            } catch(e) {}
-            this.handleAutoSync();
-        }
-
         document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
 
         if (this.idb) {
@@ -680,14 +624,6 @@ class DataStore {
             localStorage.setItem(this.keys.categories, JSON.stringify(this.categories));
         } catch(e) {}
 
-        if (markUnsynced) {
-            try { 
-                localStorage.setItem(this.keys.hasUnsynced, 'true'); 
-                localStorage.setItem(this.keys.lastEdit, Date.now().toString());
-            } catch(e) {}
-            this.handleAutoSync();
-        }
-
         document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
 
         if (this.idb) {
@@ -701,14 +637,6 @@ class DataStore {
         try {
             localStorage.setItem(this.keys.siteConfig, JSON.stringify(this.siteConfig));
         } catch(e) {}
-
-        if (markUnsynced) {
-            try { 
-                localStorage.setItem(this.keys.hasUnsynced, 'true'); 
-                localStorage.setItem(this.keys.lastEdit, Date.now().toString());
-            } catch(e) {}
-            this.handleAutoSync();
-        }
 
         document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
 
@@ -725,8 +653,6 @@ class DataStore {
             localStorage.setItem(this.keys.categories, JSON.stringify(this.categories));
             localStorage.setItem(this.keys.siteConfig, JSON.stringify(this.siteConfig));
         } catch (e) {
-            console.warn('LocalStorage quota alcanzada, datos asegurados en IndexedDB', e);
-            this.addLog('warn', 'STORAGE_QUOTA', 'Límite de LocalStorage alcanzado. Guardando copia aligerada en IDB.', null, 'WARN');
             try {
                 const lightweightProducts = this.products.map(p => ({
                     ...p,
@@ -737,11 +663,11 @@ class DataStore {
         }
     }
 
-    // CRUD Products with Logging & Anti-Duplication Protection
+    // CRUD Products with Neon PostgreSQL Serverless Integration
     async addProduct(product) {
         const migrated = this.migrateProducts([product])[0];
         
-        // Prevent duplicate creation if a product with the same name and brand already exists
+        // Anti-duplicate protection
         const normName = (migrated.name || '').trim().toLowerCase().replace(/myslf/g, 'myself');
         const normBrand = (migrated.brand || '').trim().toLowerCase();
         
@@ -752,8 +678,7 @@ class DataStore {
         });
 
         if (existingIdx !== -1 && String(this.products[existingIdx].id) !== String(migrated.id)) {
-            // Update existing instead of creating duplicate clone
-            this.addLog('info', 'DEDUPLICATE_UPDATE', `El perfume "${migrated.name}" ya existía en el inventario. Se actualizaron sus datos en lugar de duplicarlo.`, { existingId: this.products[existingIdx].id }, 'OK');
+            this.addLog('info', 'DEDUPLICATE_UPDATE', `El perfume "${migrated.name}" ya existía en el inventario. Se actualizaron sus datos.`, { existingId: this.products[existingIdx].id }, 'OK');
             return await this.updateProduct(this.products[existingIdx].id, migrated);
         }
 
@@ -761,15 +686,18 @@ class DataStore {
         this.products.unshift(migrated);
         await this.saveProducts(true);
 
-        // Real-time Cloud Sync with Firebase Firestore (instantly visible on mobile and all devices)
-        if (this.db) {
-            try {
-                await this.db.collection('capital_products').doc(String(migrated.id)).set(migrated);
-                this.addLog('success', 'CLOUD_SYNC', `Producto "${migrated.name}" sincronizado con la nube para todos los dispositivos.`, { id: migrated.id }, 'OK');
-            } catch (cloudErr) {
-                console.error('Error guardando en Firestore:', cloudErr);
-                this.addLog('error', 'CLOUD_SYNC_FAIL', `Fallo al sincronizar con la nube: ${cloudErr.message}`, null, 'FAILED');
+        // Send to Neon Serverless PostgreSQL Database
+        try {
+            const res = await window.fetchApi('/api/products', {
+                method: 'POST',
+                body: JSON.stringify(migrated)
+            });
+            if (res.ok) {
+                const saved = await res.json();
+                console.log('[Neon DB] Producto creado y persistido:', saved.id);
             }
+        } catch (err) {
+            console.warn('[Neon DB] Error guardando producto en Neon:', err);
         }
 
         this.addLog('success', 'CREATE_PRODUCT', `Producto creado: "${migrated.name}" (${migrated.brand})`, {
@@ -790,48 +718,12 @@ class DataStore {
         const migrated = this.migrateProducts(productsArray);
         
         let addedCount = 0;
-        migrated.forEach(p => {
-            const normName = (p.name || '').trim().toLowerCase().replace(/myslf/g, 'myself');
-            const normBrand = (p.brand || '').trim().toLowerCase();
-            
-            const existingIdx = this.products.findIndex(ep => {
-                const epNorm = (ep.name || '').trim().toLowerCase().replace(/myslf/g, 'myself');
-                const epBrand = (ep.brand || '').trim().toLowerCase();
-                return epNorm === normName && epBrand === normBrand;
-            });
-
-            if (existingIdx !== -1) {
-                // Update existing product without creating clone
-                this.products[existingIdx] = { ...this.products[existingIdx], ...p, id: this.products[existingIdx].id };
-            } else {
-                this.removeDeletedId(p.id);
-                this.products.unshift(p);
-                addedCount++;
-            }
-        });
-
-        await this.saveProducts(true);
-
-        // Real-time Cloud Sync with Firebase Firestore
-        if (this.db && Array.isArray(migrated) && migrated.length > 0) {
-            try {
-                const batch = this.db.batch();
-                migrated.slice(0, 450).forEach(p => {
-                    const docRef = this.db.collection('capital_products').doc(String(p.id));
-                    batch.set(docRef, p, { merge: true });
-                });
-                await batch.commit();
-                this.addLog('success', 'CLOUD_BULK_SYNC', `Sincronizados ${migrated.length} productos en la nube para todos los dispositivos.`, null, 'OK');
-            } catch (err) {
-                console.error('Error en batch Firestore:', err);
-            }
+        for (const p of migrated) {
+            await this.addProduct(p);
+            addedCount++;
         }
 
-        this.addLog('success', 'BULK_IMPORT', `Carga masiva: ${addedCount} productos nuevos agregados (existentes actualizados sin duplicar).`, {
-            count: addedCount,
-            sample: migrated.slice(0, 4).map(p => ({ id: p.id, name: p.name, brand: p.brand, price: p.priceBottle }))
-        }, 'OK');
-
+        this.addLog('success', 'BULK_IMPORT', `Carga masiva: ${addedCount} productos procesados en Neon PostgreSQL.`, { count: addedCount }, 'OK');
         return addedCount;
     }
 
@@ -845,14 +737,14 @@ class DataStore {
             this.removeDeletedId(strId);
             await this.saveProducts(true);
 
-            // Real-time Cloud Sync with Firebase Firestore
-            if (this.db) {
-                try {
-                    await this.db.collection('capital_products').doc(strId).set(this.products[idx], { merge: true });
-                    this.addLog('success', 'CLOUD_PRODUCT_UPDATED', `"${this.products[idx].name}" actualizado en la nube para todos los dispositivos.`, { id: strId }, 'OK');
-                } catch (cloudErr) {
-                    console.error('Error actualizando en Firestore:', cloudErr);
-                }
+            // Send to Neon PostgreSQL Database
+            try {
+                await window.fetchApi(`/api/products/${encodeURIComponent(strId)}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(this.products[idx])
+                });
+            } catch (err) {
+                console.warn('[Neon DB] Error actualizando producto en Neon:', err);
             }
 
             // Track detailed changes for the log
@@ -866,7 +758,7 @@ class DataStore {
             this.addLog('success', 'UPDATE_PRODUCT', `Producto editado: "${this.products[idx].name}" (#${strId})`, {
                 id: strId,
                 name: this.products[idx].name,
-                differences: Object.keys(diff).length > 0 ? diff : 'Sin cambios en atributos principales (decants o foto modificados)'
+                differences: Object.keys(diff).length > 0 ? diff : 'Atributos actualizados'
             }, 'OK');
 
             return this.products[idx];
@@ -883,14 +775,15 @@ class DataStore {
             prod.active = !prod.active;
             await this.saveProducts(true);
 
-            // Real-time Cloud Sync with Firebase Firestore
-            if (this.db) {
-                try {
-                    await this.db.collection('capital_products').doc(strId).update({ active: prod.active });
-                } catch (e) {}
-            }
+            // Send to Neon PostgreSQL
+            try {
+                await window.fetchApi(`/api/products/${encodeURIComponent(strId)}/state`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ active: prod.active })
+                });
+            } catch (e) {}
 
-            this.addLog('info', 'TOGGLE_STATUS', `Visibilidad cambiada: "${prod.name}" ahora está ${prod.active ? 'ACTIVO' : 'OCULTO'}`, {
+            this.addLog('info', 'TOGGLE_STATUS', `Visibilidad cambiada: "${prod.name}" ahora está ${prod.active ? 'ACTIVO (visible)' : 'OCULTO (inactivo)'}`, {
                 id: strId,
                 name: prod.name,
                 newStatus: prod.active ? 'Visible en tienda' : 'Oculto'
@@ -905,74 +798,42 @@ class DataStore {
         const strId = String(id);
         const target = this.products.find(p => String(p.id) === strId);
         const targetName = target ? target.name : 'Desconocido';
-        const targetBrand = target ? (target.brand || '').trim().toLowerCase() : '';
-        const targetNormName = target ? (target.name || '').trim().toLowerCase().replace(/myslf/g, 'myself') : '';
 
-        // Register this ID as explicitly deleted
         this.addDeletedId(strId);
-
-        // Also identify and register any existing orphan clone IDs of this perfume
-        if (targetNormName) {
-            this.products.forEach(p => {
-                const pNorm = (p.name || '').trim().toLowerCase().replace(/myslf/g, 'myself');
-                const pBrand = (p.brand || '').trim().toLowerCase();
-                if (pNorm === targetNormName && pBrand === targetBrand) {
-                    this.addDeletedId(p.id);
-                    if (this.db) {
-                        this.db.collection('capital_products').doc(String(p.id)).delete().catch(() => {});
-                    }
-                }
-            });
-        }
-
-        // Filter out target and any duplicates
-        this.products = this.products.filter(p => {
-            if (String(p.id) === strId) return false;
-            if (targetNormName) {
-                const pNorm = (p.name || '').trim().toLowerCase().replace(/myslf/g, 'myself');
-                const pBrand = (p.brand || '').trim().toLowerCase();
-                if (pNorm === targetNormName && pBrand === targetBrand) return false;
-            }
-            return true;
-        });
-
-        // Delete from Firestore in real time
-        if (this.db) {
-            try {
-                await this.db.collection('capital_products').doc(strId).delete();
-                this.addLog('success', 'CLOUD_DELETE', `Producto #${strId} eliminado de la nube para todos los dispositivos.`, null, 'OK');
-            } catch (cloudErr) {
-                console.error('Error eliminando de Firestore:', cloudErr);
-            }
-        }
-
-        // Ensure deleted state is immediately written to IndexedDB
-        if (this.idb) {
-            try {
-                await this.idb.set('products', this.products);
-            } catch(e) {}
-        }
-
+        this.products = this.products.filter(p => String(p.id) !== strId);
         await this.saveProducts(true);
 
-        this.addLog('warn', 'DELETE_PRODUCT', `Producto eliminado del catálogo: "${targetName}" (#${strId})`, {
+        // Send to Neon PostgreSQL
+        try {
+            await window.fetchApi(`/api/products/${encodeURIComponent(strId)}`, {
+                method: 'DELETE'
+            });
+        } catch (err) {
+            console.warn('[Neon DB] Error eliminando producto en Neon:', err);
+        }
+
+        this.addLog('warn', 'DELETE_PRODUCT', `Producto eliminado de la base de datos central: "${targetName}" (#${strId})`, {
             id: strId,
             deletedProductData: target || null
         }, 'OK');
     }
 
-    // CRUD Categories with Logging & Cloud Sync
+    // CRUD Categories with Neon PostgreSQL Integration
     async addCategory(name) {
         const cleanName = String(name || '').trim();
         if (!cleanName) return;
         if (!this.categories.some(c => c.name.toLowerCase() === cleanName.toLowerCase())) {
-            this.categories.push({ id: 'cat-' + Date.now(), name: cleanName });
+            const newCat = { id: 'cat-' + Date.now(), name: cleanName };
+            this.categories.push(newCat);
             await this.saveCategories();
-            if (this.db) {
-                try {
-                    await this.db.collection('capital_meta').doc('categories').set({ list: this.categories });
-                } catch(e) {}
-            }
+
+            try {
+                await window.fetchApi('/api/categories', {
+                    method: 'POST',
+                    body: JSON.stringify(newCat)
+                });
+            } catch(e) {}
+
             this.addLog('success', 'CREATE_CATEGORY', `Categoría creada: "${cleanName}"`, { name: cleanName }, 'OK');
         } else {
             this.addLog('warn', 'DUPLICATE_CATEGORY', `Intento de duplicar categoría existente: "${cleanName}"`, null, 'WARN');
@@ -992,64 +853,27 @@ class DataStore {
             }
         });
         await this.saveAll();
-        if (this.db) {
-            try {
-                await this.db.collection('capital_meta').doc('categories').set({ list: this.categories });
-            } catch(e) {}
-        }
-        this.addLog('warn', 'DELETE_CATEGORY', `Categoría eliminada: "${name}" (productos actualizados)`, { name }, 'OK');
-    }
-    
-    async updateCategory(oldName, newName) {
-        const oldTarget = String(oldName || '').trim().toLowerCase();
-        const cleanNew = String(newName || '').trim();
-        const cat = this.categories.find(c => c.name.toLowerCase() === oldTarget);
-        if (cat && cleanNew) {
-            cat.name = cleanNew;
-            this.products.forEach(p => {
-                if (Array.isArray(p.categories)) {
-                    const idx = p.categories.findIndex(c => c.toLowerCase() === oldTarget);
-                    if (idx !== -1) p.categories[idx] = cleanNew;
-                }
-                if (p.category && p.category.toLowerCase() === oldTarget) {
-                    p.category = cleanNew;
-                }
+
+        try {
+            await window.fetchApi(`/api/categories/${encodeURIComponent(name)}`, {
+                method: 'DELETE'
             });
-            await this.saveAll();
-            if (this.db) {
-                try {
-                    await this.db.collection('capital_meta').doc('categories').set({ list: this.categories });
-                } catch(e) {}
-            }
-            this.addLog('info', 'UPDATE_CATEGORY', `Categoría renombrada: "${oldName}" ➔ "${cleanNew}"`, { oldName, cleanNew }, 'OK');
-        }
+        } catch(e) {}
+
+        this.addLog('warn', 'DELETE_CATEGORY', `Categoría eliminada: "${name}"`, { name }, 'OK');
     }
     
     // Logo update
     async updateLogo(base64) {
         this.siteConfig.logo = base64;
         await this.saveSiteConfig();
+        try {
+            await window.fetchApi('/api/settings', {
+                method: 'PATCH',
+                body: JSON.stringify({ logo: base64 })
+            });
+        } catch(e) {}
         this.addLog('info', 'UPDATE_LOGO', 'Logo de la tienda actualizado.', { sizeKb: Math.round(base64.length / 1024) }, 'OK');
-    }
-
-    // Automatic GitHub background sync
-    async handleAutoSync() {
-        const token = localStorage.getItem(this.keys.token);
-        const autoSync = localStorage.getItem(this.keys.autoSync) !== 'false';
-        if (token && autoSync) {
-            clearTimeout(this._syncDebounce);
-            this._syncDebounce = setTimeout(async () => {
-                try {
-                    const res = await this.publishToGithub(token);
-                    if (res.success) {
-                        localStorage.removeItem(this.keys.hasUnsynced);
-                        document.dispatchEvent(new CustomEvent('axxesGithubSynced', { detail: { success: true } }));
-                    }
-                } catch(e) {
-                    console.warn('Auto-sync error', e);
-                }
-            }, 1500);
-        }
     }
 
     // Export / Import with Logging
@@ -1082,6 +906,15 @@ class DataStore {
                     this.siteConfig = backup.siteConfig;
                 }
                 await this.saveAll();
+
+                // Sync each product into Neon
+                for (const p of this.products) {
+                    window.fetchApi('/api/products', {
+                        method: 'POST',
+                        body: JSON.stringify(p)
+                    }).catch(() => {});
+                }
+
                 this.addLog('success', 'IMPORT_BACKUP', `Copia de seguridad restaurada exitosamente: ${this.products.length} productos, ${this.categories.length} categorías.`, { backupDate: backup.timestamp }, 'OK');
                 return { success: true, pCount: this.products.length, cCount: this.categories.length, date: backup.timestamp };
             }
@@ -1093,7 +926,7 @@ class DataStore {
         }
     }
 
-    // --- GITHUB SYNC (PUBLISH TO PRODUCTION) WITH LOGGING ---
+    // GitHub Sync
     async publishToGithub(token) {
         const repo = 'Juan-Arenas/axxes';
         try {
@@ -1103,21 +936,15 @@ class DataStore {
                 throw new Error(errMsg);
             }
 
-            // Guarantee that the catalog is 100% clean and duplicate-free before publishing
             this.deduplicateProducts(false);
 
-            // 1. Update data/products.js
             const productsContent = `window.INITIAL_PRODUCTS = ${JSON.stringify(this.products, null, 2)};\n`;
             await this.commitFile(token, repo, 'data/products.js', productsContent, 'Admin: Update products catalog');
             
-            // 2. Update data/categories.js
             const catsContent = `window.INITIAL_CATEGORIES = ${JSON.stringify(this.categories, null, 2)};\n`;
             await this.commitFile(token, repo, 'data/categories.js', catsContent, 'Admin: Update categories');
 
-            localStorage.removeItem(this.keys.hasUnsynced);
-            localStorage.setItem('axxes_last_published_time', Date.now().toString());
-
-            this.addLog('success', 'GITHUB_SYNC', `¡Éxito! Catálogo publicado en vivo en GitHub (${repo}). Todos los visitantes verán los cambios.`, {
+            this.addLog('success', 'GITHUB_SYNC', `¡Éxito! Catálogo publicado en GitHub (${repo}).`, {
                 repo: repo,
                 productsCount: this.products.length,
                 categoriesCount: this.categories.length,

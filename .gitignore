@@ -2,3 +2,9 @@
 *.mp4
 *.txt
 *.pdf
+node_modules/
+.env
+Ventas Maquillaje/
+setup_neon_db.js
+seed_neon.js
+scratch_test_api.js

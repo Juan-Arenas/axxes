@@ -1,0 +1,11 @@
+node_modules
+Ventas Maquillaje
+*.mp4
+*.pdf
+*.txt
+.git
+setup_neon_db.js
+seed_neon.js
+scratch*
+extracted_posters
+*_backup.*

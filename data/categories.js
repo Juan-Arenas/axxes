@@ -34,5 +34,9 @@ window.INITIAL_CATEGORIES = [
   {
     "id": "cat-9",
     "name": "Testers"
+  },
+  {
+    "id": "cat-10",
+    "name": "Combos Decants"
   }
 ];

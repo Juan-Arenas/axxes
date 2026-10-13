@@ -1561,3 +1561,205 @@ img { max-width: 100%; display: block; }
     display: block;
     margin-bottom: 2px;
 }
+
+/* ==========================================================================
+   INTERACTIVE BANNERS (COMBOS & PROMOS)
+   ========================================================================== */
+.slide.slide-clickable {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.slide.slide-clickable .slide-img {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide.slide-clickable:hover .slide-img {
+    transform: scale(1.02);
+}
+.banner-click-badge {
+    position: absolute;
+    bottom: 25px;
+    right: 28px;
+    z-index: 5;
+    pointer-events: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.banner-click-badge span {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(13, 15, 20, 0.90);
+    color: #ffffff;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    font-family: var(--font-heading);
+    font-size: 16px;
+    letter-spacing: 1.2px;
+    padding: 10px 24px;
+    border-radius: 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.45);
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+.slide.slide-clickable:hover .banner-click-badge {
+    transform: translateY(-4px) scale(1.03);
+}
+.slide.slide-clickable:hover .banner-click-badge span {
+    border-color: var(--c-accent);
+    color: #ffffff;
+    background: var(--c-accent);
+    box-shadow: 0 10px 25px var(--c-accent-glow);
+}
+@media (max-width: 768px) {
+    .banner-click-badge {
+        bottom: 12px;
+        right: 12px;
+    }
+    .banner-click-badge span {
+        font-size: 11px;
+        padding: 6px 14px;
+        gap: 6px;
+    }
+}
+
+/* ==========================================================================
+   SPECIAL QUICK PILLS (PROMO & COMBOS)
+   ========================================================================== */
+.quick-pill.pill-promo-pill {
+    border-color: rgba(249, 115, 22, 0.4);
+    color: #ea580c;
+}
+.quick-pill.pill-promo-pill i {
+    color: #ea580c;
+}
+.quick-pill.pill-promo-pill:hover,
+.quick-pill.pill-promo-pill.active {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    border-color: #ea580c !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(234, 88, 12, 0.35) !important;
+}
+.quick-pill.pill-promo-pill.active i {
+    color: #ffffff !important;
+}
+
+.quick-pill.pill-combo-pill {
+    border-color: rgba(139, 92, 246, 0.4);
+    color: #7c3aed;
+}
+.quick-pill.pill-combo-pill i {
+    color: #7c3aed;
+}
+.quick-pill.pill-combo-pill:hover,
+.quick-pill.pill-combo-pill.active {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
+    border-color: #6d28d9 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(109, 40, 217, 0.35) !important;
+}
+.quick-pill.pill-combo-pill.active i {
+    color: #ffffff !important;
+}
+
+/* ==========================================================================
+   PRODUCT CARD STOCK & PROMO BADGES
+   ========================================================================== */
+.app-prod-badge.badge-soldout {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(220, 38, 38, 0.45);
+    font-weight: 700;
+}
+.app-prod-badge.badge-combo {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(139, 92, 246, 0.35);
+    font-weight: 700;
+}
+.app-prod-badge.badge-promo {
+    background: linear-gradient(135deg, #f97316 0%, #ef4444 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(249, 115, 22, 0.35);
+    font-weight: 700;
+}
+
+/* Partial stock notice in size selector */
+.app-size-caption-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 4px;
+}
+.app-partial-stock-tag {
+    font-size: 10px;
+    font-weight: 700;
+    color: #ea580c;
+    background: #ffedd5;
+    padding: 2px 7px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: uppercase;
+}
+
+/* Size Pills Stock states */
+.app-size-btn.size-soldout {
+    background: #f8fafc;
+    color: #94a3b8;
+    border-color: #e2e8f0;
+    position: relative;
+    cursor: pointer;
+}
+.app-size-btn.size-soldout:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+.app-size-btn.size-soldout.active {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35) !important;
+}
+.pill-soldout-label {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    color: #ef4444;
+    margin-left: 2px;
+    text-transform: uppercase;
+}
+.app-size-btn.size-soldout.active .pill-soldout-label {
+    color: #ffffff !important;
+}
+
+.app-single-badge.single-soldout {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #fca5a5;
+    font-weight: 700;
+}
+
+/* Card completely sold out styling */
+.card-all-soldout img {
+    filter: grayscale(35%) opacity(0.85);
+}
+.card-all-soldout {
+    border-color: rgba(220, 38, 38, 0.25);
+}
+
+/* Add Button Disabled / Agotado state */
+.app-btn-add.btn-disabled,
+.app-btn-add:disabled {
+    background: #94a3b8 !important;
+    color: #ffffff !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 0.85;
+}
+.app-btn-add.btn-disabled:hover {
+    background: #94a3b8 !important;
+}
+

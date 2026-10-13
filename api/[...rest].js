@@ -451,42 +451,66 @@ module.exports = async (req, res) => {
               rows = await sql`
                 SELECT p.id, p.name, p.brand, p.description, p.price, p.price_bottle as "priceBottle",
                        p.sell_bottle as "sellBottle", p.decants, p.image, p.category, p.categories,
-                       p.gender, p.active, p.featured, p.bestseller, p.offer, p.is_new as "isNew"
+                       p.gender, p.active, p.featured, p.bestseller, p.offer, p.is_new as "isNew",
+                       COALESCE(p.out_of_stock, false) as "outOfStock",
+                       COALESCE(p.bottle_sold_out, false) as "bottleSoldOut",
+                       COALESCE(p.is_combo, false) as "isCombo",
+                       COALESCE(p.is_promo, false) as "isPromo",
+                       COALESCE(p.sold_out_sizes, '[]'::jsonb) as "soldOutSizes",
+                       p.created_at as "createdAt"
                 FROM capital.products p
                 WHERE p.active = TRUE AND (
                   LOWER(p.category) = LOWER(${categoryParam}) OR
                   p.categories @> ${JSON.stringify([categoryParam])}::jsonb
                 )
-                ORDER BY p.id ASC;
+                ORDER BY p.created_at DESC NULLS LAST, p.id DESC;
               `;
             } else if (activeOnly) {
               rows = await sql`
                 SELECT p.id, p.name, p.brand, p.description, p.price, p.price_bottle as "priceBottle",
                        p.sell_bottle as "sellBottle", p.decants, p.image, p.category, p.categories,
-                       p.gender, p.active, p.featured, p.bestseller, p.offer, p.is_new as "isNew"
+                       p.gender, p.active, p.featured, p.bestseller, p.offer, p.is_new as "isNew",
+                       COALESCE(p.out_of_stock, false) as "outOfStock",
+                       COALESCE(p.bottle_sold_out, false) as "bottleSoldOut",
+                       COALESCE(p.is_combo, false) as "isCombo",
+                       COALESCE(p.is_promo, false) as "isPromo",
+                       COALESCE(p.sold_out_sizes, '[]'::jsonb) as "soldOutSizes",
+                       p.created_at as "createdAt"
                 FROM capital.products p
                 WHERE p.active = TRUE
-                ORDER BY p.id ASC;
+                ORDER BY p.created_at DESC NULLS LAST, p.id DESC;
               `;
             } else if (categoryParam) {
               rows = await sql`
                 SELECT p.id, p.name, p.brand, p.description, p.price, p.price_bottle as "priceBottle",
                        p.sell_bottle as "sellBottle", p.decants, p.image, p.category, p.categories,
-                       p.gender, p.active, p.featured, p.bestseller, p.offer, p.is_new as "isNew"
+                       p.gender, p.active, p.featured, p.bestseller, p.offer, p.is_new as "isNew",
+                       COALESCE(p.out_of_stock, false) as "outOfStock",
+                       COALESCE(p.bottle_sold_out, false) as "bottleSoldOut",
+                       COALESCE(p.is_combo, false) as "isCombo",
+                       COALESCE(p.is_promo, false) as "isPromo",
+                       COALESCE(p.sold_out_sizes, '[]'::jsonb) as "soldOutSizes",
+                       p.created_at as "createdAt"
                 FROM capital.products p
                 WHERE (
                   LOWER(p.category) = LOWER(${categoryParam}) OR
                   p.categories @> ${JSON.stringify([categoryParam])}::jsonb
                 )
-                ORDER BY p.id ASC;
+                ORDER BY p.created_at DESC NULLS LAST, p.id DESC;
               `;
             } else {
               rows = await sql`
                 SELECT p.id, p.name, p.brand, p.description, p.price, p.price_bottle as "priceBottle",
                        p.sell_bottle as "sellBottle", p.decants, p.image, p.category, p.categories,
-                       p.gender, p.active, p.featured, p.bestseller, p.offer, p.is_new as "isNew"
+                       p.gender, p.active, p.featured, p.bestseller, p.offer, p.is_new as "isNew",
+                       COALESCE(p.out_of_stock, false) as "outOfStock",
+                       COALESCE(p.bottle_sold_out, false) as "bottleSoldOut",
+                       COALESCE(p.is_combo, false) as "isCombo",
+                       COALESCE(p.is_promo, false) as "isPromo",
+                       COALESCE(p.sold_out_sizes, '[]'::jsonb) as "soldOutSizes",
+                       p.created_at as "createdAt"
                 FROM capital.products p
-                ORDER BY p.id ASC;
+                ORDER BY p.created_at DESC NULLS LAST, p.id DESC;
               `;
             }
           }
@@ -524,18 +548,25 @@ module.exports = async (req, res) => {
           const active = payload.active !== false;
           const featured = Boolean(payload.featured);
           const bestseller = Boolean(payload.bestseller);
-          const offer = Boolean(payload.offer);
-          const isNew = Boolean(payload.isNew);
+          const offer = Boolean(payload.offer || payload.isPromo);
+          const isNew = Boolean(payload.isNew !== undefined ? payload.isNew : true);
+          const outOfStock = Boolean(payload.outOfStock);
+          const bottleSoldOut = Boolean(payload.bottleSoldOut);
+          const isCombo = Boolean(payload.isCombo || categories.some(c => String(c).toLowerCase().includes('combo')));
+          const isPromo = Boolean(payload.isPromo || payload.offer);
+          const soldOutSizes = Array.isArray(payload.soldOutSizes) ? payload.soldOutSizes : [];
 
           const inserted = await sql`
             INSERT INTO capital.products (
               id, name, brand, description, price, price_bottle, sell_bottle,
               decants, image, category, categories, gender,
-              active, featured, bestseller, offer, is_new
+              active, featured, bestseller, offer, is_new,
+              out_of_stock, bottle_sold_out, is_combo, is_promo, sold_out_sizes, created_at, updated_at
             ) VALUES (
               ${id}, ${name}, ${brand}, ${description}, ${minPrice}, ${priceBottle}, ${sellBottle},
               ${JSON.stringify(decants)}::jsonb, ${image}, ${category}, ${JSON.stringify(categories)}::jsonb, ${gender},
-              ${active}, ${featured}, ${bestseller}, ${offer}, ${isNew}
+              ${active}, ${featured}, ${bestseller}, ${offer}, ${isNew},
+              ${outOfStock}, ${bottleSoldOut}, ${isCombo}, ${isPromo}, ${JSON.stringify(soldOutSizes)}::jsonb, NOW(), NOW()
             )
             ON CONFLICT (id) DO UPDATE SET
               name = EXCLUDED.name,
@@ -554,10 +585,18 @@ module.exports = async (req, res) => {
               bestseller = EXCLUDED.bestseller,
               offer = EXCLUDED.offer,
               is_new = EXCLUDED.is_new,
+              out_of_stock = EXCLUDED.out_of_stock,
+              bottle_sold_out = EXCLUDED.bottle_sold_out,
+              is_combo = EXCLUDED.is_combo,
+              is_promo = EXCLUDED.is_promo,
+              sold_out_sizes = EXCLUDED.sold_out_sizes,
               updated_at = NOW()
             RETURNING id, name, brand, description, price, price_bottle as "priceBottle",
                       sell_bottle as "sellBottle", decants, image, category, categories,
-                      gender, active, featured, bestseller, offer, is_new as "isNew";
+                      gender, active, featured, bestseller, offer, is_new as "isNew",
+                      out_of_stock as "outOfStock", bottle_sold_out as "bottleSoldOut",
+                      is_combo as "isCombo", is_promo as "isPromo", sold_out_sizes as "soldOutSizes",
+                      created_at as "createdAt";
           `;
 
           const newProduct = inserted[0];
@@ -573,6 +612,7 @@ module.exports = async (req, res) => {
               brand: newProduct.brand,
               priceBottle: newProduct.priceBottle,
               decantsCount: decants.length,
+              outOfStock: newProduct.outOfStock,
               active: newProduct.active
             },
             req
@@ -595,8 +635,14 @@ module.exports = async (req, res) => {
           const rows = await sql`
             SELECT id, name, brand, description, price, price_bottle as "priceBottle",
                    sell_bottle as "sellBottle", decants, image, category, categories,
-                   gender, active, featured, bestseller, offer, is_new as "isNew"
-            FROM capital.products
+                   gender, active, featured, bestseller, offer, is_new as "isNew",
+                   COALESCE(p.out_of_stock, false) as "outOfStock",
+                   COALESCE(p.bottle_sold_out, false) as "bottleSoldOut",
+                   COALESCE(p.is_combo, false) as "isCombo",
+                   COALESCE(p.is_promo, false) as "isPromo",
+                   COALESCE(p.sold_out_sizes, '[]'::jsonb) as "soldOutSizes",
+                   p.created_at as "createdAt"
+            FROM capital.products p
             WHERE id = ${productId}
             LIMIT 1;
           `;
@@ -640,8 +686,13 @@ module.exports = async (req, res) => {
           const active = payload.active != null ? Boolean(payload.active) : prev.active;
           const featured = payload.featured != null ? Boolean(payload.featured) : prev.featured;
           const bestseller = payload.bestseller != null ? Boolean(payload.bestseller) : prev.bestseller;
-          const offer = payload.offer != null ? Boolean(payload.offer) : prev.offer;
+          const offer = payload.offer != null ? Boolean(payload.offer) : (payload.isPromo != null ? Boolean(payload.isPromo) : prev.offer);
           const isNew = payload.isNew != null ? Boolean(payload.isNew) : prev.is_new;
+          const outOfStock = payload.outOfStock != null ? Boolean(payload.outOfStock) : Boolean(prev.out_of_stock);
+          const bottleSoldOut = payload.bottleSoldOut != null ? Boolean(payload.bottleSoldOut) : Boolean(prev.bottle_sold_out);
+          const isCombo = payload.isCombo != null ? Boolean(payload.isCombo) : Boolean(prev.is_combo);
+          const isPromo = payload.isPromo != null ? Boolean(payload.isPromo) : Boolean(prev.is_promo);
+          const soldOutSizes = Array.isArray(payload.soldOutSizes) ? payload.soldOutSizes : (prev.sold_out_sizes || []);
 
           const updated = await sql`
             UPDATE capital.products
@@ -661,12 +712,22 @@ module.exports = async (req, res) => {
                 bestseller = ${bestseller},
                 offer = ${offer},
                 is_new = ${isNew},
+                out_of_stock = ${outOfStock},
+                bottle_sold_out = ${bottleSoldOut},
+                is_combo = ${isCombo},
+                is_promo = ${isPromo},
+                sold_out_sizes = ${JSON.stringify(soldOutSizes)}::jsonb,
                 updated_at = NOW()
             WHERE id = ${productId}
             RETURNING id, name, brand, description, price, price_bottle as "priceBottle",
                       sell_bottle as "sellBottle", decants, image, category, categories,
-                      gender, active, featured, bestseller, offer, is_new as "isNew";
+                      gender, active, featured, bestseller, offer, is_new as "isNew",
+                      out_of_stock as "outOfStock", bottle_sold_out as "bottleSoldOut",
+                      is_combo as "isCombo", is_promo as "isPromo", sold_out_sizes as "soldOutSizes",
+                      created_at as "createdAt";
           `;
+
+          const updatedProd = updated[0];
 
           const diff = {};
           if (prev.name !== name) diff.name = { before: prev.name, after: name };

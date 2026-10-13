@@ -1148,6 +1148,9 @@ function injectAdminHTML() {
                                         <input type="checkbox" id="admin-product-sell-bottle" checked style="width:20px; height:20px; accent-color:var(--admin-accent);">
                                         <span style="font-size:0.85rem;">Sí, vender presentación completa</span>
                                     </div>
+                                    <label style="display:flex; align-items:center; gap:6px; margin-top:8px; font-size:0.82rem; color:#f87171; cursor:pointer;">
+                                        <input type="checkbox" id="admin-product-bottle-soldout" style="accent-color:#ef4444;"> 🚫 Marcar Botella como Agotada
+                                    </label>
                                 </div>
                                 <div class="form-group" id="admin-bottle-price-group">
                                     <label>Precio Botella ($ COP)</label>
@@ -1157,7 +1160,7 @@ function injectAdminHTML() {
 
                             <!-- Decants -->
                             <div class="form-group">
-                                <label>Decants / Muestras (Opcional)</label>
+                                <label>Decants / Muestras (Opcional - Puedes marcar cuáles están agotados)</label>
                                 <div class="decants-section-admin">
                                     <div id="admin-decants-list"></div>
                                     <button type="button" class="admin-btn-secondary admin-btn-sm" style="margin-top:8px;" onclick="addDecantRow()">
@@ -1166,10 +1169,27 @@ function injectAdminHTML() {
                                 </div>
                             </div>
 
+                            <!-- Stock Global -->
+                            <div class="form-group" style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:8px; padding:12px; margin-top:14px;">
+                                <label style="color:#f87171; font-weight:700; display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.88rem;">
+                                    <input type="checkbox" id="admin-product-out-of-stock" style="width:18px; height:18px; accent-color:#ef4444;">
+                                    <span>🚫 MARCAR TODO EL PRODUCTO COMO AGOTADO (Todas las presentaciones)</span>
+                                </label>
+                                <small style="color:var(--admin-muted); display:block; margin-top:4px;">
+                                    Si activas esto, saldrá la etiqueta "AGOTADO" en el catálogo y ningún cliente podrá ordenar ninguna presentación.
+                                </small>
+                            </div>
+
                             <!-- Badges -->
                             <div class="form-group">
-                                <label>Etiquetas Especiales</label>
+                                <label>Etiquetas Especiales & Promociones</label>
                                 <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:6px;">
+                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; cursor:pointer; color:#fb923c; font-weight:700;">
+                                        <input type="checkbox" id="admin-product-promo" style="accent-color:#f97316;"> 🔥 En Promoción / Oferta Especial
+                                    </label>
+                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; cursor:pointer; color:#a78bfa; font-weight:700;">
+                                        <input type="checkbox" id="admin-product-combo" style="accent-color:#8b5cf6;"> 🎁 Es Combo de Decants
+                                    </label>
                                     <label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; cursor:pointer;">
                                         <input type="checkbox" id="admin-product-featured" style="accent-color:var(--admin-accent);"> Destacado
                                     </label>
@@ -1550,25 +1570,43 @@ function setupAdminEventListeners() {
             try {
                 const id = document.getElementById('admin-product-id').value;
                 
-                // Gather decants
+                // Gather decants with stock state
                 const decants = [];
+                const soldOutSizes = [];
                 document.querySelectorAll('.decant-row').forEach(row => {
                     const sizeInput = row.querySelector('.decant-size');
                     const priceInput = row.querySelector('.decant-price');
+                    const soldOutInput = row.querySelector('.decant-soldout');
                     if (sizeInput && priceInput) {
                         const size = sizeInput.value.trim().toUpperCase();
                         const price = parseFloat(priceInput.value) || 0;
+                        const isSold = soldOutInput ? soldOutInput.checked : false;
                         if (size && price > 0) {
-                            decants.push({ size, price });
+                            decants.push({ size, price, soldOut: isSold });
+                            if (isSold) soldOutSizes.push(size);
                         }
                     }
                 });
+
+                // Bottle out of stock
+                const bottleSoldOut = Boolean(document.getElementById('admin-product-bottle-soldout')?.checked);
+                if (bottleSoldOut) soldOutSizes.push('bottle');
+
+                // Global out of stock
+                const outOfStock = Boolean(document.getElementById('admin-product-out-of-stock')?.checked);
+
+                // Promo and Combos
+                const isPromo = Boolean(document.getElementById('admin-product-promo')?.checked || document.getElementById('admin-product-offer')?.checked);
+                const isCombo = Boolean(document.getElementById('admin-product-combo')?.checked);
 
                 // Gather categories
                 const selectedCats = [];
                 document.querySelectorAll('#admin-product-categories-checkboxes input:checked').forEach(cb => {
                     selectedCats.push(cb.value);
                 });
+                if (isCombo && !selectedCats.includes('Combos Decants')) {
+                    selectedCats.push('Combos Decants');
+                }
 
                 // Image
                 let finalImage = (document.getElementById('admin-product-image-url').value || '').trim();
@@ -1595,7 +1633,7 @@ function setupAdminEventListeners() {
                 }
 
                 const prod = {
-                    id: id || ('axx-' + Date.now()),
+                    id: id || ('cap_' + Date.now()),
                     name: name,
                     brand: brand,
                     description: document.getElementById('admin-product-description').value.trim(),
@@ -1609,8 +1647,13 @@ function setupAdminEventListeners() {
                     active: document.getElementById('admin-product-active').checked,
                     featured: document.getElementById('admin-product-featured').checked,
                     bestseller: document.getElementById('admin-product-bestseller').checked,
-                    offer: document.getElementById('admin-product-offer').checked,
-                    isNew: document.getElementById('admin-product-new').checked
+                    offer: isPromo,
+                    isNew: document.getElementById('admin-product-new').checked,
+                    outOfStock: outOfStock,
+                    bottleSoldOut: bottleSoldOut,
+                    isCombo: isCombo,
+                    isPromo: isPromo,
+                    soldOutSizes: soldOutSizes
                 };
 
                 if (id) {
@@ -2337,26 +2380,50 @@ function renderAdminProductList(searchQuery = '') {
             : '<span style="color:var(--admin-danger); font-weight:700;">● Oculto</span>';
 
         const decantInfo = (Array.isArray(p.decants) && p.decants.length > 0)
-            ? p.decants.map(d => `${d.size}: $${(d.price || 0).toLocaleString('es-CO')}`).join(' | ')
+            ? p.decants.map(d => `${d.size}${d.soldOut ? ' (Agotado)' : ''}: $${(d.price || 0).toLocaleString('es-CO')}`).join(' | ')
             : 'Sin decants';
 
         const catsHtml = (p.categories || [p.category || 'Unisex']).map(c => `<span class="badge" style="background:#1e1e2d; padding:2px 6px; border-radius:4px; font-size:0.7rem; color:var(--admin-accent); margin-right:4px;">${c}</span>`).join('');
 
+        // Stock badges
+        let stockBadgeHtml = '';
+        if (p.outOfStock) {
+            stockBadgeHtml = '<span class="badge" style="background:#ef4444; color:#fff; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem; margin-right:4px;">🚫 AGOTADO TODO</span>';
+        } else if (p.bottleSoldOut || (Array.isArray(p.decants) && p.decants.some(d => d.soldOut))) {
+            stockBadgeHtml = '<span class="badge" style="background:#f59e0b; color:#000; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem; margin-right:4px;">⚠️ STOCK PARCIAL</span>';
+        }
+
+        const promoBadgeHtml = (p.isPromo || p.offer) 
+            ? '<span class="badge" style="background:#f97316; color:#fff; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem; margin-right:4px;">🔥 PROMO</span>' 
+            : '';
+
+        const comboBadgeHtml = p.isCombo 
+            ? '<span class="badge" style="background:#8b5cf6; color:#fff; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem; margin-right:4px;">🎁 COMBO</span>' 
+            : '';
+
         return `
-        <div class="admin-prod-card ${p.active ? '' : 'is-inactive'}">
+        <div class="admin-prod-card ${p.active ? '' : 'is-inactive'} ${p.outOfStock ? 'is-soldout-card' : ''}">
             <div class="admin-prod-card-top">
                 <img src="${p.image || 'logo.webp'}" class="admin-prod-thumb" alt="${p.name}" onerror="this.src='logo.webp'">
                 <div class="admin-prod-details">
-                    <div class="admin-prod-brand">${p.brand || 'AXXES'}</div>
+                    <div class="admin-prod-brand">${p.brand || 'CAPITAL PERFUMES'}</div>
                     <div class="admin-prod-name" title="${p.name}">${p.name}</div>
-                    <div class="admin-prod-price">Botella: ${p.sellBottle !== false ? `$${(p.priceBottle || 0).toLocaleString('es-CO')}` : 'No disponible'}</div>
+                    <div class="admin-prod-price">Botella: ${p.sellBottle !== false ? `$${(p.priceBottle || 0).toLocaleString('es-CO')}${p.bottleSoldOut ? ' (Agotada)' : ''}` : 'No disponible'}</div>
                     <div class="meta" style="font-size:0.72rem; margin: 4px 0;">${statusDot} • Decants: ${decantInfo}</div>
-                    <div class="cats">${catsHtml}</div>
+                    <div class="cats" style="margin-top:4px;">
+                        ${stockBadgeHtml}
+                        ${promoBadgeHtml}
+                        ${comboBadgeHtml}
+                        ${catsHtml}
+                    </div>
                 </div>
             </div>
             <div class="admin-prod-actions">
                 <button type="button" class="admin-action-btn" style="background:var(--admin-accent); color:white;" onclick="editProduct('${p.id}')">
                     <i class="fas fa-edit"></i> Editar
+                </button>
+                <button type="button" class="admin-action-btn ${p.outOfStock ? 'btn-active-danger' : ''}" style="${p.outOfStock ? 'background:#ef4444; color:#fff;' : ''}" onclick="toggleProductStock('${p.id}')" title="Alternar si está agotado o disponible">
+                    <i class="fas fa-ban"></i> ${p.outOfStock ? 'Reponer' : 'Agotar'}
                 </button>
                 <button type="button" class="admin-action-btn" onclick="toggleProductActive('${p.id}')" title="Mostrar u ocultar en tienda">
                     <i class="fas ${p.active ? 'fa-eye-slash' : 'fa-eye'}"></i> ${p.active ? 'Ocultar' : 'Mostrar'}
@@ -2409,6 +2476,18 @@ window.resetAdminForm = function() {
     document.getElementById('admin-product-sell-bottle').checked = true;
     document.getElementById('admin-bottle-price-group').style.opacity = '1';
     
+    const bottleSoldOutEl = document.getElementById('admin-product-bottle-soldout');
+    if (bottleSoldOutEl) bottleSoldOutEl.checked = false;
+
+    const outOfStockEl = document.getElementById('admin-product-out-of-stock');
+    if (outOfStockEl) outOfStockEl.checked = false;
+
+    const promoEl = document.getElementById('admin-product-promo');
+    if (promoEl) promoEl.checked = false;
+
+    const comboEl = document.getElementById('admin-product-combo');
+    if (comboEl) comboEl.checked = false;
+
     renderCategoryCheckboxes();
 };
 
@@ -2439,16 +2518,20 @@ function renderCategoriesManagement() {
     `).join('');
 }
 
-window.addDecantRow = function(size = '', price = '') {
+window.addDecantRow = function(size = '', price = '', soldOut = false) {
     const container = document.getElementById('admin-decants-list');
     if (!container) return;
 
     const row = document.createElement('div');
     row.className = 'decant-row';
+    row.style = 'display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; background:#161622; padding:6px 10px; border-radius:6px; border:1px solid var(--admin-border);';
     row.innerHTML = `
-        <input type="text" placeholder="Tamaño (Ej: 5ML)" value="${size}" class="decant-size" style="max-width:120px;">
-        <input type="number" placeholder="Precio ($)" value="${price}" class="decant-price">
-        <button type="button" class="admin-btn-danger admin-btn-sm" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        <input type="text" placeholder="Tamaño (Ej: 5ML)" value="${size}" class="decant-size" style="max-width:110px;">
+        <input type="number" placeholder="Precio ($)" value="${price}" class="decant-price" style="max-width:140px;">
+        <label style="display:flex; align-items:center; gap:5px; font-size:0.78rem; color:#f87171; cursor:pointer; margin-left:4px;">
+            <input type="checkbox" class="decant-soldout" ${soldOut ? 'checked' : ''} style="accent-color:#ef4444;"> Agotado
+        </label>
+        <button type="button" class="admin-btn-danger admin-btn-sm" style="margin-left:auto;" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
     `;
     container.appendChild(row);
 };
@@ -2471,6 +2554,18 @@ window.editProduct = function(id) {
     document.getElementById('admin-product-sell-bottle').checked = p.sellBottle !== false;
     document.getElementById('admin-bottle-price-group').style.opacity = p.sellBottle !== false ? '1' : '0.4';
     
+    const bottleSoldOutEl = document.getElementById('admin-product-bottle-soldout');
+    if (bottleSoldOutEl) bottleSoldOutEl.checked = Boolean(p.bottleSoldOut || (p.soldOutSizes && p.soldOutSizes.includes('bottle')));
+
+    const outOfStockEl = document.getElementById('admin-product-out-of-stock');
+    if (outOfStockEl) outOfStockEl.checked = Boolean(p.outOfStock);
+
+    const promoEl = document.getElementById('admin-product-promo');
+    if (promoEl) promoEl.checked = Boolean(p.isPromo || p.offer);
+
+    const comboEl = document.getElementById('admin-product-combo');
+    if (comboEl) comboEl.checked = Boolean(p.isCombo || (p.categories && p.categories.some(c => c.toLowerCase().includes('combo'))));
+
     document.getElementById('admin-product-image-url').value = p.image || '';
     if (p.image) {
         document.getElementById('admin-image-preview-img').src = p.image;
@@ -2479,7 +2574,7 @@ window.editProduct = function(id) {
     
     document.getElementById('admin-product-featured').checked = Boolean(p.featured);
     document.getElementById('admin-product-bestseller').checked = Boolean(p.bestseller);
-    document.getElementById('admin-product-offer').checked = Boolean(p.offer);
+    document.getElementById('admin-product-offer').checked = Boolean(p.offer || p.isPromo);
     document.getElementById('admin-product-new').checked = Boolean(p.isNew);
     document.getElementById('admin-product-active').checked = p.active !== false;
 
@@ -2488,7 +2583,10 @@ window.editProduct = function(id) {
     const decantsList = document.getElementById('admin-decants-list');
     decantsList.innerHTML = '';
     if (Array.isArray(p.decants)) {
-        p.decants.forEach(d => addDecantRow(d.size, d.price));
+        p.decants.forEach(d => {
+            const isSold = Boolean(d.soldOut || (p.soldOutSizes && p.soldOutSizes.includes(d.size)) || p.outOfStock);
+            addDecantRow(d.size, d.price, isSold);
+        });
     }
 
     const submitBtn = document.getElementById('admin-product-submit-btn');
@@ -2496,6 +2594,16 @@ window.editProduct = function(id) {
 
     const cancelEditBtn = document.getElementById('admin-product-cancel-edit-btn');
     if (cancelEditBtn) cancelEditBtn.style.display = 'inline-flex';
+};
+
+window.toggleProductStock = async function(id) {
+    const strId = String(id);
+    const p = window.axxesStore.products.find(x => String(x.id) === strId);
+    if (!p) return;
+
+    const newStockState = !p.outOfStock;
+    await window.axxesStore.updateProduct(id, { outOfStock: newStockState });
+    renderAdminProductList(document.getElementById('admin-product-search') ? document.getElementById('admin-product-search').value.toLowerCase().trim() : '');
 };
 
 window.toggleProductActive = async function(id) {

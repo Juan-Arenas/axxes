@@ -550,17 +550,28 @@ class DataStore {
     migrateProducts(products) {
         if (!Array.isArray(products)) return [];
         return products.map(p => {
+            const soldOutSizes = Array.isArray(p.soldOutSizes) ? p.soldOutSizes : (Array.isArray(p.sold_out_sizes) ? p.sold_out_sizes : []);
+            const outOfStock = Boolean(p.outOfStock || p.out_of_stock);
+            const bottleSoldOut = Boolean(p.bottleSoldOut || p.bottle_sold_out || soldOutSizes.includes('bottle'));
+
             let decants = [];
             if (Array.isArray(p.decants)) {
-                decants = p.decants.map(d => ({
-                    size: String(d.size || '').trim().toUpperCase(),
-                    price: parseFloat(d.price) || 0
-                }));
+                decants = p.decants.map(d => {
+                    const sizeNorm = String(d.size || '').trim().toUpperCase();
+                    const isSold = Boolean(d.soldOut || d.sold_out || soldOutSizes.includes(sizeNorm) || outOfStock);
+                    return {
+                        size: sizeNorm,
+                        price: parseFloat(d.price) || 0,
+                        soldOut: isSold
+                    };
+                });
             } else if (p.decants && typeof p.decants === 'object') {
                 Object.entries(p.decants).forEach(([size, price]) => {
                     const numPrice = parseFloat(price);
                     if (numPrice > 0) {
-                        decants.push({ size: String(size).trim().toUpperCase(), price: numPrice });
+                        const sizeNorm = String(size).trim().toUpperCase();
+                        const isSold = Boolean(soldOutSizes.includes(sizeNorm) || outOfStock);
+                        decants.push({ size: sizeNorm, price: numPrice, soldOut: isSold });
                     }
                 });
             }
@@ -573,6 +584,9 @@ class DataStore {
             }
             if (categories.length === 0) categories = ['Unisex'];
             
+            const isCombo = Boolean(p.isCombo || p.is_combo || categories.some(c => String(c).toLowerCase().includes('combo')));
+            const isPromo = Boolean(p.isPromo || p.is_promo || p.offer);
+
             return {
                 ...p,
                 id: String(p.id || ('cap_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4))),
@@ -587,10 +601,16 @@ class DataStore {
                 active: p.active !== undefined ? p.active : true,
                 featured: Boolean(p.featured),
                 bestseller: Boolean(p.bestseller),
-                offer: Boolean(p.offer),
+                offer: isPromo,
                 isNew: Boolean(p.isNew),
                 priceBottle: parseFloat(p.priceBottle || p.price_bottle) || 0,
-                image: p.image || ''
+                image: p.image || '',
+                outOfStock: outOfStock,
+                bottleSoldOut: bottleSoldOut,
+                isCombo: isCombo,
+                isPromo: isPromo,
+                soldOutSizes: soldOutSizes,
+                createdAt: p.createdAt || p.created_at || (p.id && String(p.id).startsWith('cap_') ? parseInt(p.id.split('_')[1]) : 0)
             };
         });
     }
@@ -682,6 +702,7 @@ class DataStore {
             return await this.updateProduct(this.products[existingIdx].id, migrated);
         }
 
+        migrated.createdAt = new Date().toISOString();
         this.removeDeletedId(migrated.id);
         this.products.unshift(migrated);
         await this.saveProducts(true);

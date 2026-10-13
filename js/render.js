@@ -133,66 +133,126 @@ function renderStoreGrid(productsToRender) {
     bindSizeSelectors();
 }
 
-// Create product card with dynamic size selector
+// Create product card with dynamic size selector and per-size stock
 function createProductCardWithSizes(p) {
+    const soldOutSizes = Array.isArray(p.soldOutSizes) ? p.soldOutSizes : (Array.isArray(p.sold_out_sizes) ? p.sold_out_sizes : []);
+    const isGlobalSoldOut = Boolean(p.outOfStock || p.out_of_stock);
+
     // Determine available sizes
     let sizes = [];
     
     if (Array.isArray(p.decants) && p.decants.length > 0) {
         p.decants.forEach(d => {
-            sizes.push({ label: d.size, value: d.size, price: d.price });
+            const isSold = isGlobalSoldOut || Boolean(d.soldOut || d.sold_out || soldOutSizes.includes(d.size));
+            sizes.push({ label: d.size, value: d.size, price: d.price, soldOut: isSold });
         });
     }
     
     if (p.sellBottle !== false && p.priceBottle > 0) {
-        sizes.push({ label: 'Botella', value: 'bottle', price: p.priceBottle });
+        const isBottleSold = isGlobalSoldOut || Boolean(p.bottleSoldOut || p.bottle_sold_out || soldOutSizes.includes('bottle'));
+        sizes.push({ label: 'Botella', value: 'bottle', price: p.priceBottle, soldOut: isBottleSold });
     }
     
     // If no sizes configured, show bottle price
     if (sizes.length === 0) {
-        sizes.push({ label: 'Botella', value: 'bottle', price: p.priceBottle || 0 });
+        const isBottleSold = isGlobalSoldOut || Boolean(p.bottleSoldOut || p.bottle_sold_out || soldOutSizes.includes('bottle'));
+        sizes.push({ label: 'Botella', value: 'bottle', price: p.priceBottle || 0, soldOut: isBottleSold });
     }
 
     // Sort sizes logically: 5ML, 10ML, etc., then bottle
     const sizeOrder = {'5ML': 1, '10ML': 2, '15ML': 3, '30ML': 4, 'bottle': 5};
     sizes.sort((a, b) => (sizeOrder[a.value] || 99) - (sizeOrder[b.value] || 99));
-    
-    // Default to first size
-    const defaultSize = sizes[0];
-    
-    // Categories badges
-    let badgeText = '';
-    if (Array.isArray(p.categories) && p.categories.length > 0) {
-        badgeText = p.categories[0];
+
+    const isAllSoldOut = isGlobalSoldOut || sizes.every(s => s.soldOut);
+    const hasPartialSoldOut = !isAllSoldOut && sizes.some(s => s.soldOut);
+
+    // Pick first available size as default if possible
+    let defaultIndex = sizes.findIndex(s => !s.soldOut);
+    if (defaultIndex === -1) defaultIndex = 0;
+    const defaultSize = sizes[defaultIndex];
+
+    // Priority Badges: 
+    // 1. AGOTADO (if completely out of stock)
+    // 2. COMBO DECANTS (if combo)
+    // 3. EN PROMOCIÓN (if promo/offer)
+    // 4. Category badge (Nicho, Árabes, Unisex, etc.)
+    let badgeHtml = '';
+    if (isAllSoldOut) {
+        badgeHtml = `<div class="app-prod-badge badge-soldout"><i class="fa-solid fa-ban"></i> AGOTADO</div>`;
+    } else if (p.isCombo || (p.categories && p.categories.some(c => String(c).toLowerCase().includes('combo')))) {
+        badgeHtml = `<div class="app-prod-badge badge-combo"><i class="fa-solid fa-gift"></i> COMBO DECANTS</div>`;
+    } else if (p.isPromo || p.offer) {
+        badgeHtml = `<div class="app-prod-badge badge-promo"><i class="fa-solid fa-fire"></i> EN PROMOCIÓN</div>`;
+    } else if (Array.isArray(p.categories) && p.categories.length > 0) {
+        badgeHtml = `<div class="app-prod-badge">${p.categories[0]}</div>`;
     } else if (p.category) {
-        badgeText = p.category;
+        badgeHtml = `<div class="app-prod-badge">${p.category}</div>`;
     }
-    
+
+    const partialStockTag = hasPartialSoldOut ? `<span class="app-partial-stock-tag"><i class="fa-solid fa-circle-exclamation"></i> Stock parcial</span>` : '';
+
     // Description (optional)
     const descHtml = p.description ? `<div class="app-prod-desc">${p.description}</div>` : '';
     
     // Size buttons & presentation block
     const sizeButtons = sizes.length > 1 ? `
         <div class="app-prod-sizes">
-            <span class="app-size-caption"><i class="fa-solid fa-flask"></i> PRESENTACIÓN:</span>
+            <div class="app-size-caption-wrap">
+                <span class="app-size-caption"><i class="fa-solid fa-flask"></i> PRESENTACIÓN:</span>
+                ${partialStockTag}
+            </div>
             <div class="app-size-pills">
-                ${sizes.map((s, i) => `
-                    <button class="app-size-btn ${i === 0 ? 'active' : ''}" 
-                        data-size="${s.value}" 
-                        data-price="${s.price}"
-                        data-product-id="${p.id}">${s.label}</button>
-                `).join('')}
+                ${sizes.map((s, i) => {
+                    const isActive = (i === defaultIndex);
+                    const soldClass = s.soldOut ? 'size-soldout' : '';
+                    const soldLabel = s.soldOut ? '<span class="pill-soldout-label">Agotado</span>' : '';
+                    return `
+                        <button type="button" class="app-size-btn ${isActive ? 'active' : ''} ${soldClass}" 
+                            data-size="${s.value}" 
+                            data-label="${s.label}"
+                            data-price="${s.price}"
+                            data-sold-out="${s.soldOut ? 'true' : 'false'}"
+                            data-product-id="${p.id}">
+                            ${s.label} ${soldLabel}
+                        </button>
+                    `;
+                }).join('')}
             </div>
         </div>
     ` : `
         <div class="app-prod-sizes single">
-            <span class="app-single-badge"><i class="fa-solid fa-flask"></i> ${sizes[0].label === 'bottle' ? 'Botella Completa' : sizes[0].label}</span>
+            <span class="app-single-badge ${sizes[0].soldOut ? 'single-soldout' : ''}">
+                <i class="fa-solid fa-flask"></i> ${sizes[0].label === 'bottle' ? 'Botella Completa' : sizes[0].label}
+                ${sizes[0].soldOut ? ' (Agotado)' : ''}
+            </span>
         </div>
+    `;
+
+    // Add button state
+    const isDefaultSoldOut = defaultSize.soldOut;
+    const addBtnHtml = isDefaultSoldOut ? `
+        <button type="button" class="app-btn-add btn-add btn-disabled" disabled
+            data-id="${p.id}" 
+            data-name="${p.name}" 
+            data-price="${defaultSize.price}" 
+            data-img="${p.image}" 
+            data-size="${defaultSize.value}">
+            <i class="fa-solid fa-ban"></i> AGOTADO (${defaultSize.label === 'bottle' ? 'Botella' : defaultSize.label})
+        </button>
+    ` : `
+        <button type="button" class="app-btn-add btn-add" 
+            data-id="${p.id}" 
+            data-name="${p.name}" 
+            data-price="${defaultSize.price}" 
+            data-img="${p.image}" 
+            data-size="${defaultSize.value}">
+            <i class="fa-solid fa-bag-shopping"></i> AGREGAR
+        </button>
     `;
     
     return `
-        <div class="app-prod-card reveal is-visible" data-product-id="${p.id}">
-            ${badgeText ? `<div class="app-prod-badge">${badgeText}</div>` : ''}
+        <div class="app-prod-card reveal is-visible ${isAllSoldOut ? 'card-all-soldout' : ''}" data-product-id="${p.id}">
+            ${badgeHtml}
             <img src="${p.image || 'logo.webp'}" alt="${p.name}" onerror="this.onerror=null;this.src='logo.webp';">
             <div class="app-prod-brand">${p.brand || ''}</div>
             <h4 class="app-prod-name">${p.name}</h4>
@@ -202,14 +262,7 @@ function createProductCardWithSizes(p) {
                 <span class="app-price-label">PRECIO:</span>
                 <span class="app-prod-price" data-product-id="${p.id}">$${defaultSize.price.toLocaleString('es-CO')}</span>
             </div>
-            <button class="app-btn-add btn-add" 
-                data-id="${p.id}" 
-                data-name="${p.name}" 
-                data-price="${defaultSize.price}" 
-                data-img="${p.image}" 
-                data-size="${defaultSize.value}">
-                <i class="fa-solid fa-bag-shopping"></i> AGREGAR
-            </button>
+            ${addBtnHtml}
         </div>
     `;
 }
@@ -218,24 +271,38 @@ function createProductCardWithSizes(p) {
 function bindSizeSelectors() {
     document.querySelectorAll('.app-size-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const productId = e.target.dataset.productId;
-            const price = parseFloat(e.target.dataset.price);
-            const size = e.target.dataset.size;
+            const pill = e.currentTarget;
+            const productId = pill.dataset.productId;
+            const price = parseFloat(pill.dataset.price);
+            const size = pill.dataset.size;
+            const sizeLabel = pill.dataset.label || size;
+            const isSoldOut = pill.dataset.soldOut === 'true';
             
             // Update active state
-            const card = e.target.closest('.app-prod-card');
+            const card = pill.closest('.app-prod-card');
+            if (!card) return;
             card.querySelectorAll('.app-size-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
+            pill.classList.add('active');
             
             // Update price display
             const priceEl = card.querySelector('.app-prod-price');
             if (priceEl) priceEl.textContent = '$' + price.toLocaleString('es-CO');
             
-            // Update add button data
+            // Update add button state
             const addBtn = card.querySelector('.btn-add');
             if (addBtn) {
                 addBtn.dataset.price = price;
                 addBtn.dataset.size = size;
+                if (isSoldOut) {
+                    addBtn.disabled = true;
+                    addBtn.classList.add('btn-disabled');
+                    const labelText = sizeLabel === 'bottle' ? 'Botella' : sizeLabel;
+                    addBtn.innerHTML = `<i class="fa-solid fa-ban"></i> AGOTADO (${labelText})`;
+                } else {
+                    addBtn.disabled = false;
+                    addBtn.classList.remove('btn-disabled');
+                    addBtn.innerHTML = `<i class="fa-solid fa-bag-shopping"></i> AGREGAR`;
+                }
             }
         });
     });

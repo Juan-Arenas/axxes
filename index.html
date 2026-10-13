@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
     <link rel="icon" type="image/webp" href="logo.webp?v=2">
     <link rel="apple-touch-icon" href="favicon.png?v=2">
-    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="styles.css?v=9">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,6 +44,8 @@
                 <ul class="nav-links">
                     <li><a href="#hero">Inicio</a></li>
                     <li><a href="#" data-filter-all="true">Todo</a></li>
+                    <li><a href="#" data-filter-special="promo" style="color:#fb923c; font-weight:700;"><i class="fa-solid fa-fire"></i> Promos</a></li>
+                    <li><a href="#" data-filter-special="combos" style="color:#a78bfa; font-weight:700;"><i class="fa-solid fa-gift"></i> Combos</a></li>
                     <li><a href="#" data-filter-gender="Hombre">Hombre</a></li>
                     <li><a href="#" data-filter-gender="Mujer">Mujer</a></li>
                     <li><a href="#" data-filter-gender="Unisex">Unisex</a></li>
@@ -75,6 +77,8 @@
             <ul class="mobile-links">
                 <li><a href="#hero">Inicio</a></li>
                 <li><a href="#" data-filter-all="true">Ver Todo</a></li>
+                <li><a href="#" data-filter-special="promo" style="color:#fb923c; font-weight:700;"><i class="fa-solid fa-fire"></i> Perfumes en Promoción</a></li>
+                <li><a href="#" data-filter-special="combos" style="color:#a78bfa; font-weight:700;"><i class="fa-solid fa-gift"></i> Combos de Decants</a></li>
                 <li><a href="#" data-filter-gender="Hombre">Hombre</a></li>
                 <li><a href="#" data-filter-gender="Mujer">Mujer</a></li>
                 <li><a href="#" data-filter-gender="Unisex">Unisex</a></li>
@@ -88,14 +92,22 @@
 
     <!-- Main Content -->
     <main>
-        <!-- 2. BANNERS PRINCIPALES CON FLECHAS -->
+        <!-- 2. BANNERS PRINCIPALES CON ACCIÓN INTERACTIVA AL CLIC -->
         <section class="hero-slider" id="hero">
             <div class="slider-track" id="main-slider">
-                <div class="slide">
-                    <img src="banner2.webp" alt="Banner Capital Perfumes" class="slide-img">
+                <!-- Slide 1: Combo de Decants -->
+                <div class="slide slide-clickable" data-banner-filter="combos" title="Toca para ver los Combos de Decants">
+                    <img src="banner3.webp?v=4" alt="Combos de Decants Capital Perfumes" class="slide-img">
+                    <div class="banner-click-badge">
+                        <span><i class="fa-solid fa-gift"></i> VER COMBOS DECANTS <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
                 </div>
-                <div class="slide">
-                    <img src="banner1.webp" alt="Banner Capital Perfumes" class="slide-img">
+                <!-- Slide 2: Perfumes en Promoción -->
+                <div class="slide slide-clickable" data-banner-filter="promo" title="Toca para ver Perfumes en Promoción">
+                    <img src="banner2.webp?v=4" alt="Perfumes en Promoción Capital Perfumes" class="slide-img">
+                    <div class="banner-click-badge">
+                        <span><i class="fa-solid fa-fire"></i> VER PERFUMES EN PROMOCIÓN <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
                 </div>
             </div>
             <button class="slider-arrow slider-arrow-left" id="slider-prev" aria-label="Anterior">
@@ -119,6 +131,8 @@
                 <!-- Pestañas Rápidas de Categoría -->
                 <div class="store-quick-pills" id="store-quick-pills">
                     <button class="quick-pill active" data-filter-quick="all"><i class="fa-solid fa-border-all"></i> TODO</button>
+                    <button class="quick-pill pill-promo-pill" data-filter-quick="promo"><i class="fa-solid fa-fire"></i> EN PROMOCIÓN</button>
+                    <button class="quick-pill pill-combo-pill" data-filter-quick="combos"><i class="fa-solid fa-gift"></i> COMBOS DECANTS</button>
                     <button class="quick-pill" data-filter-quick="nicho"><i class="fa-solid fa-crown"></i> NICHO</button>
                     <button class="quick-pill" data-filter-quick="arabes"><i class="fa-solid fa-moon"></i> ÁRABES</button>
                     <button class="quick-pill" data-filter-quick="decants"><i class="fa-solid fa-flask"></i> DECANTS (5-10ML)</button>
@@ -173,10 +187,11 @@
                             <button id="open-filters-mobile" class="btn-secondary mobile-only"><i class="fa-solid fa-filter"></i> Filtros</button>
                             <div class="sort-dropdown">
                                 <select id="sort-select">
-                                    <option value="relevance">Relevancia</option>
-                                    <option value="recent">Más recientes</option>
-                                    <option value="price-asc">Precio menor</option>
-                                    <option value="price-desc">Precio mayor</option>
+                                    <option value="relevance">Relevancia (Más Recientes)</option>
+                                    <option value="promo">🔥 Perfumes en Promoción</option>
+                                    <option value="combos">🎁 Combos Decants</option>
+                                    <option value="price-asc">Precio: Menor a Mayor</option>
+                                    <option value="price-desc">Precio: Mayor a Menor</option>
                                     <option value="bestseller">Más vendidos</option>
                                 </select>
                             </div>
@@ -554,11 +569,11 @@
     </button>
 
     <!-- Scripts with Cache Busting -->
-    <script src="data/categories.js?v=3.2"></script>
-    <script src="data/products.js?v=3.2"></script>
-    <script src="admin/dataStore.js?v=3.2"></script>
-    <script src="js/render.js?v=3.2"></script>
-    <script src="app.js?v=3.2"></script>
-    <script src="admin/adminUI.js?v=3.2"></script>
+    <script src="data/categories.js?v=3.3"></script>
+    <script src="data/products.js?v=3.3"></script>
+    <script src="admin/dataStore.js?v=3.3"></script>
+    <script src="js/render.js?v=3.3"></script>
+    <script src="app.js?v=3.3"></script>
+    <script src="admin/adminUI.js?v=3.3"></script>
 </body>
 </html>

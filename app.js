@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initHeroSlider();
     initScrollReveal();
     initSearch();
+    initProductModal();
     initCartUI();
     initAdminAccess();
     initLogoUpdater();
@@ -195,7 +196,35 @@ function animateCounters() {
     });
 }
 
-// 4. Mega Search
+// 4. Mega Search & Product Quick View Modal
+function getProductPricingSummary(p) {
+    const soldOutSizes = Array.isArray(p.soldOutSizes) ? p.soldOutSizes : (Array.isArray(p.sold_out_sizes) ? p.sold_out_sizes : []);
+    const isGlobalSoldOut = Boolean(p.outOfStock || p.out_of_stock);
+    let sizes = [];
+
+    if (Array.isArray(p.decants) && p.decants.length > 0) {
+        p.decants.forEach(d => {
+            const isSold = isGlobalSoldOut || Boolean(d.soldOut || d.sold_out || soldOutSizes.includes(d.size));
+            sizes.push({ value: d.size, label: d.size, price: d.price, soldOut: isSold });
+        });
+    }
+    if (p.sellBottle !== false && p.priceBottle > 0) {
+        const isSold = isGlobalSoldOut || Boolean(p.bottleSoldOut || p.bottle_sold_out || soldOutSizes.includes('bottle'));
+        sizes.push({ value: 'bottle', label: 'Botella Completa', price: p.priceBottle, soldOut: isSold });
+    }
+    if (sizes.length === 0) {
+        const isSold = isGlobalSoldOut || Boolean(p.bottleSoldOut || p.bottle_sold_out || soldOutSizes.includes('bottle'));
+        sizes.push({ value: 'bottle', label: 'Botella Completa', price: p.priceBottle || 0, soldOut: isSold });
+    }
+
+    const allSoldOut = isGlobalSoldOut || sizes.every(s => s.soldOut);
+    const validPrices = sizes.map(s => s.price).filter(pr => pr > 0);
+    const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+    const sizesSummary = sizes.map(s => s.label === 'bottle' ? 'Botella' : s.label).join(', ');
+
+    return { sizes, allSoldOut, minPrice, sizesSummary };
+}
+
 function initSearch() {
     const modal = document.getElementById('search-modal');
     const btnOpen = document.getElementById('open-search');
@@ -216,6 +245,13 @@ function initSearch() {
         resultsContainer.innerHTML = '';
     });
 
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+
     input.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase().trim();
         if (query.length < 2) {
@@ -223,29 +259,474 @@ function initSearch() {
             return;
         }
 
+        if (!window.axxesStore || !window.axxesStore.products) return;
         const prods = window.axxesStore.products.filter(p => p.active);
-        const matches = prods.filter(p => 
-            p.name.toLowerCase().includes(query) || 
-            (p.brand && p.brand.toLowerCase().includes(query)) ||
-            (p.categories && p.categories.some(c => c.toLowerCase().includes(query)))
-        ).slice(0, 5);
+        const matches = prods.filter(p => {
+            const name = (p.name || '').toLowerCase();
+            const brand = (p.brand || '').toLowerCase();
+            const desc = (p.description || '').toLowerCase();
+            const gender = (p.gender || '').toLowerCase();
+            const cats = Array.isArray(p.categories) ? p.categories.map(c => String(c).toLowerCase()) : [];
+            const cat = (p.category || '').toLowerCase();
+            return name.includes(query) || brand.includes(query) || desc.includes(query) || gender.includes(query) || cats.some(c => c.includes(query)) || cat.includes(query);
+        });
 
         if (matches.length === 0) {
-            resultsContainer.innerHTML = '<p>No se encontraron resultados.</p>';
+            resultsContainer.innerHTML = `
+                <div style="text-align:center; padding:2.5rem 1rem; color:#94a3b8;">
+                    <i class="fa-solid fa-magnifying-glass" style="font-size:2rem; margin-bottom:10px; color:#475569; display:block;"></i>
+                    <p style="font-size:1.1rem; color:#fff;">No se encontraron perfumes para "<strong>${query}</strong>".</p>
+                    <p style="font-size:0.9rem; margin-top:4px;">Intenta buscar por nombre, marca o presentación (ej: "Sauvage", "Khamrah", "Decant", "Árabes").</p>
+                </div>
+            `;
             return;
         }
 
-        resultsContainer.innerHTML = matches.map(p => `
-            <div style="display:flex; gap:15px; align-items:center; cursor:pointer;" onclick="window.location.hash='catalogo-seccion'; document.getElementById('close-search').click();">
-                <img src="${p.image || 'logo.webp'}" alt="${p.name}" onerror="this.onerror=null;this.src='logo.webp';" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
-                <div>
-                    <h4 style="font-family:var(--font-heading); font-size:1.1rem; margin-bottom:0;">${p.name}</h4>
-                    <span style="font-size:0.8rem; color:#888; text-transform:uppercase;">${p.brand}</span>
-                </div>
+        const visibleMatches = matches.slice(0, 12);
+
+        let html = `
+            <div class="search-results-header">
+                <span>Encontrados <strong>${matches.length}</strong> perfumes para "${query}"</span>
+                <span style="font-size:11px; color:#a78bfa;"><i class="fa-solid fa-hand-pointer"></i> Toca para ver fotos, notas y precios</span>
             </div>
-        `).join('');
+        `;
+
+        html += visibleMatches.map(p => {
+            const summary = getProductPricingSummary(p);
+            let badgeHtml = '';
+            if (summary.allSoldOut) {
+                badgeHtml = `<span class="search-meta-pill soldout"><i class="fa-solid fa-ban"></i> Agotado</span>`;
+            } else if (p.isCombo) {
+                badgeHtml = `<span class="search-meta-pill" style="color:#c084fc;"><i class="fa-solid fa-gift"></i> Combo</span>`;
+            } else if (p.isPromo || p.offer) {
+                badgeHtml = `<span class="search-meta-pill" style="color:#fb923c;"><i class="fa-solid fa-fire"></i> Promo</span>`;
+            }
+
+            const priceDisplay = summary.minPrice > 0 ? `$${summary.minPrice.toLocaleString('es-CO')}` : '';
+
+            return `
+                <div class="search-result-item" onclick="window.selectProductFromSearch('${p.id}')" title="Ver perfume: ${p.name}">
+                    <div class="search-thumb-wrap">
+                        <img src="${p.image || 'logo.webp'}" alt="${p.name}" class="search-result-img" onerror="this.onerror=null;this.src='logo.webp';">
+                    </div>
+                    <div class="search-result-info">
+                        <div class="search-result-brand">${p.brand || 'Capital Perfumes'}</div>
+                        <div class="search-result-title">${p.name}</div>
+                        <div class="search-result-meta">
+                            <span class="search-meta-pill"><i class="fa-solid fa-flask"></i> ${summary.sizesSummary}</span>
+                            ${badgeHtml}
+                        </div>
+                    </div>
+                    <div class="search-result-action">
+                        <div class="search-result-price">${priceDisplay}</div>
+                        <span class="search-result-btn">Ver perfume <i class="fa-solid fa-arrow-right"></i></span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        if (matches.length > visibleMatches.length) {
+            html += `
+                <div class="search-all-results-btn" onclick="window.filterCatalogBySearch('${query.replace(/'/g, "\\'")}')">
+                    <i class="fa-solid fa-border-all"></i> Ver los ${matches.length} perfumes en el catálogo <i class="fa-solid fa-arrow-down"></i>
+                </div>
+            `;
+        }
+
+        resultsContainer.innerHTML = html;
+    });
+
+    // Enter key handler
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = input.value.toLowerCase().trim();
+            if (!query) return;
+            if (!window.axxesStore || !window.axxesStore.products) return;
+            const prods = window.axxesStore.products.filter(p => p.active);
+            const matches = prods.filter(p => {
+                const name = (p.name || '').toLowerCase();
+                const brand = (p.brand || '').toLowerCase();
+                const desc = (p.description || '').toLowerCase();
+                const gender = (p.gender || '').toLowerCase();
+                const cats = Array.isArray(p.categories) ? p.categories.map(c => String(c).toLowerCase()) : [];
+                return name.includes(query) || brand.includes(query) || desc.includes(query) || gender.includes(query) || cats.some(c => c.includes(query));
+            });
+
+            if (matches.length === 1) {
+                window.selectProductFromSearch(matches[0].id);
+            } else if (matches.length > 1) {
+                window.filterCatalogBySearch(query);
+            }
+        }
     });
 }
+
+// Select product from search: closes search modal, scrolls to product, pulses highlight, and opens detail modal
+window.selectProductFromSearch = function(productId) {
+    const searchModal = document.getElementById('search-modal');
+    if (searchModal) searchModal.classList.remove('active');
+
+    // Reset restricting active search query
+    if (window.activeSearchQuery) {
+        window.activeSearchQuery = null;
+    }
+
+    // Open detail modal immediately
+    window.openProductModal(productId);
+
+    // Also scroll the background catalog to this product
+    setTimeout(() => {
+        let card = document.querySelector(`.app-prod-card[data-product-id="${productId}"]`);
+        if (!card) {
+            // Uncheck any active filters or reset to 'all' so card is rendered
+            const allPill = document.querySelector('.quick-pill[data-filter-quick="all"]');
+            if (allPill) allPill.click();
+            else if (window.applyFilters) window.applyFilters();
+            
+            setTimeout(() => {
+                card = document.querySelector(`.app-prod-card[data-product-id="${productId}"]`);
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.classList.remove('product-card-highlight');
+                    void card.offsetWidth;
+                    card.classList.add('product-card-highlight');
+                    setTimeout(() => card.classList.remove('product-card-highlight'), 5000);
+                }
+            }, 300);
+        } else {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.remove('product-card-highlight');
+            void card.offsetWidth;
+            card.classList.add('product-card-highlight');
+            setTimeout(() => card.classList.remove('product-card-highlight'), 5000);
+        }
+    }, 250);
+};
+
+// Filter catalog by search term
+window.filterCatalogBySearch = function(query) {
+    const searchModal = document.getElementById('search-modal');
+    if (searchModal) searchModal.classList.remove('active');
+    window.activeSearchQuery = query;
+    if (window.applyFilters) window.applyFilters();
+    const catSec = document.getElementById('catalogo-seccion');
+    if (catSec) catSec.scrollIntoView({ behavior: 'smooth' });
+};
+
+// Clear active search filter
+window.clearSearchFilter = function() {
+    window.activeSearchQuery = null;
+    const input = document.getElementById('mega-search');
+    if (input) input.value = '';
+    if (window.applyFilters) window.applyFilters();
+};
+
+// Product Detail Modal Logic
+let currentModalProductId = null;
+let currentModalSelectedSize = null;
+let currentModalSelectedPrice = 0;
+let currentModalQty = 1;
+
+function initProductModal() {
+    const backdrop = document.getElementById('product-modal-backdrop');
+    const closeBtn = document.getElementById('close-product-modal');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', window.closeProductModal);
+    }
+    if (backdrop) {
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) window.closeProductModal();
+        });
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            window.closeProductModal();
+        }
+    });
+}
+
+window.closeProductModal = function() {
+    const backdrop = document.getElementById('product-modal-backdrop');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.style.overflow = '';
+};
+
+window.openProductModal = function(productId) {
+    if (!window.axxesStore || !window.axxesStore.products) return;
+    const p = window.axxesStore.products.find(item => String(item.id) === String(productId));
+    if (!p) {
+        console.warn('Producto no encontrado:', productId);
+        return;
+    }
+
+    currentModalProductId = p.id;
+    currentModalQty = 1;
+
+    const soldOutSizes = Array.isArray(p.soldOutSizes) ? p.soldOutSizes : (Array.isArray(p.sold_out_sizes) ? p.sold_out_sizes : []);
+    const isGlobalSoldOut = Boolean(p.outOfStock || p.out_of_stock);
+
+    let sizes = [];
+    if (Array.isArray(p.decants) && p.decants.length > 0) {
+        p.decants.forEach(d => {
+            const isSold = isGlobalSoldOut || Boolean(d.soldOut || d.sold_out || soldOutSizes.includes(d.size));
+            sizes.push({ value: d.size, label: d.size, price: d.price, soldOut: isSold });
+        });
+    }
+    if (p.sellBottle !== false && p.priceBottle > 0) {
+        const isSold = isGlobalSoldOut || Boolean(p.bottleSoldOut || p.bottle_sold_out || soldOutSizes.includes('bottle'));
+        sizes.push({ value: 'bottle', label: 'Botella Completa', price: p.priceBottle, soldOut: isSold });
+    }
+    if (sizes.length === 0) {
+        const isSold = isGlobalSoldOut || Boolean(p.bottleSoldOut || p.bottle_sold_out || soldOutSizes.includes('bottle'));
+        sizes.push({ value: 'bottle', label: 'Botella Completa', price: p.priceBottle || 0, soldOut: isSold });
+    }
+
+    const sizeOrder = {'5ML': 1, '10ML': 2, '15ML': 3, '30ML': 4, 'bottle': 5, 'Botella Completa': 5};
+    sizes.sort((a, b) => (sizeOrder[a.value] || 99) - (sizeOrder[b.value] || 99));
+
+    const isAllSoldOut = isGlobalSoldOut || sizes.every(s => s.soldOut);
+    let defaultIndex = sizes.findIndex(s => !s.soldOut);
+    if (defaultIndex === -1) defaultIndex = 0;
+    const defaultSize = sizes[defaultIndex];
+
+    currentModalSelectedSize = defaultSize.value;
+    currentModalSelectedPrice = defaultSize.price;
+
+    // Badges
+    let badgesHtml = '<span class="modal-badge-item original"><i class="fa-solid fa-certificate"></i> 100% ORIGINAL</span>';
+    if (isAllSoldOut) {
+        badgesHtml += '<span class="modal-badge-item soldout"><i class="fa-solid fa-ban"></i> AGOTADO</span>';
+    } else if (p.isCombo) {
+        badgesHtml += '<span class="modal-badge-item combo"><i class="fa-solid fa-gift"></i> COMBO DECANTS</span>';
+    } else if (p.isPromo || p.offer) {
+        badgesHtml += '<span class="modal-badge-item promo"><i class="fa-solid fa-fire"></i> EN PROMOCIÓN</span>';
+    }
+
+    // Tags
+    const tags = [];
+    if (p.gender) tags.push(`<span class="modal-tag-pill"><i class="fa-solid fa-venus-mars"></i> ${p.gender}</span>`);
+    if (Array.isArray(p.categories)) {
+        p.categories.forEach(c => {
+            if (c !== p.gender) tags.push(`<span class="modal-tag-pill">${c}</span>`);
+        });
+    } else if (p.category && p.category !== p.gender) {
+        tags.push(`<span class="modal-tag-pill">${p.category}</span>`);
+    }
+
+    // Description text
+    const descText = p.description || `Fragancia 100% original y exclusiva de la casa ${p.brand || 'Capital Perfumes'}. Presentación disponible en decants premium y botella completa con envíos express a toda Colombia.`;
+
+    const contentEl = document.getElementById('product-modal-content');
+    if (!contentEl) return;
+
+    contentEl.innerHTML = `
+        <div class="modal-product-grid">
+            <!-- Left Column: Image -->
+            <div class="modal-img-col">
+                <div class="modal-img-wrap">
+                    <div class="modal-badges-wrap">
+                        ${badgesHtml}
+                    </div>
+                    <img src="${p.image || 'logo.webp'}" alt="${p.name}" class="modal-main-img" onerror="this.onerror=null;this.src='logo.webp';">
+                </div>
+                <div class="modal-authenticity-card">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <div>
+                        <strong style="display:block; color:#fff;">Garantía de Originalidad</strong>
+                        <span>Perfumería 100% original garantizada en decants y botellas selladas.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Info & Actions -->
+            <div class="modal-info-col">
+                <div class="modal-brand-tag">${p.brand || 'Capital Perfumes'}</div>
+                <h2 class="modal-title">${p.name}</h2>
+                <div class="modal-tags-row">
+                    ${tags.join('')}
+                </div>
+
+                <!-- Price Box -->
+                <div class="modal-price-box">
+                    <span class="modal-price-val" id="modal-price-display">$${defaultSize.price.toLocaleString('es-CO')}</span>
+                    <span class="modal-price-size-label" id="modal-price-size-label">(${defaultSize.label})</span>
+                    <div class="modal-stock-status ${defaultSize.soldOut ? 'soldout' : 'available'}" id="modal-stock-indicator">
+                        <i class="fa-solid ${defaultSize.soldOut ? 'fa-ban' : 'fa-circle-check'}"></i>
+                        <span>${defaultSize.soldOut ? 'Agotado en esta presentación' : 'Disponible para entrega inmediata'}</span>
+                    </div>
+                </div>
+
+                <!-- Sizes Selector -->
+                <div class="modal-sizes-block">
+                    <span class="modal-sizes-label"><i class="fa-solid fa-flask"></i> SELECCIONA LA PRESENTACIÓN:</span>
+                    <div class="modal-sizes-pills" id="modal-sizes-container">
+                        ${sizes.map((s, i) => `
+                            <button type="button" class="modal-size-btn ${i === defaultIndex ? 'active' : ''} ${s.soldOut ? 'soldout' : ''}" 
+                                data-size="${s.value}" 
+                                data-label="${s.label}" 
+                                data-price="${s.price}" 
+                                data-soldout="${s.soldOut ? 'true' : 'false'}">
+                                <span>${s.label}</span>
+                                <span class="modal-size-btn-price">$${s.price.toLocaleString('es-CO')}</span>
+                                ${s.soldOut ? '<span class="modal-size-btn-sold">Agotado</span>' : ''}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Description Block -->
+                <div class="modal-desc-block">
+                    <div class="modal-desc-heading"><i class="fa-solid fa-align-left"></i> DESCRIPCIÓN & NOTAS</div>
+                    <div class="modal-desc-body">${descText}</div>
+                </div>
+
+                <!-- Qty & CTA Buttons -->
+                <div class="modal-cta-row">
+                    <div class="modal-qty-control">
+                        <button type="button" class="modal-qty-btn" id="modal-qty-minus"><i class="fa-solid fa-minus"></i></button>
+                        <input type="text" readonly value="1" class="modal-qty-input" id="modal-qty-val">
+                        <button type="button" class="modal-qty-btn" id="modal-qty-plus"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <button type="button" class="modal-btn-add" id="modal-btn-add" ${defaultSize.soldOut ? 'disabled' : ''}>
+                        <i class="fa-solid fa-bag-shopping"></i> 
+                        <span id="modal-btn-add-text">${defaultSize.soldOut ? `AGOTADO (${defaultSize.label})` : 'AGREGAR AL CARRITO'}</span>
+                    </button>
+                    <button type="button" class="modal-btn-wpp" id="modal-btn-wpp">
+                        <i class="fa-brands fa-whatsapp"></i> PEDIR POR WHATSAPP
+                    </button>
+                </div>
+
+                <!-- Perks footer -->
+                <div class="modal-perks-row">
+                    <div class="modal-perk-item">
+                        <i class="fa-solid fa-truck-fast"></i>
+                        <span>Envíos Colombia 1 a 3 días hábiles</span>
+                    </div>
+                    <div class="modal-perk-item">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <span>Addi, Tarjetas, Contra Entrega Medellín</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Size Selection Handler
+    const sizeButtons = contentEl.querySelectorAll('.modal-size-btn');
+    sizeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            sizeButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const val = btn.dataset.size;
+            const label = btn.dataset.label;
+            const price = parseFloat(btn.dataset.price);
+            const isSold = btn.dataset.soldout === 'true';
+
+            currentModalSelectedSize = val;
+            currentModalSelectedPrice = price;
+
+            // Update price display
+            const priceDisp = document.getElementById('modal-price-display');
+            const priceLabel = document.getElementById('modal-price-size-label');
+            if (priceDisp) priceDisp.textContent = '$' + price.toLocaleString('es-CO');
+            if (priceLabel) priceLabel.textContent = `(${label})`;
+
+            // Update stock indicator
+            const stockInd = document.getElementById('modal-stock-indicator');
+            if (stockInd) {
+                if (isSold) {
+                    stockInd.className = 'modal-stock-status soldout';
+                    stockInd.innerHTML = '<i class="fa-solid fa-ban"></i> <span>Agotado en esta presentación</span>';
+                } else {
+                    stockInd.className = 'modal-stock-status available';
+                    stockInd.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Disponible para entrega inmediata</span>';
+                }
+            }
+
+            // Update add button
+            const addBtn = document.getElementById('modal-btn-add');
+            const addText = document.getElementById('modal-btn-add-text');
+            if (addBtn && addText) {
+                if (isSold) {
+                    addBtn.disabled = true;
+                    addText.textContent = `AGOTADO (${label})`;
+                } else {
+                    addBtn.disabled = false;
+                    addText.textContent = 'AGREGAR AL CARRITO';
+                }
+            }
+        });
+    });
+
+    // Qty controls
+    const minusBtn = document.getElementById('modal-qty-minus');
+    const plusBtn = document.getElementById('modal-qty-plus');
+    const qtyInput = document.getElementById('modal-qty-val');
+    if (minusBtn && plusBtn && qtyInput) {
+        minusBtn.addEventListener('click', () => {
+            if (currentModalQty > 1) {
+                currentModalQty--;
+                qtyInput.value = currentModalQty;
+            }
+        });
+        plusBtn.addEventListener('click', () => {
+            currentModalQty++;
+            qtyInput.value = currentModalQty;
+        });
+    }
+
+    // Add to cart handler
+    const addBtn = document.getElementById('modal-btn-add');
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            if (window.addToCart) {
+                window.addToCart({
+                    id: p.id,
+                    name: p.name,
+                    price: currentModalSelectedPrice,
+                    img: p.image,
+                    qty: currentModalQty,
+                    size: currentModalSelectedSize || 'bottle'
+                });
+                window.closeProductModal();
+                // Open cart drawer
+                const drawer = document.getElementById('cart-drawer');
+                const overlay = document.getElementById('cart-overlay');
+                if (drawer && overlay) {
+                    drawer.classList.add('open');
+                    overlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        });
+    }
+
+    // Direct WhatsApp handler
+    const wppBtn = document.getElementById('modal-btn-wpp');
+    if (wppBtn) {
+        wppBtn.addEventListener('click', () => {
+            const sizeLabel = currentModalSelectedSize === 'bottle' ? 'Botella Completa' : currentModalSelectedSize;
+            let msg = `*¡Hola Capital Perfumes!* 💎✨\n\n`;
+            msg += `Deseo consultar / pedir el siguiente perfume:\n`;
+            msg += `• *Perfume:* ${p.name}\n`;
+            msg += `• *Casa / Marca:* ${p.brand || 'Exclusiva'}\n`;
+            msg += `• *Presentación:* ${sizeLabel}\n`;
+            msg += `• *Cantidad:* ${currentModalQty}\n`;
+            msg += `• *Precio:* $${(currentModalSelectedPrice * currentModalQty).toLocaleString('es-CO')} COP\n\n`;
+            msg += `¿Tienen disponibilidad inmediata para envío a mi ciudad? ¡Muchas gracias!`;
+            const encoded = encodeURIComponent(msg);
+            window.open(`https://wa.me/573005130634?text=${encoded}`, '_blank');
+        });
+    }
+
+    // Show modal
+    const backdrop = document.getElementById('product-modal-backdrop');
+    if (backdrop) backdrop.classList.add('active');
+    document.body.style.overflow = 'hidden';
+};
 
 // 5. Cart UI & Logic
 function initCartUI() {
@@ -538,6 +1019,9 @@ function initStoreFilters() {
             // Reset all checkboxes
             document.querySelectorAll('#store-filters input[type="checkbox"]').forEach(cb => cb.checked = false);
 
+            // Clear search filter when switching category pill
+            window.activeSearchQuery = null;
+
             if (quick === 'all') {
                 if (priceSlider) priceSlider.value = priceSlider.max;
                 if (priceVal) priceVal.innerText = '$' + parseInt(priceSlider.max).toLocaleString('es-CO');
@@ -584,6 +1068,20 @@ function initStoreFilters() {
 window.applyFilters = function() {
     if(!window.axxesStore) return;
     let prods = window.axxesStore.products.filter(p => p.active);
+
+    // 0. Active Search Query filter
+    if (window.activeSearchQuery) {
+        const q = window.activeSearchQuery.toLowerCase().trim();
+        prods = prods.filter(p => {
+            const name = (p.name || '').toLowerCase();
+            const brand = (p.brand || '').toLowerCase();
+            const desc = (p.description || '').toLowerCase();
+            const gender = (p.gender || '').toLowerCase();
+            const cats = Array.isArray(p.categories) ? p.categories.map(c => String(c).toLowerCase()) : [];
+            const cat = (p.category || '').toLowerCase();
+            return name.includes(q) || brand.includes(q) || desc.includes(q) || gender.includes(q) || cats.some(c => c.includes(q)) || cat.includes(q);
+        });
+    }
 
     const activePill = document.querySelector('.quick-pill.active')?.getAttribute('data-filter-quick');
     const sortVal = document.getElementById('sort-select') ? document.getElementById('sort-select').value : 'relevance';

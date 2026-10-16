@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
     <link rel="icon" type="image/webp" href="logo.webp?v=2">
     <link rel="apple-touch-icon" href="favicon.png?v=2">
-    <link rel="stylesheet" href="styles.css?v=9">
+    <link rel="stylesheet" href="styles.css?v=10">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -546,14 +546,26 @@
 
     <!-- BUSCADOR PREMIUM -->
     <div class="search-modal" id="search-modal">
-        <button class="close-search" id="close-search"><i class="fa-solid fa-xmark"></i></button>
+        <button class="close-search" id="close-search" aria-label="Cerrar buscador"><i class="fa-solid fa-xmark"></i></button>
         <div class="search-content">
             <div class="search-input-wrapper">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="mega-search" placeholder="Buscar perfume, marca, categoría..." autocomplete="off">
+                <input type="text" id="mega-search" placeholder="Buscar perfume, marca, decant, notas..." autocomplete="off">
             </div>
             <div class="search-results-instant" id="search-results-instant">
                 <!-- JS Results -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE DE PRODUCTO (DESCRIPCIÓN, TAMAÑOS Y PRECIOS) -->
+    <div class="product-modal-backdrop" id="product-modal-backdrop">
+        <div class="product-detail-modal" id="product-detail-modal">
+            <button class="close-product-modal" id="close-product-modal" aria-label="Cerrar modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="product-modal-content" id="product-modal-content">
+                <!-- Dinámico vía JavaScript -->
             </div>
         </div>
     </div>
@@ -569,11 +581,11 @@
     </button>
 
     <!-- Scripts with Cache Busting -->
-    <script src="data/categories.js?v=3.4"></script>
-    <script src="data/products.js?v=3.4"></script>
-    <script src="admin/dataStore.js?v=3.4"></script>
-    <script src="js/render.js?v=3.4"></script>
-    <script src="app.js?v=3.4"></script>
-    <script src="admin/adminUI.js?v=3.4"></script>
+    <script src="data/categories.js?v=3.5"></script>
+    <script src="data/products.js?v=3.5"></script>
+    <script src="admin/dataStore.js?v=3.5"></script>
+    <script src="js/render.js?v=3.5"></script>
+    <script src="app.js?v=3.5"></script>
+    <script src="admin/adminUI.js?v=3.5"></script>
 </body>
 </html>

@@ -121,12 +121,31 @@ function renderStoreGrid(productsToRender) {
     const storeGrid = document.getElementById('main-store-grid');
     if (!storeGrid) return;
 
+    let searchTagHtml = '';
+    if (window.activeSearchQuery) {
+        searchTagHtml = `
+            <div class="catalog-search-tag-bar" style="grid-column: 1/-1;">
+                <span><i class="fa-solid fa-magnifying-glass" style="margin-right:6px;"></i> Resultados de búsqueda para: <strong>"${window.activeSearchQuery}"</strong> (${productsToRender.length} perfumes)</span>
+                <button type="button" class="catalog-search-tag-clear" onclick="window.clearSearchFilter()"><i class="fa-solid fa-xmark"></i> Quitar filtro</button>
+            </div>
+        `;
+    }
+
     if (productsToRender.length === 0) {
-        storeGrid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding: 2rem;">No se encontraron resultados.</p>`;
+        storeGrid.innerHTML = `
+            ${searchTagHtml}
+            <div style="grid-column: 1/-1; text-align:center; padding: 3rem 1rem;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size:2.5rem; color:#ccc; margin-bottom:1rem; display:block;"></i>
+                <p style="font-size:1.1rem; color:#666;">No se encontraron resultados para tu búsqueda.</p>
+                <button type="button" class="btn btn-primary-dark mt-2" onclick="window.clearSearchFilter()" style="margin-top:12px; padding:10px 20px; font-size:14px; border-radius:6px; cursor:pointer;">
+                    <i class="fa-solid fa-border-all"></i> Ver todo el catálogo
+                </button>
+            </div>
+        `;
         return;
     }
 
-    storeGrid.innerHTML = productsToRender.map(p => createProductCardWithSizes(p)).join('');
+    storeGrid.innerHTML = searchTagHtml + productsToRender.map(p => createProductCardWithSizes(p)).join('');
     
     // Bind buttons newly added to DOM
     bindCartButtons();
@@ -191,8 +210,8 @@ function createProductCardWithSizes(p) {
 
     const partialStockTag = hasPartialSoldOut ? `<span class="app-partial-stock-tag"><i class="fa-solid fa-circle-exclamation"></i> Stock parcial</span>` : '';
 
-    // Description (optional)
-    const descHtml = p.description ? `<div class="app-prod-desc">${p.description}</div>` : '';
+    // Description (optional snippet in card)
+    const descHtml = p.description ? `<div class="app-prod-desc" onclick="window.openProductModal('${p.id}')" style="cursor:pointer;" title="Toca para ver descripción completa">${p.description.length > 70 ? p.description.substring(0, 70) + '...' : p.description}</div>` : '';
     
     // Size buttons & presentation block
     const sizeButtons = sizes.length > 1 ? `
@@ -253,9 +272,14 @@ function createProductCardWithSizes(p) {
     return `
         <div class="app-prod-card reveal is-visible ${isAllSoldOut ? 'card-all-soldout' : ''}" data-product-id="${p.id}">
             ${badgeHtml}
-            <img src="${p.image || 'logo.webp'}" alt="${p.name}" onerror="this.onerror=null;this.src='logo.webp';">
-            <div class="app-prod-brand">${p.brand || ''}</div>
-            <h4 class="app-prod-name">${p.name}</h4>
+            <div style="position:relative; cursor:pointer;" onclick="window.openProductModal('${p.id}')" title="Toca para ver fotos, notas y precios">
+                <img src="${p.image || 'logo.webp'}" alt="${p.name}" onerror="this.onerror=null;this.src='logo.webp';">
+            </div>
+            <div class="app-prod-brand" onclick="window.openProductModal('${p.id}')" style="cursor:pointer;">${p.brand || ''}</div>
+            <h4 class="app-prod-name" onclick="window.openProductModal('${p.id}')" style="cursor:pointer;" title="Toca para ver descripción completa">${p.name}</h4>
+            <div class="app-prod-card-view-btn" onclick="window.openProductModal('${p.id}')">
+                <i class="fa-solid fa-eye"></i> Ver descripción & detalles
+            </div>
             ${descHtml}
             ${sizeButtons}
             <div class="app-prod-price-wrap">

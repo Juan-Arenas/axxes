@@ -482,16 +482,30 @@ class DataStore {
     // ================= NEON SERVERLESS POSTGRESQL SYNC =================
     async syncPendingProducts(neonProds) {
         if (!Array.isArray(neonProds)) return;
-        const neonIds = new Set(neonProds.map(p => String(p.id)));
+        const neonMap = new Map(neonProds.map(p => [String(p.id), p]));
         const deletedIds = this.getDeletedIds();
 
-        // Detect any products stored locally that are missing in Neon
-        const unsynced = (this.products || []).filter(p => p && p.id && !neonIds.has(String(p.id)) && !deletedIds.includes(String(p.id)));
+        // Detect:
+        // 1. Products stored locally that are missing in Neon
+        // 2. Products in Neon that have no image, but local has the image!
+        const toSync = (this.products || []).filter(p => {
+            if (!p || !p.id) return false;
+            const strId = String(p.id);
+            if (deletedIds.includes(strId)) return false;
 
-        if (unsynced.length === 0) return;
+            const neonVersion = neonMap.get(strId);
+            if (!neonVersion) {
+                return true;
+            }
+            const hasLocalImage = p.image && String(p.image).trim().length > 50;
+            const neonHasNoImage = !neonVersion.image || String(neonVersion.image).trim().length <= 50;
+            return hasLocalImage && neonHasNoImage;
+        });
 
-        console.log(`[Neon Auto-Sync] Sincronizando ${unsynced.length} productos locales pendientes a Neon DB...`);
-        for (const localP of unsynced) {
+        if (toSync.length === 0) return;
+
+        console.log(`[Neon Auto-Sync] Sincronizando ${toSync.length} productos con fotos hacia Neon DB...`);
+        for (const localP of toSync) {
             try {
                 const res = await window.fetchApi('/api/products', {
                     method: 'POST',
@@ -516,13 +530,22 @@ class DataStore {
             if (resProds.ok) {
                 const neonProds = await resProds.json();
                 if (Array.isArray(neonProds) && neonProds.length > 0) {
-                    const neonIds = new Set(neonProds.map(p => String(p.id)));
+                    const neonMap = new Map(neonProds.map(p => [String(p.id), p]));
                     const deletedIds = this.getDeletedIds();
                     
                     // Keep unsynced local products so they are NOT lost!
-                    const unsynced = (this.products || []).filter(p => p && p.id && !neonIds.has(String(p.id)) && !deletedIds.includes(String(p.id)));
+                    const unsynced = (this.products || []).filter(p => p && p.id && !neonMap.has(String(p.id)) && !deletedIds.includes(String(p.id)));
 
-                    this.products = this.migrateProducts([...unsynced, ...neonProds]);
+                    // If local has image and neon doesn't, preserve local image in merged array!
+                    const mergedNeonProds = neonProds.map(nP => {
+                        const localP = (this.products || []).find(p => String(p?.id) === String(nP.id));
+                        if (localP && localP.image && localP.image.length > 50 && (!nP.image || nP.image.length <= 50)) {
+                            return { ...nP, image: localP.image };
+                        }
+                        return nP;
+                    });
+
+                    this.products = this.migrateProducts([...unsynced, ...mergedNeonProds]);
                     this.deduplicateProducts(false);
                     this.isNeonConnected = true;
                     this.safeLocalStorageSave();
@@ -530,10 +553,8 @@ class DataStore {
                     console.log(`[Neon DB] Conectado exitosamente: ${neonProds.length} perfumes sincronizados en tiempo real.`);
                     this.addLog('success', 'NEON_CONNECT', `Conectado a Neon PostgreSQL: ${neonProds.length} productos sincronizados.`, { count: neonProds.length }, 'OK');
 
-                    // Automatically upload pending local products to Neon
-                    if (unsynced.length > 0) {
-                        this.syncPendingProducts(neonProds);
-                    }
+                    // Automatically upload pending products or missing images to Neon
+                    await this.syncPendingProducts(neonProds);
                 }
             }
 
@@ -570,11 +591,19 @@ class DataStore {
                         const hash = fresh.length + '_' + (fresh[0]?.id || '') + '_' + (fresh[0]?.name || '');
                         if (this._lastProductsHash && this._lastProductsHash !== hash) {
                             console.log('[Neon Realtime] Cambios detectados desde otro dispositivo. Actualizando...');
-                            const neonIds = new Set(fresh.map(p => String(p.id)));
+                            const neonMap = new Map(fresh.map(p => [String(p.id), p]));
                             const deletedIds = this.getDeletedIds();
-                            const unsynced = (this.products || []).filter(p => p && p.id && !neonIds.has(String(p.id)) && !deletedIds.includes(String(p.id)));
+                            const unsynced = (this.products || []).filter(p => p && p.id && !neonMap.has(String(p.id)) && !deletedIds.includes(String(p.id)));
 
-                            this.products = this.migrateProducts([...unsynced, ...fresh]);
+                            const mergedFresh = fresh.map(nP => {
+                                const localP = (this.products || []).find(p => String(p?.id) === String(nP.id));
+                                if (localP && localP.image && localP.image.length > 50 && (!nP.image || nP.image.length <= 50)) {
+                                    return { ...nP, image: localP.image };
+                                }
+                                return nP;
+                            });
+
+                            this.products = this.migrateProducts([...unsynced, ...mergedFresh]);
                             this.safeLocalStorageSave();
                             document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
                         }

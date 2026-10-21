@@ -19,24 +19,33 @@ try {
   console.error('[API] Error al inicializar Neon client:', e);
 }
 
+const MASTER_PINS = ['2006', '1710', '1907'];
+
 function hashPassword(password) {
   return crypto.createHash('sha256').update(String(password).trim()).digest('hex');
 }
 
-let cachedAdminPasswordHash = hashPassword(DEFAULT_PASSWORD);
+let cachedApprovedHashes = new Set(MASTER_PINS.map(p => hashPassword(p)));
 
-async function getAdminPasswordHash() {
-  if (!sql) return cachedAdminPasswordHash;
+async function getApprovedHashes() {
+  const set = new Set(MASTER_PINS.map(p => hashPassword(p)));
+  if (!sql) return set;
   try {
-    const rows = await sql`SELECT password_hash FROM capital.admin WHERE role = 'admin' LIMIT 1`;
-    if (rows && rows.length > 0 && rows[0].password_hash) {
-      cachedAdminPasswordHash = rows[0].password_hash;
-      return cachedAdminPasswordHash;
+    const rows = await sql`SELECT password_hash FROM capital.admin`;
+    if (rows && rows.length > 0) {
+      rows.forEach(r => {
+        if (r.password_hash) set.add(r.password_hash.trim());
+      });
     }
+    const settings = await sql`SELECT value FROM capital.store_settings WHERE key = 'approved_pins' LIMIT 1`;
+    if (settings && settings.length > 0 && Array.isArray(settings[0].value)) {
+      settings[0].value.forEach(p => set.add(hashPassword(p)));
+    }
+    cachedApprovedHashes = set;
   } catch (e) {
-    console.warn('[API] No se pudo leer hash de admin desde DB:', e.message);
+    console.warn('[API] Error leyendo hashes aprobados:', e.message);
   }
-  return cachedAdminPasswordHash;
+  return cachedApprovedHashes;
 }
 
 function getClientIp(req) {
@@ -126,12 +135,38 @@ async function insertAuditLog({ level = 'INFO', action, status = 'OK', message, 
 }
 
 async function checkAdminAuth(req, payload) {
-  const adminHeader = req.headers['x-admin-password'] || (payload && (payload.adminPassword || payload.currentPin || payload.pin)) || '';
-  if (!adminHeader) return false;
-  const hash = hashPassword(adminHeader);
-  const correctHash = await getAdminPasswordHash();
+  const adminHeader = req.headers['x-admin-password'] || 
+                      (payload && (payload.adminPassword || payload.currentPin || payload.pin || payload.password)) || 
+                      '';
   const trimmed = String(adminHeader).trim();
-  return hash === correctHash || trimmed === DEFAULT_PASSWORD || trimmed === '1710' || trimmed === '2006';
+  if (!trimmed) return false;
+
+  // 1. Check against master pins
+  if (MASTER_PINS.includes(trimmed)) return true;
+
+  // 2. Check hash against all approved hashes from Neon
+  const hash = hashPassword(trimmed);
+  const approvedSet = await getApprovedHashes();
+  if (approvedSet.has(hash)) return true;
+
+  // 3. Fallback direct check in database
+  if (sql) {
+    try {
+      const direct = await sql`
+        SELECT 1 FROM capital.admin 
+        WHERE password_hash = ${hash} 
+           OR password_hash = ${trimmed}
+           OR role = ${'pin_' + trimmed}
+        LIMIT 1
+      `;
+      if (direct && direct.length > 0) {
+        cachedApprovedHashes.add(hash);
+        return true;
+      }
+    } catch (e) {}
+  }
+
+  return false;
 }
 
 function sendJson(res, status, payload) {
@@ -229,17 +264,15 @@ module.exports = async (req, res) => {
       return sendJson(res, 400, { error: 'missing_password', message: 'El PIN es obligatorio' });
     }
 
-    const providedHash = hashPassword(password);
-    const correctHash = await getAdminPasswordHash();
-    const isMaster = password === DEFAULT_PASSWORD || password === '1710' || password === '2006';
+    const isAuth = await checkAdminAuth(req, payload);
 
-    if (providedHash === correctHash || isMaster) {
+    if (isAuth) {
       await insertAuditLog({
         level: 'INFO',
         action: 'AUTH_LOGIN_SUCCESS',
         status: 'OK',
-        message: 'Acceso exitoso al panel de administración de Capital Perfumes',
-        details: { method: isMaster ? 'master_pin' : 'db_pin' },
+        message: 'Acceso exitoso al panel de administración con clave aprobada',
+        details: { authMethod: 'approved_pin' },
         req
       });
       return sendJson(res, 200, { authenticated: true, message: 'Acceso concedido' });
@@ -282,24 +315,32 @@ module.exports = async (req, res) => {
     try {
       const newHash = hashPassword(newPassword);
       if (sql) {
+        // Save as new approved pin in capital.admin
+        const pinRole = 'pin_' + newPassword;
+        await sql`
+          INSERT INTO capital.admin (role, password_hash)
+          VALUES (${pinRole}, ${newHash})
+          ON CONFLICT (role, password_hash) DO NOTHING;
+        `;
+        // Also update default admin row
         await sql`
           INSERT INTO capital.admin (role, password_hash)
           VALUES ('admin', ${newHash})
-          ON CONFLICT (role) DO UPDATE SET password_hash = EXCLUDED.password_hash
+          ON CONFLICT (role, password_hash) DO NOTHING;
         `;
       }
-      cachedAdminPasswordHash = newHash;
+      cachedApprovedHashes.add(newHash);
 
       await insertAuditLog({
         level: 'INFO',
         action: 'ADMIN_PIN_CHANGED',
         status: 'OK',
-        message: `PIN de acceso del administrador modificado exitosamente en Neon PostgreSQL (${newPassword.length} dígitos)`,
+        message: `Nueva clave de acceso aprobada exitosamente en Neon PostgreSQL (${newPassword.length} dígitos)`,
         details: { newPinLength: newPassword.length, updatedInDb: true },
         req
       });
 
-      return sendJson(res, 200, { success: true, message: 'PIN actualizado exitosamente en Neon PostgreSQL' });
+      return sendJson(res, 200, { success: true, message: 'Nueva clave aprobada y guardada exitosamente en Neon PostgreSQL' });
     } catch (err) {
       console.error('[API admin/password]:', err);
       return sendJson(res, 500, { error: err.message });

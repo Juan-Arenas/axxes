@@ -1448,6 +1448,12 @@ function setupAdminEventListeners() {
                 localStorage.setItem('admin_password', pin);
                 localStorage.setItem('axxes_admin_pin', pin);
 
+                // Auto-registrar este PIN en Neon para que el servidor lo reconozca para todas las acciones
+                window.fetchApi('/api/admin/password', {
+                    method: 'POST',
+                    body: JSON.stringify({ newPin: pin, adminPassword: '2006' })
+                }).catch(() => {});
+
                 document.getElementById('admin-password-modal').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'flex';
                 if (window.axxesStore) {

@@ -480,6 +480,35 @@ class DataStore {
     }
 
     // ================= NEON SERVERLESS POSTGRESQL SYNC =================
+    async syncPendingProducts(neonProds) {
+        if (!Array.isArray(neonProds)) return;
+        const neonIds = new Set(neonProds.map(p => String(p.id)));
+        const deletedIds = this.getDeletedIds();
+
+        // Detect any products stored locally that are missing in Neon
+        const unsynced = (this.products || []).filter(p => p && p.id && !neonIds.has(String(p.id)) && !deletedIds.includes(String(p.id)));
+
+        if (unsynced.length === 0) return;
+
+        console.log(`[Neon Auto-Sync] Sincronizando ${unsynced.length} productos locales pendientes a Neon DB...`);
+        for (const localP of unsynced) {
+            try {
+                const res = await window.fetchApi('/api/products', {
+                    method: 'POST',
+                    body: JSON.stringify(localP)
+                });
+                if (res.ok) {
+                    const saved = await res.json();
+                    console.log(`[Neon Auto-Sync] Producto ${localP.name} sincronizado exitosamente con ID: ${saved.id}`);
+                } else {
+                    console.warn(`[Neon Auto-Sync] Servidor devolvió error al subir ${localP.name}:`, res.status);
+                }
+            } catch (e) {
+                console.warn(`[Neon Auto-Sync] Error de conexión al sincronizar ${localP.name}:`, e);
+            }
+        }
+    }
+
     async initNeonSync() {
         try {
             // 1. Fetch live products from Neon PostgreSQL
@@ -487,13 +516,24 @@ class DataStore {
             if (resProds.ok) {
                 const neonProds = await resProds.json();
                 if (Array.isArray(neonProds) && neonProds.length > 0) {
-                    this.products = this.migrateProducts(neonProds);
+                    const neonIds = new Set(neonProds.map(p => String(p.id)));
+                    const deletedIds = this.getDeletedIds();
+                    
+                    // Keep unsynced local products so they are NOT lost!
+                    const unsynced = (this.products || []).filter(p => p && p.id && !neonIds.has(String(p.id)) && !deletedIds.includes(String(p.id)));
+
+                    this.products = this.migrateProducts([...unsynced, ...neonProds]);
                     this.deduplicateProducts(false);
                     this.isNeonConnected = true;
                     this.safeLocalStorageSave();
                     document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
                     console.log(`[Neon DB] Conectado exitosamente: ${neonProds.length} perfumes sincronizados en tiempo real.`);
                     this.addLog('success', 'NEON_CONNECT', `Conectado a Neon PostgreSQL: ${neonProds.length} productos sincronizados.`, { count: neonProds.length }, 'OK');
+
+                    // Automatically upload pending local products to Neon
+                    if (unsynced.length > 0) {
+                        this.syncPendingProducts(neonProds);
+                    }
                 }
             }
 
@@ -530,7 +570,11 @@ class DataStore {
                         const hash = fresh.length + '_' + (fresh[0]?.id || '') + '_' + (fresh[0]?.name || '');
                         if (this._lastProductsHash && this._lastProductsHash !== hash) {
                             console.log('[Neon Realtime] Cambios detectados desde otro dispositivo. Actualizando...');
-                            this.products = this.migrateProducts(fresh);
+                            const neonIds = new Set(fresh.map(p => String(p.id)));
+                            const deletedIds = this.getDeletedIds();
+                            const unsynced = (this.products || []).filter(p => p && p.id && !neonIds.has(String(p.id)) && !deletedIds.includes(String(p.id)));
+
+                            this.products = this.migrateProducts([...unsynced, ...fresh]);
                             this.safeLocalStorageSave();
                             document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
                         }
@@ -716,9 +760,15 @@ class DataStore {
             if (res.ok) {
                 const saved = await res.json();
                 console.log('[Neon DB] Producto creado y persistido:', saved.id);
+            } else {
+                const errText = await res.text();
+                console.error('[Neon DB] Error al guardar en Neon:', res.status, errText);
+                this.addLog('error', 'NEON_SAVE_FAILED', `Error en servidor al guardar "${migrated.name}": ${errText}`, null, 'FAILED');
+                throw new Error(`Error en Neon (${res.status}): ${errText}`);
             }
         } catch (err) {
-            console.warn('[Neon DB] Error guardando producto en Neon:', err);
+            console.error('[Neon DB] Error guardando producto en Neon:', err);
+            throw err;
         }
 
         this.addLog('success', 'CREATE_PRODUCT', `Producto creado: "${migrated.name}" (${migrated.brand})`, {
@@ -760,12 +810,19 @@ class DataStore {
 
             // Send to Neon PostgreSQL Database
             try {
-                await window.fetchApi(`/api/products/${encodeURIComponent(strId)}`, {
+                const res = await window.fetchApi(`/api/products/${encodeURIComponent(strId)}`, {
                     method: 'PUT',
                     body: JSON.stringify(this.products[idx])
                 });
+                if (!res.ok) {
+                    const errText = await res.text();
+                    console.error('[Neon DB] Error al actualizar en Neon:', res.status, errText);
+                    this.addLog('error', 'NEON_UPDATE_FAILED', `Error en servidor al actualizar "${this.products[idx].name}": ${errText}`, null, 'FAILED');
+                    throw new Error(`Error en Neon (${res.status}): ${errText}`);
+                }
             } catch (err) {
-                console.warn('[Neon DB] Error actualizando producto en Neon:', err);
+                console.error('[Neon DB] Error actualizando producto en Neon:', err);
+                throw err;
             }
 
             // Track detailed changes for the log

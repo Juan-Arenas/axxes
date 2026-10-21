@@ -553,7 +553,9 @@ class DataStore {
                     const unsynced = (this.products || []).filter(p => p && p.id && !neonMap.has(String(p.id)) && !deletedIds.includes(String(p.id)));
 
                     // If local has image and neon doesn't, preserve local image in merged array!
-                    const mergedNeonProds = neonProds.map(nP => {
+                    const mergedNeonProds = neonProds
+                        .filter(nP => !deletedIds.includes(String(nP.id)))
+                        .map(nP => {
                         const localP = (this.products || []).find(p => String(p?.id) === String(nP.id));
                         if (localP && localP.image && localP.image.length > 50 && (!nP.image || nP.image.length <= 50)) {
                             return { ...nP, image: localP.image };

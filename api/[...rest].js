@@ -19,7 +19,7 @@ try {
   console.error('[API] Error al inicializar Neon client:', e);
 }
 
-const MASTER_PINS = ['2006', '1710', '1907'];
+const MASTER_PINS = ['2006', '1710', '1907', '0896'];
 
 function hashPassword(password) {
   return crypto.createHash('sha256').update(String(password).trim()).digest('hex');

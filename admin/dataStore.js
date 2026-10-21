@@ -229,14 +229,8 @@ class DataStore {
         // 1. Initial synchronous load from local storage
         this.loadSyncData();
 
-        // 2. Asynchronous deep check against IndexedDB
-        this.loadFromIDB();
-
-        // 3. Connect to Neon Serverless PostgreSQL (Global Multi-Device Database)
-        this.initNeonSync();
-
-        // 4. Start real-time multi-device polling loop
-        this.startRealtimePolling();
+        // 2. Async initialization sequence: IDB check -> Neon Sync -> Polling
+        this.initSequence();
     }
 
     // ================= LOGGER SUBSYSTEM =================
@@ -444,6 +438,12 @@ class DataStore {
         }
     }
 
+        async initSequence() {
+        await this.loadFromIDB();
+        await this.initNeonSync();
+        this.startRealtimePolling();
+    }
+
     async loadFromIDB() {
         try {
             const idbProducts = await this.idb.get('products');
@@ -452,18 +452,34 @@ class DataStore {
 
             let updated = false;
 
-            if (Array.isArray(idbProducts) && idbProducts.length > 0 && this.products.length === 0) {
-                this.products = this.migrateProducts(idbProducts);
-                this.deduplicateProducts(false);
-                updated = true;
+            if (Array.isArray(idbProducts) && idbProducts.length > 0) {
+                const idbMap = new Map(idbProducts.map(p => [String(p.id), p]));
+                
+                // Merge images from IndexedDB if localStorage trimmed them
+                this.products = this.products.map(p => {
+                    const idbP = idbMap.get(String(p.id));
+                    if (idbP && idbP.image && idbP.image.length > 50 && (!p.image || p.image.length <= 50)) {
+                        updated = true;
+                        return { ...p, image: idbP.image };
+                    }
+                    return p;
+                });
+
+                // Add any products that were only in IndexedDB
+                for (const ip of idbProducts) {
+                    if (!this.products.some(p => String(p.id) === String(ip.id))) {
+                        this.products.unshift(ip);
+                        updated = true;
+                    }
+                }
             }
 
-            if (Array.isArray(idbCategories) && idbCategories.length > 0 && this.categories.length === 0) {
+            if (Array.isArray(idbCategories) && idbCategories.length > 0 && (!this.categories || this.categories.length === 0)) {
                 this.categories = idbCategories;
                 updated = true;
             }
 
-            if (idbSiteConfig && Object.keys(idbSiteConfig).length > 0 && Object.keys(this.siteConfig).length === 0) {
+            if (idbSiteConfig && Object.keys(idbSiteConfig).length > 0 && (!this.siteConfig || Object.keys(this.siteConfig).length === 0)) {
                 this.siteConfig = idbSiteConfig;
                 updated = true;
             }

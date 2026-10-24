@@ -2627,13 +2627,17 @@ window.toggleProductActive = async function(id) {
 };
 
 window.deleteProduct = async function(id) {
-    if (confirm('¿Seguro que deseas eliminar este producto?')) {
-        await window.axxesStore.deleteProduct(id);
-        renderAdminDashboard();
-        window.showToast('🗑️ Producto eliminado.');
+    if (confirm('¿Seguro que deseas eliminar este producto permanentemente?')) {
+        try {
+            await window.axxesStore.deleteProduct(id);
+            renderAdminDashboard();
+            window.showToast('🗑️ Producto eliminado exitosamente.');
+        } catch (err) {
+            console.error('Error al borrar producto:', err);
+            alert('No se pudo eliminar el producto: ' + err.message);
+        }
     }
 };
-
 window.deleteCategory = async function(name) {
     if (confirm(`¿Seguro que deseas eliminar la categoría "${name}"?`)) {
         await window.axxesStore.deleteCategory(name);

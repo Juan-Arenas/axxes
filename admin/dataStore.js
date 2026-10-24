@@ -465,13 +465,7 @@ class DataStore {
                     return p;
                 });
 
-                // Add any products that were only in IndexedDB
-                for (const ip of idbProducts) {
-                    if (!this.products.some(p => String(p.id) === String(ip.id))) {
-                        this.products.unshift(ip);
-                        updated = true;
-                    }
-                }
+// IDB product sync completed
             }
 
             if (Array.isArray(idbCategories) && idbCategories.length > 0 && (!this.categories || this.categories.length === 0)) {
@@ -609,19 +603,18 @@ class DataStore {
                         const hash = fresh.length + '_' + (fresh[0]?.id || '') + '_' + (fresh[0]?.name || '');
                         if (this._lastProductsHash && this._lastProductsHash !== hash) {
                             console.log('[Neon Realtime] Cambios detectados desde otro dispositivo. Actualizando...');
-                            const neonMap = new Map(fresh.map(p => [String(p.id), p]));
                             const deletedIds = this.getDeletedIds();
-                            const unsynced = (this.products || []).filter(p => p && p.id && !neonMap.has(String(p.id)) && !deletedIds.includes(String(p.id)));
+                            const mergedFresh = fresh
+                                .filter(nP => !deletedIds.includes(String(nP.id)))
+                                .map(nP => {
+                                    const localP = (this.products || []).find(p => String(p?.id) === String(nP.id));
+                                    if (localP && localP.image && localP.image.length > 50 && (!nP.image || nP.image.length <= 50)) {
+                                        return { ...nP, image: localP.image };
+                                    }
+                                    return nP;
+                                });
 
-                            const mergedFresh = fresh.map(nP => {
-                                const localP = (this.products || []).find(p => String(p?.id) === String(nP.id));
-                                if (localP && localP.image && localP.image.length > 50 && (!nP.image || nP.image.length <= 50)) {
-                                    return { ...nP, image: localP.image };
-                                }
-                                return nP;
-                            });
-
-                            this.products = this.migrateProducts([...unsynced, ...mergedFresh]);
+                            this.products = this.migrateProducts(mergedFresh);
                             this.safeLocalStorageSave();
                             document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
                         }

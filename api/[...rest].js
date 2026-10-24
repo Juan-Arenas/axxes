@@ -6,7 +6,7 @@ const { neon } = require('@neondatabase/serverless');
 
 const DATABASE_URL = (
   process.env.DATABASE_URL ||
-  'postgresql://authenticator:npg_l1dPIAZeQ6rb@ep-holy-rice-ayq7meg3.c-5.us-east-2.aws.neon.tech/valen?sslmode=require'
+  'postgresql://neondb_owner:npg_LT0xMo7lisPz@ep-lingering-union-b5l334xe-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
 ).trim();
 
 const DEFAULT_PASSWORD = (process.env.ADMIN_PASSWORD || '2006').trim();

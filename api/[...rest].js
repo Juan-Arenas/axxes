@@ -4,10 +4,11 @@ const path = require('path');
 const crypto = require('crypto');
 const { neon } = require('@neondatabase/serverless');
 
-const DATABASE_URL = (
-  process.env.DATABASE_URL ||
-  'postgresql://neondb_owner:npg_LT0xMo7lisPz@ep-lingering-union-b5l334xe-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
-).trim();
+let rawDbUrl = (process.env.DATABASE_URL || '').trim();
+if (!rawDbUrl || rawDbUrl.includes('ep-holy-rice-ayq7meg3')) {
+  rawDbUrl = 'postgresql://neondb_owner:npg_LT0xMo7lisPz@ep-lingering-union-b5l334xe-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+}
+const DATABASE_URL = rawDbUrl;
 
 const DEFAULT_PASSWORD = (process.env.ADMIN_PASSWORD || '2006').trim();
 

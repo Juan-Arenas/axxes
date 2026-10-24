@@ -491,46 +491,9 @@ class DataStore {
 
     // ================= NEON SERVERLESS POSTGRESQL SYNC =================
     async syncPendingProducts(neonProds) {
-        if (!Array.isArray(neonProds)) return;
-        const neonMap = new Map(neonProds.map(p => [String(p.id), p]));
-        const deletedIds = this.getDeletedIds();
-
-        // Detect:
-        // 1. Products stored locally that are missing in Neon
-        // 2. Products in Neon that have no image, but local has the image!
-        const toSync = (this.products || []).filter(p => {
-            if (!p || !p.id) return false;
-            const strId = String(p.id);
-            if (deletedIds.includes(strId)) return false;
-
-            const neonVersion = neonMap.get(strId);
-            if (!neonVersion) {
-                return true;
-            }
-            const hasLocalImage = p.image && String(p.image).trim().length > 50;
-            const neonHasNoImage = !neonVersion.image || String(neonVersion.image).trim().length <= 50;
-            return hasLocalImage && neonHasNoImage;
-        });
-
-        if (toSync.length === 0) return;
-
-        console.log(`[Neon Auto-Sync] Sincronizando ${toSync.length} productos con fotos hacia Neon DB...`);
-        for (const localP of toSync) {
-            try {
-                const res = await window.fetchApi('/api/products', {
-                    method: 'POST',
-                    body: JSON.stringify(localP)
-                });
-                if (res.ok) {
-                    const saved = await res.json();
-                    console.log(`[Neon Auto-Sync] Producto ${localP.name} sincronizado exitosamente con ID: ${saved.id}`);
-                } else {
-                    console.warn(`[Neon Auto-Sync] Servidor devolvió error al subir ${localP.name}:`, res.status);
-                }
-            } catch (e) {
-                console.warn(`[Neon Auto-Sync] Error de conexión al sincronizar ${localP.name}:`, e);
-            }
-        }
+        // Deshabilitado: Neon PostgreSQL es la unica fuente de verdad.
+        // Evita resucitar productos eliminados desde otros dispositivos.
+        return;
     }
 
     async initNeonSync() {
@@ -539,34 +502,28 @@ class DataStore {
             const resProds = await window.fetchApi('/api/products?active=false');
             if (resProds.ok) {
                 const neonProds = await resProds.json();
-                if (Array.isArray(neonProds) && neonProds.length > 0) {
-                    const neonMap = new Map(neonProds.map(p => [String(p.id), p]));
-                    const deletedIds = this.getDeletedIds();
-                    
-                    // Keep unsynced local products so they are NOT lost!
-                    const unsynced = (this.products || []).filter(p => p && p.id && !neonMap.has(String(p.id)) && !deletedIds.includes(String(p.id)));
-
-                    // If local has image and neon doesn't, preserve local image in merged array!
-                    const mergedNeonProds = neonProds
-                        .filter(nP => !deletedIds.includes(String(nP.id)))
-                        .map(nP => {
-                        const localP = (this.products || []).find(p => String(p?.id) === String(nP.id));
+                if (Array.isArray(neonProds)) {
+                    // Neon PostgreSQL es la verdad absoluta. Si un producto no esta en Neon, fue eliminado.
+                    const localMap = new Map((this.products || []).map(p => [String(p.id), p]));
+                    const mergedNeonProds = neonProds.map(nP => {
+                        const localP = localMap.get(String(nP.id));
                         if (localP && localP.image && localP.image.length > 50 && (!nP.image || nP.image.length <= 50)) {
                             return { ...nP, image: localP.image };
                         }
                         return nP;
                     });
 
-                    this.products = this.migrateProducts([...unsynced, ...mergedNeonProds]);
+                    this.products = this.migrateProducts(mergedNeonProds);
                     this.deduplicateProducts(false);
                     this.isNeonConnected = true;
                     this.safeLocalStorageSave();
+                    if (this.idb) {
+                        this.idb.set('products', this.products).catch(() => {});
+                    }
+                    this._lastProductsHash = neonProds.map(p => p.id + ':' + (p.active ? 1 : 0) + ':' + (p.out_of_stock || p.outOfStock ? 1 : 0)).join('|');
                     document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
-                    console.log(`[Neon DB] Conectado exitosamente: ${neonProds.length} perfumes sincronizados en tiempo real.`);
-                    this.addLog('success', 'NEON_CONNECT', `Conectado a Neon PostgreSQL: ${neonProds.length} productos sincronizados.`, { count: neonProds.length }, 'OK');
-
-                    // Automatically upload pending products or missing images to Neon
-                    await this.syncPendingProducts(neonProds);
+                    console.log('[Neon DB] Conectado exitosamente: ' + neonProds.length + ' perfumes sincronizados en tiempo real.');
+                    this.addLog('success', 'NEON_CONNECT', 'Conectado a Neon PostgreSQL: ' + neonProds.length + ' productos sincronizados.', { count: neonProds.length }, 'OK');
                 }
             }
 
@@ -592,33 +549,34 @@ class DataStore {
     startRealtimePolling() {
         if (this._pollingInterval) clearInterval(this._pollingInterval);
         
-        // Check every 4.5 seconds for changes made on other devices (mobile or PC)
+        // Consultar cada 3.5 segundos para sincronizar al instante eliminaciones y cambios de otros dispositivos
         this._pollingInterval = setInterval(async () => {
             try {
                 // Poll products
                 const res = await window.fetchApi('/api/products?active=false');
                 if (res.ok) {
                     const fresh = await res.json();
-                    if (Array.isArray(fresh) && fresh.length > 0) {
-                        const hash = fresh.length + '_' + (fresh[0]?.id || '') + '_' + (fresh[0]?.name || '');
-                        if (this._lastProductsHash && this._lastProductsHash !== hash) {
-                            console.log('[Neon Realtime] Cambios detectados desde otro dispositivo. Actualizando...');
-                            const deletedIds = this.getDeletedIds();
-                            const mergedFresh = fresh
-                                .filter(nP => !deletedIds.includes(String(nP.id)))
-                                .map(nP => {
-                                    const localP = (this.products || []).find(p => String(p?.id) === String(nP.id));
-                                    if (localP && localP.image && localP.image.length > 50 && (!nP.image || nP.image.length <= 50)) {
-                                        return { ...nP, image: localP.image };
-                                    }
-                                    return nP;
-                                });
+                    if (Array.isArray(fresh)) {
+                        const freshHash = fresh.map(p => p.id + ':' + (p.active ? 1 : 0) + ':' + (p.out_of_stock || p.outOfStock ? 1 : 0)).join('|');
+                        if (this._lastProductsHash && this._lastProductsHash !== freshHash) {
+                            console.log('[Neon Realtime] Cambios en el inventario detectados desde otro dispositivo. Sincronizando...');
+                            const localMap = new Map((this.products || []).map(p => [String(p.id), p]));
+                            const mergedFresh = fresh.map(nP => {
+                                const localP = localMap.get(String(nP.id));
+                                if (localP && localP.image && localP.image.length > 50 && (!nP.image || nP.image.length <= 50)) {
+                                    return { ...nP, image: localP.image };
+                                }
+                                return nP;
+                            });
 
                             this.products = this.migrateProducts(mergedFresh);
                             this.safeLocalStorageSave();
+                            if (this.idb) {
+                                this.idb.set('products', this.products).catch(() => {});
+                            }
                             document.dispatchEvent(new CustomEvent('axxesDataUpdated'));
                         }
-                        this._lastProductsHash = hash;
+                        this._lastProductsHash = freshHash;
                     }
                 }
 
@@ -628,7 +586,7 @@ class DataStore {
                     await this.fetchRemoteLogs();
                 }
             } catch (e) {}
-        }, 4500);
+        }, 3500);
     }
 
     migrateProducts(products) {

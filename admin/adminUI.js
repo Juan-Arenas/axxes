@@ -3066,3 +3066,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 500);
 });
+
+
+// Live Realtime listener: Re-render admin panel whenever changes happen on other devices
+document.addEventListener('axxesDataUpdated', () => {
+    const adminPanel = document.getElementById('admin-panel');
+    if (adminPanel && adminPanel.style.display !== 'none') {
+        const searchInput = document.getElementById('admin-product-search');
+        if (typeof renderAdminProductList === 'function') {
+            renderAdminProductList(searchInput ? searchInput.value.toLowerCase().trim() : '');
+        }
+        const pStat = document.getElementById('admin-header-product-stat');
+        if (pStat && window.axxesStore) {
+            pStat.textContent = window.axxesStore.products.length + ' Productos';
+        }
+        const cStat = document.getElementById('admin-header-category-stat');
+        if (cStat && window.axxesStore) {
+            cStat.textContent = window.axxesStore.categories.length + ' Categorías';
+        }
+    }
+});

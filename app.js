@@ -881,31 +881,78 @@ function loadCart() {
     }
 }
 
-// Global helper for special filters (Combos / Promos / Todo)
-window.filterBySpecial = function(key) {
-    // 1. Update quick pill active state
-    document.querySelectorAll('.quick-pill').forEach(pill => {
-        if (pill.getAttribute('data-filter-quick') === key) pill.classList.add('active');
-        else pill.classList.remove('active');
-    });
+// Global helper for setting active catalog filter (Pills, Nav, Banners, Footer)
+window.setCatalogFilter = function(type = 'all', value = 'all') {
+    const norm = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-    // 2. Reset standard checkboxes
+    window.activeCatalogFilter = { type: type, value: value };
+    window.activeCatalogCategory = (type === 'category' || type === 'gender') ? value : null;
+    window.activeSearchQuery = null;
+
+    // 1. Update visual active state on quick pills
+    const quickPills = document.getElementById('store-quick-pills');
+    if (quickPills) {
+        quickPills.querySelectorAll('.quick-pill').forEach(pill => {
+            const pType = pill.dataset.filterType || pill.getAttribute('data-filter-quick') || (pill.dataset.filterCategory ? 'category' : 'all');
+            const pVal = pill.dataset.filterValue || pill.dataset.filterCategory || pill.getAttribute('data-filter-quick') || 'all';
+            let isMatch = false;
+            if (pType === type) {
+                if (type === 'all' || type === 'promo' || type === 'combos' || type === 'decants' || type === 'completos') {
+                    isMatch = true;
+                } else if (norm(pVal) === norm(value)) {
+                    isMatch = true;
+                }
+            }
+            pill.classList.toggle('active', isMatch);
+        });
+    }
+
+    // 2. Clear all sidebar checkboxes to prevent conflicting stale states
     document.querySelectorAll('#store-filters input[type="checkbox"]').forEach(cb => cb.checked = false);
 
-    // 3. Update sort select
+    // 3. Sync with sort select or sidebar checkbox if applicable
     const sortSelect = document.getElementById('sort-select');
     if (sortSelect) {
-        if (key === 'promo' || key === 'combos') {
-            sortSelect.value = key;
-        } else {
+        if (type === 'promo') sortSelect.value = 'promo';
+        else if (type === 'combos') sortSelect.value = 'combos';
+        else if (sortSelect.value === 'promo' || sortSelect.value === 'combos') {
             sortSelect.value = 'relevance';
         }
     }
 
-    // 4. Apply filters
-    window.applyFilters();
+    if (type === 'gender') {
+        const cb = document.querySelector(`.filter-gender[value="${value}"]`);
+        if (cb) cb.checked = true;
+    } else if (type === 'category') {
+        const cb = Array.from(document.querySelectorAll('.filter-category')).find(c => norm(c.value) === norm(value));
+        if (cb) cb.checked = true;
+    } else if (type === 'completos') {
+        const cb = document.querySelector('.filter-size[value="bottle"]');
+        if (cb) cb.checked = true;
+    }
 
-    // 5. Smooth scroll to catalog
+    if (type === 'all') {
+        const priceSlider = document.getElementById('filter-price-slider');
+        const priceVal = document.getElementById('filter-price-val');
+        if (priceSlider) priceSlider.value = priceSlider.max;
+        if (priceVal && priceSlider) priceVal.innerText = '$' + parseInt(priceSlider.max).toLocaleString('es-CO');
+    }
+
+    // 4. Apply filters immediately
+    if (typeof window.applyFilters === 'function') {
+        window.applyFilters();
+    }
+};
+
+// Global helper for special filters (Combos / Promos / Todo)
+window.filterBySpecial = function(key) {
+    if (key === 'promo' || key === 'combos') {
+        window.setCatalogFilter(key, key);
+    } else {
+        window.setCatalogFilter('all', 'all');
+    }
+
+    // Smooth scroll to catalog
     const catSec = document.getElementById('catalogo-seccion');
     if (catSec) {
         catSec.scrollIntoView({ behavior: 'smooth' });
@@ -925,16 +972,18 @@ function initStoreFilters() {
         btnCloseFilters.addEventListener('click', () => filterPanel.classList.remove('active'));
     }
 
-    // Attach listeners
+    // Attach listeners for sidebar checkboxes
     const checkboxes = document.querySelectorAll('.filter-gender, .filter-category, .filter-brand, .filter-size');
-    checkboxes.forEach(cb => cb.addEventListener('change', window.applyFilters));
+    checkboxes.forEach(cb => cb.addEventListener('change', () => {
+        if (window.applyFilters) window.applyFilters();
+    }));
 
     const priceSlider = document.getElementById('filter-price-slider');
     const priceVal = document.getElementById('filter-price-val');
     if(priceSlider) {
         priceSlider.addEventListener('input', (e) => {
             priceVal.innerText = '$' + parseInt(e.target.value).toLocaleString('es-CO');
-            window.applyFilters();
+            if (window.applyFilters) window.applyFilters();
         });
     }
 
@@ -942,12 +991,11 @@ function initStoreFilters() {
     if(sortSelect) {
         sortSelect.addEventListener('change', () => {
             const val = sortSelect.value;
-            if (val === 'promo') {
-                updateActiveQuickPill('promo');
-            } else if (val === 'combos') {
-                updateActiveQuickPill('combos');
+            if (val === 'promo' || val === 'combos') {
+                window.setCatalogFilter(val, val);
+            } else {
+                if (window.applyFilters) window.applyFilters();
             }
-            window.applyFilters();
         });
     }
 
@@ -956,166 +1004,143 @@ function initStoreFilters() {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const special = link.getAttribute('data-filter-special');
-            if (special) {
-                window.filterBySpecial(special);
-                return;
+            if (special === 'promo' || special === 'combos') {
+                window.setCatalogFilter(special, special);
+            } else if (link.hasAttribute('data-filter-all')) {
+                window.setCatalogFilter('all', 'all');
+            } else if (link.getAttribute('data-filter-gender')) {
+                window.setCatalogFilter('gender', link.getAttribute('data-filter-gender'));
+            } else if (link.getAttribute('data-filter-category')) {
+                const cat = link.getAttribute('data-filter-category');
+                if (cat === 'Decants') window.setCatalogFilter('decants', 'decants');
+                else window.setCatalogFilter('category', cat);
+            } else if (link.getAttribute('data-filter-size') === 'bottle') {
+                window.setCatalogFilter('completos', 'completos');
             }
 
-            const isAll = link.hasAttribute('data-filter-all');
-            const g = link.getAttribute('data-filter-gender');
-            const c = link.getAttribute('data-filter-category');
-            const s = link.getAttribute('data-filter-size');
-            
-            // Reset all checkboxes
-            document.querySelectorAll('#store-filters input[type="checkbox"]').forEach(cb => cb.checked = false);
-            
-            if (sortSelect && (sortSelect.value === 'promo' || sortSelect.value === 'combos')) {
-                sortSelect.value = 'relevance';
-            }
-
-            if (isAll) {
-                // Reset slider
-                if (priceSlider) priceSlider.value = priceSlider.max;
-                if (priceVal) priceVal.innerText = '$' + parseInt(priceSlider.max).toLocaleString('es-CO');
-                updateActiveQuickPill('all');
-            } else {
-                if(g) {
-                    const cb = document.querySelector(`.filter-gender[value="${g}"]`);
-                    if(cb) cb.checked = true;
-                    updateActiveQuickPill(g.toLowerCase());
-                }
-                if(c) {
-                    const cb = document.querySelector(`.filter-category[value="${c}"]`);
-                    if(cb) cb.checked = true;
-                    if (c === 'Árabes') updateActiveQuickPill('arabes');
-                    else if (c === 'Nicho') updateActiveQuickPill('nicho');
-                    else if (c === 'Decants') updateActiveQuickPill('decants');
-                }
-                if(s) {
-                    const cb = document.querySelector(`.filter-size[value="${s}"]`);
-                    if(cb) cb.checked = true;
-                    if (s === 'bottle') updateActiveQuickPill('completos');
-                }
-            }
-            window.applyFilters();
             const catSec = document.getElementById('catalogo-seccion');
-            if (catSec) catSec.scrollIntoView({behavior: 'smooth'});
+            if (catSec) catSec.scrollIntoView({ behavior: 'smooth' });
         });
     });
 
-    // Quick filter pills listener
-    function updateActiveQuickPill(key) {
-        document.querySelectorAll('.quick-pill').forEach(pill => {
-            if (pill.getAttribute('data-filter-quick') === key) pill.classList.add('active');
-            else pill.classList.remove('active');
+    // Quick filter pills listener (delegated)
+    const quickPills = document.getElementById('store-quick-pills');
+    if (quickPills) {
+        quickPills.addEventListener('click', (event) => {
+            const pill = event.target.closest('.quick-pill');
+            if (!pill || !quickPills.contains(pill)) return;
+
+            const filterType = pill.dataset.filterType || pill.getAttribute('data-filter-quick') || (pill.dataset.filterCategory ? 'category' : 'all');
+            const filterValue = pill.dataset.filterValue || pill.dataset.filterCategory || pill.getAttribute('data-filter-quick') || 'all';
+
+            window.setCatalogFilter(filterType, filterValue);
         });
     }
-
-    document.querySelectorAll('.quick-pill').forEach(pill => {
-        pill.addEventListener('click', () => {
-            const quick = pill.getAttribute('data-filter-quick');
-            updateActiveQuickPill(quick);
-
-            // Reset all checkboxes
-            document.querySelectorAll('#store-filters input[type="checkbox"]').forEach(cb => cb.checked = false);
-
-            // Clear search filter when switching category pill
-            window.activeSearchQuery = null;
-
-            if (quick === 'all') {
-                if (priceSlider) priceSlider.value = priceSlider.max;
-                if (priceVal) priceVal.innerText = '$' + parseInt(priceSlider.max).toLocaleString('es-CO');
-                if (sortSelect && (sortSelect.value === 'promo' || sortSelect.value === 'combos')) {
-                    sortSelect.value = 'relevance';
-                }
-            } else if (quick === 'promo') {
-                if (sortSelect) sortSelect.value = 'promo';
-            } else if (quick === 'combos') {
-                if (sortSelect) sortSelect.value = 'combos';
-            } else {
-                if (sortSelect && (sortSelect.value === 'promo' || sortSelect.value === 'combos')) {
-                    sortSelect.value = 'relevance';
-                }
-                if (quick === 'nicho') {
-                    const cb = document.querySelector('.filter-category[value="Nicho"]');
-                    if(cb) cb.checked = true;
-                } else if (quick === 'arabes') {
-                    const cb = document.querySelector('.filter-category[value="Árabes"]');
-                    if(cb) cb.checked = true;
-                } else if (quick === 'decants') {
-                    const cb = document.querySelector('.filter-category[value="Decants"]');
-                    if(cb) cb.checked = true;
-                } else if (quick === 'completos') {
-                    const cb = document.querySelector('.filter-size[value="bottle"]');
-                    if(cb) cb.checked = true;
-                } else if (quick === 'hombre') {
-                    const cb = document.querySelector('.filter-gender[value="Hombre"]');
-                    if(cb) cb.checked = true;
-                } else if (quick === 'mujer') {
-                    const cb = document.querySelector('.filter-gender[value="Mujer"]');
-                    if(cb) cb.checked = true;
-                } else if (quick === 'unisex') {
-                    const cb = document.querySelector('.filter-gender[value="Unisex"]');
-                    if(cb) cb.checked = true;
-                }
-            }
-
-            window.applyFilters();
-        });
-    });
 }
 
 window.applyFilters = function() {
     if(!window.axxesStore) return;
     let prods = window.axxesStore.products.filter(p => p.active);
 
+    const norm = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
     // 0. Active Search Query filter
     if (window.activeSearchQuery) {
-        const q = window.activeSearchQuery.toLowerCase().trim();
+        const q = norm(window.activeSearchQuery);
         prods = prods.filter(p => {
-            const name = (p.name || '').toLowerCase();
-            const brand = (p.brand || '').toLowerCase();
-            const desc = (p.description || '').toLowerCase();
-            const gender = (p.gender || '').toLowerCase();
-            const cats = Array.isArray(p.categories) ? p.categories.map(c => String(c).toLowerCase()) : [];
-            const cat = (p.category || '').toLowerCase();
+            const name = norm(p.name);
+            const brand = norm(p.brand);
+            const desc = norm(p.description);
+            const gender = norm(p.gender);
+            const cats = Array.isArray(p.categories) ? p.categories.map(norm) : [];
+            const cat = norm(p.category);
             return name.includes(q) || brand.includes(q) || desc.includes(q) || gender.includes(q) || cats.some(c => c.includes(q)) || cat.includes(q);
         });
     }
 
-    const activePill = document.querySelector('.quick-pill.active')?.getAttribute('data-filter-quick');
-    const sortVal = document.getElementById('sort-select') ? document.getElementById('sort-select').value : 'relevance';
+    // 1. Determine active quick pill filter
+    const activePill = document.querySelector('#store-quick-pills .quick-pill.active');
+    let filterType = 'all';
+    let filterVal = 'all';
 
-    // 1. Promos or Combos relevance filter
-    if (activePill === 'promo' || sortVal === 'promo') {
-        prods = prods.filter(p => Boolean(p.isPromo || p.offer || (p.badge && String(p.badge).toLowerCase().includes('promo'))));
-    } else if (activePill === 'combos' || sortVal === 'combos') {
-        prods = prods.filter(p => Boolean(
-            p.isCombo || 
-            (Array.isArray(p.categories) && p.categories.some(c => String(c).toLowerCase().includes('combo'))) ||
-            (p.category && String(p.category).toLowerCase().includes('combo')) ||
-            (p.name && String(p.name).toLowerCase().includes('combo'))
-        ));
+    if (activePill) {
+        filterType = activePill.dataset.filterType || activePill.getAttribute('data-filter-quick') || (activePill.dataset.filterCategory ? 'category' : 'all');
+        filterVal = activePill.dataset.filterValue || activePill.dataset.filterCategory || activePill.getAttribute('data-filter-quick') || 'all';
+    } else if (window.activeCatalogFilter) {
+        filterType = window.activeCatalogFilter.type || 'all';
+        filterVal = window.activeCatalogFilter.value || 'all';
     }
 
-    // Get active filters
-    const selectedGenders = Array.from(document.querySelectorAll('.filter-gender:checked')).map(cb => cb.value);
-    const selectedCategories = Array.from(document.querySelectorAll('.filter-category:checked')).map(cb => cb.value);
+    const sortVal = document.getElementById('sort-select') ? document.getElementById('sort-select').value : 'relevance';
+
+    // 2. Quick Pill Filtering
+    if (filterType === 'promo' || sortVal === 'promo') {
+        prods = prods.filter(p => Boolean(p.isPromo || p.offer || (p.badge && norm(p.badge).includes('promo'))));
+    } else if (filterType === 'combos' || sortVal === 'combos') {
+        prods = prods.filter(p => Boolean(
+            p.isCombo || 
+            (Array.isArray(p.categories) && p.categories.some(c => norm(c).includes('combo'))) ||
+            (p.category && norm(p.category).includes('combo')) ||
+            (p.name && norm(p.name).includes('combo'))
+        ));
+    } else if (filterType === 'decants') {
+        prods = prods.filter(p => Array.isArray(p.decants) && p.decants.length > 0);
+    } else if (filterType === 'completos') {
+        prods = prods.filter(p => Boolean(p.sellBottle));
+    } else if (filterType === 'gender') {
+        const targetGender = norm(filterVal);
+        prods = prods.filter(p => {
+            const g = norm(p.gender);
+            const cats = Array.isArray(p.categories) ? p.categories.map(norm) : [];
+            const cat = norm(p.category);
+            return g === targetGender || cats.includes(targetGender) || cat === targetGender;
+        });
+    } else if (filterType === 'category') {
+        const targetCat = norm(filterVal);
+        prods = prods.filter(p => {
+            const cats = Array.isArray(p.categories) ? p.categories.map(norm) : [];
+            const cat = norm(p.category);
+            const g = norm(p.gender);
+
+            // Matches category in array or category field
+            if (cats.includes(targetCat) || cat === targetCat) return true;
+
+            // Matches gender if category name is a gender
+            if (g === targetCat) return true;
+
+            // Decants
+            if (targetCat === 'decants' && Array.isArray(p.decants) && p.decants.length > 0) return true;
+
+            // Perfumes completos
+            if ((targetCat === 'perfumes completos' || targetCat === 'completos') && p.sellBottle) return true;
+
+            // Brand match
+            if (norm(p.brand) === targetCat) return true;
+
+            return false;
+        });
+    }
+
+    // 3. Sidebar checkbox filters (when in 'all' or in combination)
+    const selectedGenders = Array.from(document.querySelectorAll('.filter-gender:checked')).map(cb => norm(cb.value));
+    const selectedCategories = Array.from(document.querySelectorAll('.filter-category:checked')).map(cb => norm(cb.value));
     const selectedBrands = Array.from(document.querySelectorAll('.filter-brand:checked')).map(cb => cb.value);
     const selectedSizes = Array.from(document.querySelectorAll('.filter-size:checked')).map(cb => cb.value);
     const maxPrice = document.getElementById('filter-price-slider') ? parseInt(document.getElementById('filter-price-slider').value) : 9999999;
 
-    if (selectedGenders.length > 0) {
-        prods = prods.filter(p => selectedGenders.includes(p.gender));
+    if (filterType === 'all') {
+        if (selectedGenders.length > 0) {
+            prods = prods.filter(p => selectedGenders.includes(norm(p.gender)));
+        }
+        if (selectedCategories.length > 0) {
+            prods = prods.filter(p => {
+                const cats = Array.isArray(p.categories) ? p.categories.map(norm) : [];
+                const cat = norm(p.category);
+                return cats.some(c => selectedCategories.includes(c)) || selectedCategories.includes(cat);
+            });
+        }
     }
-    if (selectedCategories.length > 0) {
-        prods = prods.filter(p => {
-            if (Array.isArray(p.categories)) {
-                return p.categories.some(c => selectedCategories.includes(c));
-            }
-            return selectedCategories.includes(p.category);
-        });
-    }
+
     if (selectedBrands.length > 0) {
         prods = prods.filter(p => selectedBrands.includes(p.brand));
     }
@@ -1136,20 +1161,19 @@ window.applyFilters = function() {
         let lowestPrice = p.sellBottle ? p.priceBottle : Infinity;
         if (Array.isArray(p.decants)) {
             p.decants.forEach(d => {
-                if (d.price < lowestPrice) lowestPrice = d.price;
+                if (d.price && d.price < lowestPrice) lowestPrice = d.price;
             });
         }
         return lowestPrice <= maxPrice;
     });
 
-    // Helper for chronological sorting (newest first)
+    // 4. Sorting
     const getProductTime = (p) => {
         if (p.createdAt) return new Date(p.createdAt).getTime();
         if (p.created_at) return new Date(p.created_at).getTime();
         return 0;
     };
 
-    // Sort
     if (sortVal === 'price-asc') {
         prods.sort((a,b) => {
             const pa = a.priceBottle || (a.decants && a.decants[0] ? a.decants[0].price : 0);
@@ -1171,7 +1195,7 @@ window.applyFilters = function() {
             return (tb - ta) || ((b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
         });
     } else {
-        // 'relevance', 'promo', 'combos': Nuevos productos SIEMPRE DE PRIMERO
+        // 'relevance', 'promo', 'combos': New products first
         prods.sort((a,b) => {
             const tb = getProductTime(b);
             const ta = getProductTime(a);
@@ -1182,7 +1206,9 @@ window.applyFilters = function() {
         });
     }
 
-    if(window.renderStoreGrid) window.renderStoreGrid(prods);
+    if (typeof window.renderStoreGrid === 'function') {
+        window.renderStoreGrid(prods);
+    }
 };
 
 

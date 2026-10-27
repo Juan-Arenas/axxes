@@ -1701,10 +1701,16 @@ function setupAdminEventListeners() {
             e.preventDefault();
             const catName = document.getElementById('admin-new-category').value.trim();
             if (catName) {
-                await window.axxesStore.addCategory(catName);
+                const result = await window.axxesStore.addCategory(catName);
                 document.getElementById('admin-category-form').reset();
                 renderAdminDashboard();
-                window.showToast(`✅ Categoría "${catName}" agregada.`);
+                if (!result.created) {
+                    window.showToast(`La categoría "${catName}" ya existe.`);
+                } else if (result.synced) {
+                    window.showToast(`✅ Categoría "${catName}" agregada y sincronizada.`);
+                } else {
+                    window.showToast(`Categoría "${catName}" guardada en este dispositivo, pero no se sincronizó con la tienda.`);
+                }
             }
         });
     }

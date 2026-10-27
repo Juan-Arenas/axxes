@@ -897,22 +897,34 @@ class DataStore {
     // CRUD Categories with Neon PostgreSQL Integration
     async addCategory(name) {
         const cleanName = String(name || '').trim();
-        if (!cleanName) return;
+        if (!cleanName) return { created: false, synced: false };
         if (!this.categories.some(c => c.name.toLowerCase() === cleanName.toLowerCase())) {
             const newCat = { id: 'cat-' + Date.now(), name: cleanName };
             this.categories.push(newCat);
             await this.saveCategories();
 
+            let synced = false;
             try {
-                await window.fetchApi('/api/categories', {
+                const response = await window.fetchApi('/api/categories', {
                     method: 'POST',
                     body: JSON.stringify(newCat)
                 });
-            } catch(e) {}
+                synced = response.ok;
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('[Neon DB] Error al sincronizar categoría:', response.status, errorText);
+                    this.addLog('error', 'CATEGORY_SYNC_FAILED', `No se pudo sincronizar la categoría "${cleanName}": ${errorText}`, { name: cleanName, status: response.status }, 'FAILED');
+                }
+            } catch (error) {
+                console.error('[Neon DB] Error al sincronizar categoría:', error);
+                this.addLog('error', 'CATEGORY_SYNC_FAILED', `No se pudo sincronizar la categoría "${cleanName}": ${error.message}`, { name: cleanName }, 'FAILED');
+            }
 
             this.addLog('success', 'CREATE_CATEGORY', `Categoría creada: "${cleanName}"`, { name: cleanName }, 'OK');
+            return { created: true, synced };
         } else {
             this.addLog('warn', 'DUPLICATE_CATEGORY', `Intento de duplicar categoría existente: "${cleanName}"`, null, 'WARN');
+            return { created: false, synced: true };
         }
     }
 

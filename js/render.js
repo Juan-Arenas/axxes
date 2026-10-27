@@ -20,6 +20,26 @@ function renderAll() {
     }
     
     const prods = window.axxesStore.products.filter(p => p.active);
+    const categoryMap = new Map();
+    const normalizeKey = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+    const addCategory = (category) => {
+        const name = typeof category === 'string' ? category.trim() : String(category?.name || '').trim();
+        if (!name) return;
+        const key = normalizeKey(name);
+        if (key && !categoryMap.has(key)) {
+            categoryMap.set(key, { name });
+        }
+    };
+    (window.INITIAL_CATEGORIES || []).forEach(addCategory);
+    (window.axxesStore.categories || []).forEach(addCategory);
+    (window.axxesStore.products || []).forEach(product => {
+        (Array.isArray(product.categories) ? product.categories : []).forEach(addCategory);
+        addCategory(product.category);
+    });
+    const availableCategories = Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+
+    renderQuickPills(availableCategories);
 
     // Update dynamic products count
     const countEl = document.getElementById('dynamic-products-count');
@@ -47,8 +67,7 @@ function renderAll() {
     // 2. Render Categories in sidebar filter (from admin-managed categories)
     const filterCategoriesList = document.getElementById('filter-categories-list');
     if (filterCategoriesList) {
-        const cats = window.axxesStore.categories || [];
-        filterCategoriesList.innerHTML = cats.map(c => `
+        filterCategoriesList.innerHTML = availableCategories.map(c => `
             <label><input type="checkbox" value="${c.name}" class="filter-category"> ${c.name}</label>
         `).join('');
         
@@ -117,6 +136,74 @@ function filterByBrand(brand) {
     if (window.applyFilters) window.applyFilters();
 }
 
+function renderQuickPills(availableCategories = []) {
+    const quickPills = document.getElementById('store-quick-pills');
+    if (!quickPills) return;
+
+    const normalizeKey = (str) => String(str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+    // High priority core pills
+    const defaultPills = [
+        { type: 'all', value: 'all', label: 'TODO', icon: 'fa-solid fa-border-all', extraClass: '' },
+        { type: 'promo', value: 'promo', label: 'EN PROMOCIÓN', icon: 'fa-solid fa-fire', extraClass: 'pill-promo-pill' },
+        { type: 'combos', value: 'combos', label: 'COMBOS DECANTS', icon: 'fa-solid fa-gift', extraClass: 'pill-combo-pill' },
+        { type: 'category', value: 'Nicho', label: 'NICHO', icon: 'fa-solid fa-crown', extraClass: '' },
+        { type: 'category', value: 'Árabes', label: 'ÁRABES', icon: 'fa-solid fa-moon', extraClass: '' },
+        { type: 'category', value: 'Diseñador', label: 'DISEÑADOR', icon: 'fa-solid fa-gem', extraClass: '' },
+        { type: 'decants', value: 'decants', label: 'DECANTS (5-10ML)', icon: 'fa-solid fa-flask', extraClass: '' },
+        { type: 'completos', value: 'completos', label: 'PERFUMES COMPLETOS', icon: 'fa-solid fa-wine-bottle', extraClass: '' },
+        { type: 'gender', value: 'Hombre', label: 'HOMBRE', icon: 'fa-solid fa-mars', extraClass: '' },
+        { type: 'gender', value: 'Mujer', label: 'MUJER', icon: 'fa-solid fa-venus', extraClass: '' },
+        { type: 'gender', value: 'Unisex', label: 'UNISEX', icon: 'fa-solid fa-genderless', extraClass: '' },
+        { type: 'category', value: 'Testers', label: 'TESTERS', icon: 'fa-solid fa-vial', extraClass: '' }
+    ];
+
+    const coveredKeys = new Set(defaultPills.map(p => normalizeKey(p.value)));
+    coveredKeys.add('combosdecants');
+    coveredKeys.add('perfumescompletos');
+    coveredKeys.add('decants');
+
+    const extraPills = [];
+    availableCategories.forEach(cat => {
+        const catName = typeof cat === 'string' ? cat.trim() : String(cat?.name || '').trim();
+        const key = normalizeKey(catName);
+        if (!key || coveredKeys.has(key)) return;
+        coveredKeys.add(key);
+
+        let icon = 'fa-solid fa-tag';
+        if (key.includes('tester')) icon = 'fa-solid fa-vial';
+        else if (key.includes('gourmand')) icon = 'fa-solid fa-cookie-bite';
+        else if (key.includes('madera') || key.includes('amaderad')) icon = 'fa-solid fa-tree';
+        else if (key.includes('citric') || key.includes('fres')) icon = 'fa-solid fa-lemon';
+        else if (key.includes('floral') || key.includes('flor')) icon = 'fa-solid fa-spa';
+
+        extraPills.push({
+            type: 'category',
+            value: catName,
+            label: catName.toUpperCase(),
+            icon: icon,
+            extraClass: ''
+        });
+    });
+
+    const allPillsToRender = [...defaultPills, ...extraPills];
+    const currentFilter = window.activeCatalogFilter || { type: 'all', value: 'all' };
+
+    quickPills.innerHTML = allPillsToRender.map(item => {
+        let isActive = false;
+        if (currentFilter.type === item.type) {
+            if (item.type === 'all' || item.type === 'promo' || item.type === 'combos' || item.type === 'decants' || item.type === 'completos') {
+                isActive = true;
+            } else if (normalizeKey(currentFilter.value) === normalizeKey(item.value)) {
+                isActive = true;
+            }
+        }
+
+        const classes = ['quick-pill', item.extraClass, isActive ? 'active' : ''].filter(Boolean).join(' ');
+        return `<button type="button" class="${classes}" data-filter-type="${item.type}" data-filter-value="${item.value}" title="Filtrar por ${item.label}"><i class="${item.icon}"></i> ${item.label}</button>`;
+    }).join('');
+}
+
 function renderStoreGrid(productsToRender) {
     const storeGrid = document.getElementById('main-store-grid');
     if (!storeGrid) return;
@@ -132,13 +219,15 @@ function renderStoreGrid(productsToRender) {
     }
 
     if (productsToRender.length === 0) {
+        const filterVal = (window.activeCatalogFilter && window.activeCatalogFilter.value !== 'all') ? window.activeCatalogFilter.value : '';
         storeGrid.innerHTML = `
             ${searchTagHtml}
-            <div style="grid-column: 1/-1; text-align:center; padding: 3rem 1rem;">
-                <i class="fa-solid fa-magnifying-glass" style="font-size:2.5rem; color:#ccc; margin-bottom:1rem; display:block;"></i>
-                <p style="font-size:1.1rem; color:#666;">No se encontraron resultados para tu búsqueda.</p>
-                <button type="button" class="btn btn-primary-dark mt-2" onclick="window.clearSearchFilter()" style="margin-top:12px; padding:10px 20px; font-size:14px; border-radius:6px; cursor:pointer;">
-                    <i class="fa-solid fa-border-all"></i> Ver todo el catálogo
+            <div style="grid-column: 1/-1; text-align:center; padding: 3.5rem 1rem;">
+                <i class="fa-solid fa-flask" style="font-size:2.8rem; color:#a5b4fc; margin-bottom:1rem; display:block;"></i>
+                <p style="font-size:1.15rem; font-weight:600; color:#1e293b;">No hay perfumes disponibles en esta categoría ${filterVal ? `("${filterVal}")` : ''} en este momento.</p>
+                <p style="font-size:0.9rem; color:#64748b; margin-top:6px;">Pronto añadiremos más fragancias exclusivas a esta colección.</p>
+                <button type="button" class="btn btn-primary-dark mt-2" onclick="window.setCatalogFilter ? window.setCatalogFilter('all', 'all') : (window.clearSearchFilter ? window.clearSearchFilter() : null)" style="margin-top:14px; padding:10px 24px; font-size:14px; border-radius:25px; cursor:pointer; background:var(--c-accent); color:#fff; border:none; font-weight:600; box-shadow:0 4px 15px var(--c-accent-glow);">
+                    <i class="fa-solid fa-border-all"></i> Ver Todo el Catálogo
                 </button>
             </div>
         `;

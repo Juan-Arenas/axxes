@@ -51,6 +51,7 @@
                     <li><a href="#" data-filter-gender="Unisex">Unisex</a></li>
                     <li><a href="#" data-filter-category="Árabes">Árabes</a></li>
                     <li><a href="#" data-filter-category="Nicho">Nicho</a></li>
+                    <li><a href="#" data-filter-category="Diseñador">Diseñador</a></li>
                     <li><a href="#" data-filter-category="Decants">Decants</a></li>
                     <li><a href="#" data-filter-size="bottle">Perfumes Completos</a></li>
                 </ul>
@@ -84,6 +85,7 @@
                 <li><a href="#" data-filter-gender="Unisex">Unisex</a></li>
                 <li><a href="#" data-filter-category="Árabes">Árabes</a></li>
                 <li><a href="#" data-filter-category="Nicho">Nicho</a></li>
+                <li><a href="#" data-filter-category="Diseñador">Diseñador</a></li>
                 <li><a href="#" data-filter-category="Decants">Decants (5-10ML)</a></li>
                 <li><a href="#" data-filter-size="bottle">Perfumes Completos</a></li>
             </ul>
@@ -130,16 +132,18 @@
 
                 <!-- Pestañas Rápidas de Categoría -->
                 <div class="store-quick-pills" id="store-quick-pills">
-                    <button class="quick-pill active" data-filter-quick="all"><i class="fa-solid fa-border-all"></i> TODO</button>
-                    <button class="quick-pill pill-promo-pill" data-filter-quick="promo"><i class="fa-solid fa-fire"></i> EN PROMOCIÓN</button>
-                    <button class="quick-pill pill-combo-pill" data-filter-quick="combos"><i class="fa-solid fa-gift"></i> COMBOS DECANTS</button>
-                    <button class="quick-pill" data-filter-quick="nicho"><i class="fa-solid fa-crown"></i> NICHO</button>
-                    <button class="quick-pill" data-filter-quick="arabes"><i class="fa-solid fa-moon"></i> ÁRABES</button>
-                    <button class="quick-pill" data-filter-quick="decants"><i class="fa-solid fa-flask"></i> DECANTS (5-10ML)</button>
-                    <button class="quick-pill" data-filter-quick="completos"><i class="fa-solid fa-wine-bottle"></i> PERFUMES COMPLETOS</button>
-                    <button class="quick-pill" data-filter-quick="hombre"><i class="fa-solid fa-mars"></i> HOMBRE</button>
-                    <button class="quick-pill" data-filter-quick="mujer"><i class="fa-solid fa-venus"></i> MUJER</button>
-                    <button class="quick-pill" data-filter-quick="unisex"><i class="fa-solid fa-genderless"></i> UNISEX</button>
+                    <button type="button" class="quick-pill active" data-filter-type="all" data-filter-value="all"><i class="fa-solid fa-border-all"></i> TODO</button>
+                    <button type="button" class="quick-pill pill-promo-pill" data-filter-type="promo" data-filter-value="promo"><i class="fa-solid fa-fire"></i> EN PROMOCIÓN</button>
+                    <button type="button" class="quick-pill pill-combo-pill" data-filter-type="combos" data-filter-value="combos"><i class="fa-solid fa-gift"></i> COMBOS DECANTS</button>
+                    <button type="button" class="quick-pill" data-filter-type="category" data-filter-value="Nicho"><i class="fa-solid fa-crown"></i> NICHO</button>
+                    <button type="button" class="quick-pill" data-filter-type="category" data-filter-value="Árabes"><i class="fa-solid fa-moon"></i> ÁRABES</button>
+                    <button type="button" class="quick-pill" data-filter-type="category" data-filter-value="Diseñador"><i class="fa-solid fa-gem"></i> DISEÑADOR</button>
+                    <button type="button" class="quick-pill" data-filter-type="decants" data-filter-value="decants"><i class="fa-solid fa-flask"></i> DECANTS (5-10ML)</button>
+                    <button type="button" class="quick-pill" data-filter-type="completos" data-filter-value="completos"><i class="fa-solid fa-wine-bottle"></i> PERFUMES COMPLETOS</button>
+                    <button type="button" class="quick-pill" data-filter-type="gender" data-filter-value="Hombre"><i class="fa-solid fa-mars"></i> HOMBRE</button>
+                    <button type="button" class="quick-pill" data-filter-type="gender" data-filter-value="Mujer"><i class="fa-solid fa-venus"></i> MUJER</button>
+                    <button type="button" class="quick-pill" data-filter-type="gender" data-filter-value="Unisex"><i class="fa-solid fa-genderless"></i> UNISEX</button>
+                    <button type="button" class="quick-pill" data-filter-type="category" data-filter-value="Testers"><i class="fa-solid fa-vial"></i> TESTERS</button>
                 </div>
 
                 <div class="store-layout">
@@ -487,6 +491,7 @@
                     <li><a href="#catalogo-seccion" data-filter-all="true">Ver Todo el Catálogo</a></li>
                     <li><a href="#catalogo-seccion" data-filter-category="Nicho">Perfumes Nicho</a></li>
                     <li><a href="#catalogo-seccion" data-filter-category="Árabes">Perfumes Árabes</a></li>
+                    <li><a href="#catalogo-seccion" data-filter-category="Diseñador">Perfumes Diseñador</a></li>
                     <li><a href="#catalogo-seccion" data-filter-category="Decants">Decants 5ML & 10ML</a></li>
                     <li><a href="#catalogo-seccion" data-filter-size="bottle">Perfumes Completos & Testers</a></li>
                 </ul>
@@ -581,11 +586,11 @@
     </button>
 
     <!-- Scripts with Cache Busting -->
-    <script src="data/categories.js?v=4.0"></script>
-    <script src="data/products.js?v=4.0"></script>
-    <script src="admin/dataStore.js?v=4.0"></script>
-    <script src="js/render.js?v=4.0"></script>
-    <script src="app.js?v=4.0"></script>
-    <script src="admin/adminUI.js?v=4.0"></script>
+    <script src="data/categories.js?v=5.0"></script>
+    <script src="data/products.js?v=5.0"></script>
+    <script src="admin/dataStore.js?v=5.0"></script>
+    <script src="js/render.js?v=5.0"></script>
+    <script src="app.js?v=5.0"></script>
+    <script src="admin/adminUI.js?v=5.0"></script>
 </body>
 </html>

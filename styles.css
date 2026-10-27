@@ -2069,6 +2069,9 @@ img { max-width: 100%; display: block; }
     align-items: center;
     gap: 7px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    text-transform: uppercase;
+    user-select: none;
+    -webkit-user-select: none;
 }
 .quick-pill i {
     font-size: 13px;

@@ -4,6 +4,14 @@ window.INITIAL_CATEGORIES = [
     "name": "Hombre"
   },
   {
+    "id": "cat-10",
+    "name": "Combos Decants"
+  },
+  {
+    "id": "cat-1793040045216",
+    "name": "Diseñador"
+  },
+  {
     "id": "cat-2",
     "name": "Mujer"
   },
@@ -20,10 +28,6 @@ window.INITIAL_CATEGORIES = [
     "name": "Árabes"
   },
   {
-    "id": "cat-6",
-    "name": "Diseñador"
-  },
-  {
     "id": "cat-7",
     "name": "Nicho"
   },
@@ -34,9 +38,5 @@ window.INITIAL_CATEGORIES = [
   {
     "id": "cat-9",
     "name": "Testers"
-  },
-  {
-    "id": "cat-10",
-    "name": "Combos Decants"
   }
 ];

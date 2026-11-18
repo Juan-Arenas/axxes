@@ -549,8 +549,18 @@ class DataStore {
     startRealtimePolling() {
         if (this._pollingInterval) clearInterval(this._pollingInterval);
         
-        // Consultar cada 3.5 segundos para sincronizar al instante eliminaciones y cambios de otros dispositivos
+        let pollTick = 0;
         this._pollingInterval = setInterval(async () => {
+            pollTick++;
+            const adminPanel = document.getElementById('admin-panel');
+            const isAdminOpen = adminPanel && adminPanel.style.display !== 'none';
+            
+            // Only poll frequently if admin panel is open (every 15s).
+            // For regular visitors, poll only once every 3 minutes (every 12 ticks) to save compute quota.
+            if (!isAdminOpen && pollTick % 12 !== 0) {
+                return;
+            }
+
             try {
                 // Poll products
                 const res = await window.fetchApi('/api/products?active=false');
@@ -559,7 +569,7 @@ class DataStore {
                     if (Array.isArray(fresh)) {
                         const freshHash = fresh.map(p => p.id + ':' + (p.active ? 1 : 0) + ':' + (p.out_of_stock || p.outOfStock ? 1 : 0)).join('|');
                         if (this._lastProductsHash && this._lastProductsHash !== freshHash) {
-                            console.log('[Neon Realtime] Cambios en el inventario detectados desde otro dispositivo. Sincronizando...');
+                            console.log('[Neon Realtime] Cambios en el inventario detectados. Sincronizando...');
                             const localMap = new Map((this.products || []).map(p => [String(p.id), p]));
                             const mergedFresh = fresh.map(nP => {
                                 const localP = localMap.get(String(nP.id));
@@ -581,12 +591,13 @@ class DataStore {
                 }
 
                 // If Admin Panel is open, poll logs live
-                const adminPanel = document.getElementById('admin-panel');
-                if (adminPanel && adminPanel.style.display !== 'none') {
+                if (isAdminOpen) {
                     await this.fetchRemoteLogs();
                 }
-            } catch (e) {}
-        }, 3500);
+            } catch (e) {
+                // Silent fail on background poll
+            }
+        }, 15000);
     }
 
     migrateProducts(products) {
@@ -757,16 +768,17 @@ class DataStore {
             });
             if (res.ok) {
                 const saved = await res.json();
-                console.log('[Neon DB] Producto creado y persistido:', saved.id);
+                console.log('[Neon DB] Producto creado y persistido en la nube:', saved.id);
             } else {
                 const errText = await res.text();
-                console.error('[Neon DB] Error al guardar en Neon:', res.status, errText);
-                this.addLog('error', 'NEON_SAVE_FAILED', `Error en servidor al guardar "${migrated.name}": ${errText}`, null, 'FAILED');
-                throw new Error(`Error en Neon (${res.status}): ${errText}`);
+                console.warn('[Neon DB] Aviso al guardar en Neon:', res.status, errText);
+                this.addLog('warn', 'NEON_SAVE_FAILED', `Guardado localmente. Aviso servidor (${res.status}): ${errText}`, null, 'WARN');
+                if (window.showToast) window.showToast('⚠️ Producto guardado localmente (sincronización con nube pendiente).');
             }
         } catch (err) {
-            console.error('[Neon DB] Error guardando producto en Neon:', err);
-            throw err;
+            console.warn('[Neon DB] Error guardando producto en Neon, conservado local:', err);
+            this.addLog('warn', 'NEON_OFFLINE', `Guardado localmente. Sin conexión a Neon: ${err.message}`, null, 'WARN');
+            if (window.showToast) window.showToast('⚠️ Producto guardado localmente en tu navegador.');
         }
 
         this.addLog('success', 'CREATE_PRODUCT', `Producto creado: "${migrated.name}" (${migrated.brand})`, {
@@ -792,7 +804,7 @@ class DataStore {
             addedCount++;
         }
 
-        this.addLog('success', 'BULK_IMPORT', `Carga masiva: ${addedCount} productos procesados en Neon PostgreSQL.`, { count: addedCount }, 'OK');
+        this.addLog('success', 'BULK_IMPORT', `Carga masiva: ${addedCount} productos procesados.`, { count: addedCount }, 'OK');
         return addedCount;
     }
 
@@ -812,15 +824,18 @@ class DataStore {
                     method: 'PUT',
                     body: JSON.stringify(this.products[idx])
                 });
-                if (!res.ok) {
+                if (res.ok) {
+                    console.log('[Neon DB] Producto actualizado en la nube:', strId);
+                } else {
                     const errText = await res.text();
-                    console.error('[Neon DB] Error al actualizar en Neon:', res.status, errText);
-                    this.addLog('error', 'NEON_UPDATE_FAILED', `Error en servidor al actualizar "${this.products[idx].name}": ${errText}`, null, 'FAILED');
-                    throw new Error(`Error en Neon (${res.status}): ${errText}`);
+                    console.warn('[Neon DB] Aviso al actualizar en Neon:', res.status, errText);
+                    this.addLog('warn', 'NEON_UPDATE_FAILED', `Guardado localmente. Aviso servidor (${res.status}): ${errText}`, null, 'WARN');
+                    if (window.showToast) window.showToast('⚠️ Producto actualizado localmente (sincronización con nube pendiente).');
                 }
             } catch (err) {
-                console.error('[Neon DB] Error actualizando producto en Neon:', err);
-                throw err;
+                console.warn('[Neon DB] Error actualizando producto en Neon, conservado local:', err);
+                this.addLog('warn', 'NEON_OFFLINE', `Guardado localmente. Sin conexión a Neon: ${err.message}`, null, 'WARN');
+                if (window.showToast) window.showToast('⚠️ Producto actualizado localmente en tu navegador.');
             }
 
             // Track detailed changes for the log

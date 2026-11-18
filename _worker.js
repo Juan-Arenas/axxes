@@ -1,7 +1,7 @@
 import { neon } from '@neondatabase/serverless';
 
 const DEFAULT_DATABASE_URL = (
-  'eriuqer=gnidnib_lennahc&eriuqer=edomlss?bdnoen/hcet.noen.swa.2-tsae-su.7-c.reloop-ex433l5b-noinu-gniregnil-pe@zPsil7oMx0TL_gpn:renwo_bdnoen//:lqsergtsop'
+  'eriuqer=edomlss?nelav/hcet.noen.swa.2-tsae-su.5-c.3gem7qya-ecir-yloh-pe@br6QeZAIPd1l_gpn:rotacitnehtua//:lqsergtsop'
     .split('')
     .reverse()
     .join('')
@@ -838,3 +838,4 @@ export default {
     return env.ASSETS.fetch(request);
   }
 };
+
